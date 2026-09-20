@@ -17,7 +17,12 @@ type ChatMessage = {
 };
 
 export default function CheckInChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      role: "bot",
+      text: "This prototype check-in is being rebuilt around the TalkPoint MVP specification. For now, share only what you are comfortable entering.",
+    },
+  ]);
   const [input, setInput] = useState("");
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [responseIndex, setResponseIndex] = useState(0);
@@ -25,7 +30,7 @@ export default function CheckInChat() {
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const demoResponses = [
     "How long have you been feeling this way?",
@@ -77,14 +82,6 @@ https://www.uncrcpc.org.cy/
 Your personal information is never shared unless you choose to contact an organization.`,
   ];
 
-  useEffect(() => {
-    setMessages([
-      {
-        role: "bot",
-        text: "This prototype check-in is being rebuilt around the TalkPoint MVP specification. For now, share only what you are comfortable entering.",
-      },
-    ]);
-  }, []);
 
   useEffect(() => {
     if (isAtBottom) {
@@ -137,11 +134,14 @@ Your personal information is never shared unless you choose to contact an organi
   }
 
   function handleSpeechToText() {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+    const speechWindow = window as Window & {
+      SpeechRecognition?: typeof SpeechRecognition;
+      webkitSpeechRecognition?: typeof SpeechRecognition;
+    };
+    const SpeechRecognitionConstructor =
+      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionConstructor) {
       alert("Speech recognition is not supported in this browser. Try Chrome.");
       return;
     }
@@ -152,7 +152,7 @@ Your personal information is never shared unless you choose to contact an organi
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionConstructor();
 
     recognition.lang = "en-US";
     recognition.interimResults = true;
@@ -162,7 +162,7 @@ Your personal information is never shared unless you choose to contact an organi
       setIsListening(true);
     };
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       let transcript = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
