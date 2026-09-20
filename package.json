@@ -24,7 +24,7 @@
     "test:payload": "node scripts/check-payload-runtime.mjs",
     "test:persistence": "node scripts/check-persistence-boundaries.mjs",
     "test:provider-consent": "node scripts/check-provider-consent-hardening.mjs",
-    "payload": "payload",
+    "payload": "tsx ./node_modules/payload/bin.js",
     "test:postgres": "tsx scripts/check-postgres-integration.mjs"
   },
   "dependencies": {
