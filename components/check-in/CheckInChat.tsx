@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import LiveStatus from "@/components/accessibility/LiveStatus";
 import {
   Bot,
   Send,
@@ -24,6 +25,7 @@ export default function CheckInChat() {
   const [input, setInput] = useState("");
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [responseIndex, setResponseIndex] = useState(0);
+  const [liveStatus, setLiveStatus] = useState("");
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +74,7 @@ export default function CheckInChat() {
 
     setMessages((prev) => [...prev, { role: "bot", text: demoResponses[responseIndex] }]);
     setResponseIndex((prev) => prev + 1);
+    setLiveStatus("New demo response available");
   }
 
 
@@ -120,6 +123,8 @@ export default function CheckInChat() {
       <section
         aria-label="Demo conversation"
         role="log"
+        aria-live="polite"
+        aria-relevant="additions text"
         ref={scrollRef}
         onScroll={handleScroll}
         className="relative z-10 flex-1 overflow-y-auto px-5 py-8 pb-36"
@@ -162,6 +167,8 @@ export default function CheckInChat() {
           <div ref={bottomRef} />
         </div>
       </section>
+
+      <LiveStatus message={liveStatus} />
 
       {/* Scroll down button */}
       {!isAtBottom && (
