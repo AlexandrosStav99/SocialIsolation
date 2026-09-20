@@ -135,6 +135,7 @@ Your personal information is never shared unless you choose to contact an organi
 
   function handleSpeechToText() {
     type SpeechRecognitionEventLike = {
+      resultIndex: number;
       results: ArrayLike<{ 0: { transcript: string } }>;
     };
     type SpeechRecognitionLike = {
