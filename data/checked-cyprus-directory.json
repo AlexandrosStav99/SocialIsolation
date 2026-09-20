@@ -1,0 +1,12 @@
+{
+  "status": "research_required",
+  "purpose": "Real Cyprus service records enter this dataset only after authoritative-source checking.",
+  "records": [],
+  "rules": [
+    "Do not infer partnerships.",
+    "Do not label provider quality as verified.",
+    "Record an authoritative information source and checked date.",
+    "Re-check eligibility, coverage, contact channels and availability before publication.",
+    "Immediate-support records require the separate safety/domain-expert validation gate."
+  ]
+}
