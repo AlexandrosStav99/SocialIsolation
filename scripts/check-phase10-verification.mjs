@@ -1,0 +1,11 @@
+import fs from "node:fs";
+const read=(p)=>fs.readFileSync(p,"utf8");
+const routing=read("lib/routing/discovery.ts"),queue=read("lib/provider/queue.ts"),logger=read("lib/security/redacted-logger.ts"),withdrawal=read("lib/handoff/withdrawal.ts"),ai=read("lib/ai/openai-provider.ts"),evidence=read("docs/PHASE-10-VALIDATION-EVIDENCE.md"),limits=read("docs/PHASE-10-LIMITATIONS.md");
+for(const x of ["change_area","change_preferences","browse_directory"]) if(!routing.includes(x)) throw new Error("Missing no-match recovery: "+x);
+if(!queue.includes("providerOrganisationId!==actor.organisationId")) throw new Error("Organisation isolation guard missing");
+for(const x of ["freeText","preferredName","structuredSupportSummary","email","phone"]) if(!logger.includes(x)) throw new Error("Logging redaction key missing: "+x);
+if(!withdrawal.includes("requestDeleted:true")||!withdrawal.includes("withdrawnAt")) throw new Error("Withdrawal/deletion contract missing");
+if(!ai.includes('content.type==="output_text"')||ai.includes("data.output_text")) throw new Error("Raw Responses API parsing regression");
+for(const x of ["NOT COMPLETE","Domain-expert","18–30"]) if(!evidence.includes(x)) throw new Error("Human validation gate not explicit: "+x);
+if(!limits.includes("no compliance certification")||!limits.includes("Payload CMS runtime integration remains future")) throw new Error("Production limitation boundary missing");
+console.log("Phase 10 verification checks passed.");
