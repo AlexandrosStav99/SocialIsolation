@@ -1,5 +1,4 @@
--- TalkPoint Phase 1 storage boundaries.
--- PostgreSQL baseline. Payload-owned directory tables may evolve via Payload migrations.
+-- ARCHITECTURE BASELINE ONLY - DO NOT EXECUTE against the current Payload-managed database.\n-- This Phase 1 SQL predates the Payload runtime collections and overlaps their table names.\n-- Payload migrations are the sole runtime schema authority. See docs/DATABASE-MIGRATION-OWNERSHIP.md.\n-- TalkPoint Phase 1 storage boundaries.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TYPE talkpoint_role AS ENUM ('super_admin','platform_admin','provider_manager','provider_staff');
