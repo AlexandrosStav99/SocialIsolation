@@ -66,7 +66,7 @@ export class PayloadEphemeralSessionStore implements EphemeralSessionStore {
       limit: 1,
     });
     return result.docs[0]
-      ? toDomain(result.docs[0] as EphemeralSessionDocument)
+      ? toDomain(result.docs[0] as unknown as EphemeralSessionDocument)
       : null;
   }
 
