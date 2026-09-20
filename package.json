@@ -9,7 +9,7 @@
     "lint": "eslint --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "playwright test",
-    "audit": "npm audit --audit-level=low",
+    "audit": "npm audit --omit=dev --audit-level=low",
     "test:boundaries": "node scripts/check-phase1-boundaries.mjs",
     "test:directory": "node scripts/check-phase2-directory.mjs",
     "test:conversation": "node scripts/check-phase3-conversation.mjs",
@@ -19,7 +19,8 @@
     "test:rbac": "node scripts/check-phase7-rbac.mjs",
     "test:analytics": "node scripts/check-phase8-analytics.mjs",
     "test:ux": "node scripts/check-phase9-ux.mjs",
-    "test:verification": "node scripts/check-phase10-verification.mjs"
+    "test:verification": "node scripts/check-phase10-verification.mjs",
+    "audit:full": "npm audit --audit-level=low"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.1",
