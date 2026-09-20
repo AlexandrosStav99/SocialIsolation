@@ -1,5 +1,14 @@
 import { getPayload } from "payload";
-import config from "../payload.config.ts";
+import { postgresAdapter } from "@payloadcms/db-postgres";
+import { buildConfig } from "payload";
+import { ProviderOrganisations } from "../payload/collections/ProviderOrganisations.ts";
+import { EphemeralSessions } from "../payload/collections/EphemeralSessions.ts";
+
+const config = buildConfig({
+  secret: process.env.PAYLOAD_SECRET,
+  db: postgresAdapter({ pool: { connectionString: process.env.DATABASE_URL } }),
+  collections: [ProviderOrganisations, EphemeralSessions],
+});
 
 const payload = await getPayload({ config });
 const marker = `CI PostgreSQL ${Date.now()}`;
