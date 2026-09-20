@@ -13,8 +13,24 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: talkpoint
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: talkpoint
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U talkpoint -d talkpoint"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       NEXT_TELEMETRY_DISABLED: 1
+      DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
+      PAYLOAD_SECRET: ci-only-not-for-deployment
       NEXT_PUBLIC_MAPBOX_TOKEN: ""
     steps:
       - name: Checkout
@@ -80,6 +96,11 @@ jobs:
 
       - name: Provider RBAC and consent hardening checks
         run: npm run test:provider-consent
+
+      - name: Initialize Payload schema on CI PostgreSQL
+        env:
+          NODE_ENV: development
+        run: timeout 120s npm run test:postgres
 
       - name: Build
         env:
