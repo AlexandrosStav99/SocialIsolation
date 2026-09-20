@@ -6,7 +6,7 @@ for (const topic of required) if (!taxonomy.includes(topic)) throw new Error("Mi
 
 const checked = JSON.parse(fs.readFileSync("data/checked-cyprus-directory.json", "utf8"));
 if (!Array.isArray(checked.records)) throw new Error("Checked directory records must be an array");
-if (checked.status !== "research_required") throw new Error("Real directory must not be presented as checked before research");
+if (!["research_required", "initial_checked_records"].includes(checked.status)) throw new Error("Invalid checked-directory status");\nfor (const record of checked.records) {\n  for (const field of ["id","provider","service","informationSource","informationCheckedAt"]) {\n    if (!record[field]) throw new Error("Checked record missing " + field);\n  }\n  if (record.integrated !== false) throw new Error("Real provider must not imply integration/partnership");\n}
 
 const demo = fs.readFileSync("data/demo-directory.ts", "utf8");
 for (const phrase of ["Synthetic university demonstration record", "Demonstration"]) {
