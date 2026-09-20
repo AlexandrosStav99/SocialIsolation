@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TalkPoint
 
-## Getting Started
+University prototype for support navigation for adults aged 18–30. Product scope is frozen in [the MVP specification](docs/TALKPOINT-MVP-SPEC.md); phased delivery is defined in [the implementation plan](docs/IMPLEMENTATION-PLAN.md).
 
-First, run the development server:
+Phase 0 hardens the existing visual prototype. It is not an operational support service, emergency service, AI counsellor, checked directory or provider workspace. Use fictional input only.
 
-```bash
+## Local setup
+
+Use Node 24 (`nvm use`), then:
+
+```sh
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+No secrets are needed for the default prototype. `/dashboard` returns 404 by default. To preview synthetic dashboard visuals in a controlled environment, set the **server-only** `TALKPOINT_ENABLE_DEMO_DASHBOARD=true` and restart. This flag is not authentication: never enable it with real provider/request data. Actual authentication and organisation isolation belong to Phase 7.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The optional `NEXT_PUBLIC_MAPBOX_TOKEN` is bundled into the browser at build time. Use only a restricted public Mapbox token with minimal read scopes and URL restrictions. A blank token shows a textual fallback and district totals without calling Mapbox. Enabling it contacts Mapbox for tiles/assets and is not a privacy guarantee. Never prefix API keys, database credentials or secret Mapbox tokens with `NEXT_PUBLIC_`. Keep local values in ignored `.env.local`; use your hosting secret manager for future server-only secrets. Commit only `.env.example` placeholders. Rotate any exposed credential before removing it from history.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Verification
 
-## Learn More
+```sh
+npm run audit
+npm run lint
+npm run typecheck
+npm run build
+npx playwright install --with-deps chromium
+npm test
+```
 
-To learn more about Next.js, take a look at the following resources:
+Tests launch two production servers: the default deployment on 3100 and the explicitly enabled synthetic dashboard on 3101. Leave `NEXT_PUBLIC_MAPBOX_TOKEN` blank during build/tests. These tests do not contact real support providers.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+CI runs all commands above with failure propagation, a zero-warning lint gate, strict TypeScript, and an all-severity dependency audit. Update packages through npm and commit the regenerated lockfile together with package.json. Do not hand-edit the lockfile, suppress advisories or bypass checks.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [Phase 0 review](docs/PHASE-0-REVIEW.md) for security findings, verification and the intentionally deferred work.

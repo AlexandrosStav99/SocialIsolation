@@ -4,22 +4,22 @@ const features = [
   {
     n: "01",
     title: "Structured intake requests",
-    desc: "Receive organized support requests with consent-based contact details and categorized need summaries.",
+    desc: "Planned workflow for consented contact requests with controlled support-topic summaries.",
   },
   {
     n: "02",
     title: "Demand analytics",
-    desc: "Understand what types of support young adults are looking for by category and over time.",
+    desc: "Planned aggregate analytics for support topics and trends, using demonstration data in the university MVP.",
   },
   {
     n: "03",
     title: "Regional insights",
-    desc: "See aggregated, privacy-safe geographic trends to better allocate resources and outreach programs.",
+    desc: "Planned district-level aggregate trends with minimum-sample suppression and no individual locations.",
   },
   {
     n: "04",
     title: "Request management",
-    desc: "Track, assign, and update support requests with a clean, purpose-built operational dashboard.",
+    desc: "Planned provider workflow for assigning and updating consented demo contact requests.",
   },
 ];
 
@@ -53,16 +53,14 @@ export default function ForNGOs() {
 
           <div className="max-w-xl lg:pb-2">
             <p className="text-base leading-relaxed text-muted">
-              TalkPoint gives NGOs, universities, and community services a
-              structured, privacy-safe window into local demand, helping teams
-              respond earlier, smarter, and where it matters most.
+              The university MVP is designed to demonstrate how NGOs, universities, and community services could receive user-directed requests and view aggregate support-topic trends.
             </p>
 
             <a
               href="mailto:hello@talkpoint.cy"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              Partner with TalkPoint
+              Contact TalkPoint
               <ArrowUpRight size={15} />
             </a>
           </div>
@@ -75,7 +73,7 @@ export default function ForNGOs() {
             <div className="mb-8 flex items-center justify-between">
               <p className="text-sm font-semibold text-text">Demand overview</p>
               <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-sage">
-                Privacy-safe
+                Demonstration Data
               </span>
             </div>
 
@@ -102,8 +100,7 @@ export default function ForNGOs() {
 
             <div className="mt-8 rounded-2xl border border-border bg-surface p-4">
               <p className="text-xs leading-relaxed text-muted">
-                Anonymous data is grouped into clear trends, helping support
-                teams understand demand without exposing individual identities.
+                Illustrative values only. The completed MVP will use thresholded aggregate analytics and will not plot individual users.
               </p>
             </div>
           </div>

@@ -86,7 +86,7 @@ export default function AboutCTA() {
           "
         >
           TalkPoint is here to help you take the first small step toward
-          connection — safely, privately and at your own pace.
+          connection. Explore this demonstration with fictional text only.
         </motion.p>
 
         <motion.div
@@ -122,7 +122,7 @@ export default function AboutCTA() {
                 hover:opacity-90
               "
             >
-              Start safely
+              View demo
               <ArrowRight size={16} />
             </Link>
           </motion.div>

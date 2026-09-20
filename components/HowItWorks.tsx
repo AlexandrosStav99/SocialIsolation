@@ -4,17 +4,17 @@ const steps = [
   {
     n: "01",
     title: "Share how you feel",
-    desc: "Answer a few calm, private questions. No account, no name, no judgment. Just an honest look at what you might need.",
+    desc: "Planned: choose broad support topics without creating an account. The current demo uses fictional text only.",
   },
   {
     n: "02",
-    title: "Get matched to support",
-    desc: "We review your answers and suggest the support options most relevant to your situation, clearly explained and without jargon.",
+    title: "Explore support services",
+    desc: "Planned: deterministic rules will find checked service information using your structured choices. This is not implemented yet.",
   },
   {
     n: "03",
     title: "Connect when you're ready",
-    desc: "Reach out to an organization directly, or share your details only when you feel comfortable. Always your choice.",
+    desc: "Planned: choose self-service contact or an explicitly consented request to a participating service. No requests are sent by this demo.",
   },
 ];
 
@@ -26,7 +26,7 @@ export default function HowItWorks() {
           {/* Sticky intro */}
           <div className="lg:sticky lg:top-24 lg:h-fit">
             <p className="mb-8 text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-              How it works
+              Planned journey
             </p>
 
             <h2 className="max-w-xl text-[clamp(2.6rem,5vw,5.6rem)] font-bold leading-[0.96] tracking-tight text-text">
@@ -90,8 +90,8 @@ export default function HowItWorks() {
                 <p className="text-sm font-bold text-text">Safe first.</p>
 
                 <p className="max-w-2xl text-sm leading-relaxed text-muted">
-                  Your answers are private and used only to guide your support.
-                  They are never sold, and never shared without your consent.
+                  Privacy, consent and data boundaries require implementation and validation.
+                  Do not enter personal information into this demonstration.
                 </p>
               </div>
             </div>
