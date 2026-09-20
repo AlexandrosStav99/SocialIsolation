@@ -7,8 +7,8 @@ import { transitionRequestStatus } from "@/lib/provider/workflow";
 import { supportTopics, serviceAreas, type SupportTopic, type ServiceArea } from "@/lib/domain/data-boundaries";
 
 const DEMO_SERVICES = {
-  "demo-community-connection": { providerOrganisationId: "demo-community-org", integrated: true },
-  "demo-student-support": { providerOrganisationId: "demo-university-org", integrated: true },
+  "demo-community-online": { providerOrganisationId: "demo-community-provider", integrated: true },
+  "demo-student-online": { providerOrganisationId: "demo-student-provider", integrated: false },
 } as const;
 
 type DemoServiceId = keyof typeof DEMO_SERVICES;
