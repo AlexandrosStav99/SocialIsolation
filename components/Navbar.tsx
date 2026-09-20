@@ -18,7 +18,7 @@ export default function Navbar() {
 
 
   useEffect(() => {
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     const handleScroll = () => {
 
