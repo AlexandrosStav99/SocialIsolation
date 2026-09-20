@@ -11,10 +11,22 @@ import { EphemeralSessions } from "@/payload/collections/EphemeralSessions";
 import { AnonymousAnalyticsEvents } from "@/payload/collections/AnonymousAnalyticsEvents";
 import { ProviderAuditEvents } from "@/payload/collections/ProviderAuditEvents";
 
-
 export default buildConfig({
   secret: getPayloadSecret(),
-  db: postgresAdapter({\n    pool: { connectionString: getDatabaseUrl() },\n    migrationDir: "./migrations",\n  }),
-  collections: [ProviderOrganisations, ProviderUsers, Providers, Services, EphemeralSessions, AnonymousAnalyticsEvents, ContactRequests, ConsentRecords, ProviderAuditEvents],
+  db: postgresAdapter({
+    pool: { connectionString: getDatabaseUrl() },
+    migrationDir: "./migrations",
+  }),
+  collections: [
+    ProviderOrganisations,
+    ProviderUsers,
+    Providers,
+    Services,
+    EphemeralSessions,
+    AnonymousAnalyticsEvents,
+    ContactRequests,
+    ConsentRecords,
+    ProviderAuditEvents,
+  ],
   typescript: { outputFile: "payload-types.ts" },
 });
