@@ -23,7 +23,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U talkpoint -d talkpoint"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -100,7 +100,7 @@ jobs:
       - name: Initialize Payload schema on CI PostgreSQL
         env:
           NODE_ENV: development
-        run: npm run test:postgres
+        run: timeout 120s npm run test:postgres
 
       - name: Build
         env:
