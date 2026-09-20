@@ -26,8 +26,7 @@ test("integrated journey keeps optional text local and reaches deterministic res
   await page.getByRole("button",{name:"Run controlled handoff demo"}).click();
   await expect(page.getByRole("status")).toContainText("Provider queue status: contact_attempted");
   await expect(page.getByRole("status")).toContainText("No real request was sent.");
-  expect(outbound.join("
-")).not.toContain(sample);
+  expect(outbound.join("\n")).not.toContain(sample);
   expect(JSON.stringify(await page.evaluate(()=>[localStorage,sessionStorage]))).not.toContain(sample);
 });
 
