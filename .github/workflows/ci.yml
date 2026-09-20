@@ -62,6 +62,9 @@ jobs:
       - name: Phase 8 privacy-safe analytics checks
         run: npm run test:analytics
 
+      - name: Phase 9 UX, bilingual and accessibility checks
+        run: npm run test:ux
+
       - name: Build
         run: npm run build
 
