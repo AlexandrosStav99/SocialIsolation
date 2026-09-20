@@ -1,4 +1,4 @@
-import type { AnonymousAnalyticsEvent, ServiceArea, SupportTopic } from "@/lib/domain/data-boundaries";
+import type { AnonymousAnalyticsEvent, ServiceArea } from "@/lib/domain/data-boundaries";
 import { serviceAreas, supportTopics } from "@/lib/domain/data-boundaries";
 import type { AggregateMetric, AnalyticsDashboard, AnalyticsDataLabel, HeatmapCell } from "./types";
 
