@@ -1,0 +1,16 @@
+import fs from "node:fs";
+const config=fs.readFileSync("payload.config.ts","utf8");
+for(const name of ["ProviderUsers","EphemeralSessions","AnonymousAnalyticsEvents","ContactRequests","ConsentRecords","ProviderAuditEvents"])if(!config.includes(name))throw new Error("Missing persistence collection "+name);
+const analytics=fs.readFileSync("payload/collections/AnonymousAnalyticsEvents.ts","utf8");
+for(const forbidden of ["sessionId","requestId","contactDetail","providerUser"])if(analytics.includes(`name:"${forbidden}"`)||analytics.includes(`name: "${forbidden}"`))throw new Error("Analytics must remain structurally unlinkable: "+forbidden);
+const sessions=fs.readFileSync("payload/collections/EphemeralSessions.ts","utf8");
+for(const forbidden of ["contactDetail","preferredName","requestId"])if(sessions.includes(`name:"${forbidden}"`))throw new Error("Ephemeral session contains identifiable field "+forbidden);
+const requests=fs.readFileSync("payload/collections/ContactRequests.ts","utf8");
+for(const forbidden of ["temporaryFreeText","transcript","aiReasoning","safetyTrigger"])if(requests.includes(forbidden))throw new Error("Contact request contains forbidden field "+forbidden);
+const consent=fs.readFileSync("payload/collections/ConsentRecords.ts","utf8");
+if(!consent.includes("authorisedDataCategories")||!consent.includes("withdrawnAt"))throw new Error("Consent audit boundary incomplete");
+const users=fs.readFileSync("payload/collections/ProviderUsers.ts","utf8");
+if(!users.includes("Provider roles require organisation scope")||!users.includes("Platform roles must not have provider organisation scope"))throw new Error("Provider user scope validation missing");
+const store=fs.readFileSync("lib/session/payload-store.ts","utf8");
+if(!store.includes("purgeExpired")||!store.includes("expiresAt"))throw new Error("Ephemeral expiry purge missing");
+console.log("Privacy-domain persistence checks passed.");
