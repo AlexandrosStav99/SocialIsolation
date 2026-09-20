@@ -18,7 +18,8 @@
     "test:handoff": "node scripts/check-phase6-handoff.mjs",
     "test:rbac": "node scripts/check-phase7-rbac.mjs",
     "test:analytics": "node scripts/check-phase8-analytics.mjs",
-    "test:ux": "node scripts/check-phase9-ux.mjs"
+    "test:ux": "node scripts/check-phase9-ux.mjs",
+    "test:verification": "node scripts/check-phase10-verification.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",

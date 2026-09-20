@@ -1,6 +1,13 @@
 import type { AiConversationInput, AiConversationProvider } from "./types";
 
-type OpenAIResponse={output_text?:string};
+type OpenAIContent={type?:string;text?:string};
+type OpenAIOutput={type?:string;content?:OpenAIContent[]};
+type OpenAIResponse={output?:OpenAIOutput[]};
+
+function extractOutputText(data:OpenAIResponse):string|undefined{
+  for(const item of data.output??[]) for(const content of item.content??[]) if(content.type==="output_text"&&content.text) return content.text;
+  return undefined;
+}
 
 export class OpenAIConversationProvider implements AiConversationProvider{
   constructor(private readonly apiKey:string,private readonly model=process.env.OPENAI_CONVERSATION_MODEL ?? "gpt-5.4-mini"){}
@@ -18,8 +25,9 @@ export class OpenAIConversationProvider implements AiConversationProvider{
     });
     if(!response.ok) throw new Error("AI provider request failed");
     const data=await response.json() as OpenAIResponse;
-    if(!data.output_text) throw new Error("AI provider returned no structured text");
-    const parsed=JSON.parse(data.output_text) as {suggestedTopics:unknown;clarification:unknown};
+    const outputText=extractOutputText(data);
+    if(!outputText) throw new Error("AI provider returned no structured text");
+    const parsed=JSON.parse(outputText) as {suggestedTopics:unknown;clarification:unknown};
     return {...parsed,...(parsed.clarification===null?{clarification:undefined}:{})};
   }
 }

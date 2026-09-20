@@ -65,6 +65,9 @@ jobs:
       - name: Phase 9 UX, bilingual and accessibility checks
         run: npm run test:ux
 
+      - name: Phase 10 verification and academic-evidence checks
+        run: npm run test:verification
+
       - name: Build
         run: npm run build
 
