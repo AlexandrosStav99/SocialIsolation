@@ -30,7 +30,7 @@ export default function CheckInChat() {
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<{ stop: () => void } | null>(null);
 
   const demoResponses = [
     "How long have you been feeling this way?",
@@ -134,9 +134,23 @@ Your personal information is never shared unless you choose to contact an organi
   }
 
   function handleSpeechToText() {
+    type SpeechRecognitionEventLike = {
+      results: ArrayLike<{ 0: { transcript: string } }>;
+    };
+    type SpeechRecognitionLike = {
+      lang: string;
+      interimResults: boolean;
+      continuous: boolean;
+      onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+      onend: (() => void) | null;
+      start: () => void;
+      stop: () => void;
+    };
+    type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
     const speechWindow = window as Window & {
-      SpeechRecognition?: typeof SpeechRecognition;
-      webkitSpeechRecognition?: typeof SpeechRecognition;
+      SpeechRecognition?: SpeechRecognitionConstructor;
+      webkitSpeechRecognition?: SpeechRecognitionConstructor;
     };
     const SpeechRecognitionConstructor =
       speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
@@ -162,7 +176,7 @@ Your personal information is never shared unless you choose to contact an organi
       setIsListening(true);
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: SpeechRecognitionEventLike) => {
       let transcript = "";
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
