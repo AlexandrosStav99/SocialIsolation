@@ -14,7 +14,8 @@
     "test:directory": "node scripts/check-phase2-directory.mjs",
     "test:conversation": "node scripts/check-phase3-conversation.mjs",
     "test:routing": "node scripts/check-phase4-routing.mjs",
-    "test:ai": "node scripts/check-phase5-ai.mjs"
+    "test:ai": "node scripts/check-phase5-ai.mjs",
+    "test:handoff": "node scripts/check-phase6-handoff.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
