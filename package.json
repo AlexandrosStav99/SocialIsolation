@@ -16,7 +16,8 @@
     "test:routing": "node scripts/check-phase4-routing.mjs",
     "test:ai": "node scripts/check-phase5-ai.mjs",
     "test:handoff": "node scripts/check-phase6-handoff.mjs",
-    "test:rbac": "node scripts/check-phase7-rbac.mjs"
+    "test:rbac": "node scripts/check-phase7-rbac.mjs",
+    "test:analytics": "node scripts/check-phase8-analytics.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
