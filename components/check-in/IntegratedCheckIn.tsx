@@ -1,0 +1,42 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { createConversation, transitionConversation } from "@/lib/conversation/engine";
+import { getConversationPrompt } from "@/lib/conversation/prompts";
+import type { ConversationAction, ConversationLanguage, ConversationState } from "@/lib/conversation/types";
+import { serviceAreas, supportTopics, type ServiceArea, type SupportTopic } from "@/lib/domain/data-boundaries";
+import { discoverServices } from "@/lib/routing/discovery";
+import { routeSafety } from "@/lib/safety/router";
+import { demoServices } from "@/data/demo-directory";
+
+const topicLabels:Record<ConversationLanguage,Record<SupportTopic,string>>={en:{social_connection:"Loneliness & Social Connection",emotional_wellbeing:"Emotional & Mental Wellbeing",family_relationships:"Family & Relationships",work_unemployment:"Work & Unemployment",financial_basic_needs:"Financial & Basic Needs",housing_living:"Housing & Living Situation",personal_safety:"Abuse, Violence & Personal Safety",education_student:"Education & Student Support",other_unsure:"Something else / I’m not sure"},el:{social_connection:"Μοναξιά & Κοινωνική Σύνδεση",emotional_wellbeing:"Συναισθηματική & Ψυχική Ευεξία",family_relationships:"Οικογένεια & Σχέσεις",work_unemployment:"Εργασία & Ανεργία",financial_basic_needs:"Οικονομικά & Βασικές Ανάγκες",housing_living:"Στέγαση & Συνθήκες Διαβίωσης",personal_safety:"Κακοποίηση, Βία & Προσωπική Ασφάλεια",education_student:"Εκπαίδευση & Φοιτητική Υποστήριξη",other_unsure:"Κάτι άλλο / Δεν είμαι σίγουρος/η"}};
+const areaLabels:Record<ConversationLanguage,Record<ServiceArea,string>>={en:{nicosia:"Nicosia",limassol:"Limassol",larnaca:"Larnaca",paphos:"Paphos",famagusta:"Famagusta",anywhere_cyprus:"Anywhere in Cyprus",online:"Online"},el:{nicosia:"Λευκωσία",limassol:"Λεμεσός",larnaca:"Λάρνακα",paphos:"Πάφος",famagusta:"Αμμόχωστος",anywhere_cyprus:"Οπουδήποτε στην Κύπρο",online:"Online"}};
+
+export default function IntegratedCheckIn(){
+ const [language,setLanguage]=useState<ConversationLanguage>("en");
+ const [state,setState]=useState<ConversationState>(()=>createConversation(crypto.randomUUID(),"en"));
+ const [secondary,setSecondary]=useState<SupportTopic[]>([]); const [text,setText]=useState("");
+ const prompt=getConversationPrompt(language,state.stage);
+ const dispatch=(action:ConversationAction)=>setState(s=>transitionConversation({...s,language},action));
+ const safety=routeSafety({explicitSignals:[]});
+ const results=useMemo(()=>state.stage==="complete"&&state.primarySupportTopic&&state.serviceArea?discoverServices(demoServices,{primaryTopic:state.primarySupportTopic,secondaryTopics:state.secondarySupportTopics,serviceArea:state.serviceArea,preferredLanguages:[language]}):null,[state,language]);
+ const reset=(lang=language)=>{setLanguage(lang);setSecondary([]);setText("");setState(createConversation(crypto.randomUUID(),lang));};
+ const button="rounded-xl border border-[#D8CEC1] bg-white px-4 py-3 text-left text-sm font-medium text-[#24352F] transition hover:border-[#315C4B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#315C4B]";
+ return <main className="min-h-[calc(100vh-6rem)] bg-[#F6F3EE] px-5 py-10"><div className="mx-auto max-w-3xl">
+  <div className="mb-6 flex justify-between gap-4"><p className="text-xs text-[#6B7B73]">{language==="en"?"University demonstration · synthetic services only":"Πανεπιστημιακή επίδειξη · μόνο συνθετικές υπηρεσίες"}</p><div className="flex gap-2" aria-label="Language"><button className={button} onClick={()=>reset("en")} aria-pressed={language==="en"}>EN</button><button className={button} onClick={()=>reset("el")} aria-pressed={language==="el"}>EL</button></div></div>
+  <button type="button" className="mb-4 text-sm font-semibold underline focus-visible:outline-2" onClick={()=>alert(language==="en"?"Immediate-support wording and resources require domain-expert validation. This university demo does not provide emergency support.":"Η διατύπωση και οι πόροι άμεσης υποστήριξης απαιτούν επικύρωση από ειδικό. Αυτή η πανεπιστημιακή επίδειξη δεν παρέχει υπηρεσία έκτακτης ανάγκης.")}>{language==="en"?"I need help now":"Χρειάζομαι βοήθεια τώρα"}</button><span className="sr-only">Safety route: {safety.state}</span><section className="rounded-3xl border border-[#E6DED3] bg-white p-6 shadow-sm" aria-live="polite"><h1 className="text-2xl font-bold text-[#24352F]">{prompt.heading}</h1>{prompt.body&&<p className="mt-2 text-sm text-[#6B7B73]">{prompt.body}</p>}
+  <div className="mt-6 grid gap-3">
+  {state.stage==="age_gate"&&<><button className={button} onClick={()=>dispatch({type:"confirm_age",confirmed:true})}>{language==="en"?"I confirm I am 18 or over":"Επιβεβαιώνω ότι είμαι 18 ετών ή άνω"}</button><button className={button} onClick={()=>dispatch({type:"confirm_age",confirmed:false})}>{language==="en"?"I am under 18":"Είμαι κάτω των 18"}</button></>}
+  {state.stage==="primary_topic"&&supportTopics.map(t=><button key={t} className={button} onClick={()=>dispatch({type:"select_primary_topic",topic:t})}>{topicLabels[language][t]}</button>)}
+  {state.stage==="secondary_topics"&&<>{supportTopics.filter(t=>t!==state.primarySupportTopic).map(t=><label key={t} className={button}><input type="checkbox" className="mr-3" checked={secondary.includes(t)} disabled={!secondary.includes(t)&&secondary.length>=2} onChange={e=>setSecondary(v=>e.target.checked?[...v,t]:v.filter(x=>x!==t))}/>{topicLabels[language][t]}</label>)}<button className={button} onClick={()=>dispatch({type:"select_secondary_topics",topics:secondary})}>{language==="en"?"Continue":"Συνέχεια"}</button></>}
+  {state.stage==="optional_context"&&<><label className="text-sm font-medium" htmlFor="optional-context">{language==="en"?"Optional context":"Προαιρετικό πλαίσιο"}</label><textarea id="optional-context" maxLength={500} value={text} onChange={e=>setText(e.target.value)} className="min-h-28 rounded-xl border p-3" placeholder={language==="en"?"Do not include identifying information":"Μην συμπεριλάβεις στοιχεία ταυτοποίησης"}/><button className={button} onClick={()=>dispatch({type:"set_optional_context",text})}>{language==="en"?"Continue":"Συνέχεια"}</button></>}
+  {state.stage==="service_area"&&serviceAreas.map(a=><button key={a} className={button} onClick={()=>dispatch({type:"select_service_area",area:a})}>{areaLabels[language][a]}</button>)}
+  {state.stage==="preferences"&&<button className={button} onClick={()=>dispatch({type:"set_preferences",preferences:[]})}>{language==="en"?"Continue without additional preferences":"Συνέχεια χωρίς επιπλέον προτιμήσεις"}</button>}
+  {state.stage==="review"&&<><dl className="grid gap-2 text-sm"><div><dt className="font-semibold">{language==="en"?"Topic":"Θέμα"}</dt><dd>{state.primarySupportTopic&&topicLabels[language][state.primarySupportTopic]}</dd></div><div><dt className="font-semibold">{language==="en"?"Area":"Περιοχή"}</dt><dd>{state.serviceArea&&areaLabels[language][state.serviceArea]}</dd></div></dl><button className={button} onClick={()=>dispatch({type:"confirm_review"})}>{language==="en"?"Explore relevant services":"Δες σχετικές υπηρεσίες"}</button></>}
+  {state.stage==="complete"&&results?.kind==="matches"&&<div className="grid gap-4">{results.services.map(({service,reasons})=><article key={service.id} className="rounded-2xl border p-4"><h2 className="font-bold">{service.name}</h2><p className="mt-2 text-xs text-[#6B7B73]">{reasons.join(" · ")}</p><p className="mt-3 text-xs font-semibold">{language==="en"?"Demonstration service. No real request will be sent.":"Υπηρεσία επίδειξης. Δεν θα σταλεί πραγματικό αίτημα."}</p></article>)}</div>}
+  {state.stage==="complete"&&results?.kind==="no_match"&&<div><p>{language==="en"?"No matching demonstration services were found. Change your area/topic or restart.":"Δεν βρέθηκαν αντίστοιχες υπηρεσίες επίδειξης. Άλλαξε περιοχή/θέμα ή ξεκίνησε ξανά."}</p><button className={button+" mt-4"} onClick={()=>reset()}>{language==="en"?"Start again":"Ξεκίνα ξανά"}</button></div>}
+  {state.stage==="ended"&&<button className={button} onClick={()=>reset()}>{language==="en"?"Start again":"Ξεκίνα ξανά"}</button>}
+  </div></section>
+  {state.stage!=="ended"&&state.stage!=="complete"&&<button className="mt-5 text-sm underline" onClick={()=>dispatch({type:"end_session"})}>{language==="en"?"End session":"Τερματισμός συνεδρίας"}</button>}
+ </div></main>;
+}

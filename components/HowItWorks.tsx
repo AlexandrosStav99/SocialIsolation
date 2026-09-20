@@ -4,17 +4,17 @@ const steps = [
   {
     n: "01",
     title: "Share how you feel",
-    desc: "Planned: choose broad support topics without creating an account. The current demo uses fictional text only.",
+    desc: "Choose broad support topics without creating an account. Use fictional text only in this university demonstration.",
   },
   {
     n: "02",
     title: "Explore support services",
-    desc: "Planned: deterministic rules will find checked service information using your structured choices. This is not implemented yet.",
+    desc: "The demonstration now uses deterministic rules with synthetic service records to show how structured choices drive service discovery.",
   },
   {
     n: "03",
     title: "Connect when you're ready",
-    desc: "Planned: choose self-service contact or an explicitly consented request to a participating service. No requests are sent by this demo.",
+    desc: "The consent and handoff domain flow is implemented and tested, but this public demonstration sends no real contact requests.",
   },
 ];
 
@@ -26,7 +26,7 @@ export default function HowItWorks() {
           {/* Sticky intro */}
           <div className="lg:sticky lg:top-24 lg:h-fit">
             <p className="mb-8 text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-              Planned journey
+              Demonstration journey
             </p>
 
             <h2 className="max-w-xl text-[clamp(2.6rem,5vw,5.6rem)] font-bold leading-[0.96] tracking-tight text-text">

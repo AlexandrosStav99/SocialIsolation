@@ -44,7 +44,7 @@ export default function HeroSection() {
         .hero-text-delay-2 {
           animation: hero-fade-in 0.8s ease-out 0.4s both;
         }
-      `}</style>
+        @media (prefers-reduced-motion: reduce) {\n          .hero-blob, .hero-text, .hero-text-delay, .hero-text-delay-2 { animation: none !important; }\n        }\n      `}</style>
 
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="hero-blob" style={{ width: 500, height: 500, top: "-10%", left: "-10%", background: "#DCA77A", opacity: 0.15 }} />
@@ -78,7 +78,7 @@ export default function HeroSection() {
             </button>
 
             <p className="mt-3 text-xs text-sage">
-              No account required. Service discovery and contact requests are not available yet.
+              No account required. The demo now exercises deterministic service discovery; real contact requests are disabled.
             </p>
           </div>
 

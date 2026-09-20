@@ -2,13 +2,13 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import CheckInChat from "@/components/check-in/CheckInChat";
+import IntegratedCheckIn from "@/components/check-in/IntegratedCheckIn";
 
 export default function CheckInPage() {
   return (
     <>
       <Navbar />
-      <CheckInChat />
+      <IntegratedCheckIn />
       <Footer />
     </>
   );
