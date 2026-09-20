@@ -100,6 +100,7 @@ jobs:
       - name: Generate initial Payload migration artifact
         env:
           NODE_ENV: development
+          NODE_OPTIONS: --experimental-transform-types
         run: |
           timeout 120s npm run payload -- migrate:create initial_runtime_schema
           test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' -print -quit)"
