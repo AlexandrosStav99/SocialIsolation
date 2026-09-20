@@ -53,6 +53,9 @@ jobs:
       - name: Phase 5 AI boundary and fallback checks
         run: npm run test:ai
 
+      - name: Phase 6 handoff and consent checks
+        run: npm run test:handoff
+
       - name: Build
         run: npm run build
 
