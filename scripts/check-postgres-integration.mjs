@@ -71,4 +71,7 @@ try {
     await payload.delete({ collection: "provider-organisations", id: organisationId, overrideAccess: true });
   }
   await payload.destroy();
+  // Payload/Drizzle can retain background handles after destroy in this isolated
+  // CI harness. The round-trip and cleanup have completed, so terminate cleanly.
+  process.exit(0);
 }
