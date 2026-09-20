@@ -72,7 +72,13 @@ jobs:
       - name: Phase 10 verification and academic-evidence checks
         run: npm run test:verification
 
+      - name: Payload PostgreSQL runtime checks
+        run: npm run test:payload
+
       - name: Build
+        env:
+          DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
+          PAYLOAD_SECRET: ci-only-not-for-deployment
         run: npm run build
 
       - name: Install Chromium
