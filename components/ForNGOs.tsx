@@ -4,22 +4,22 @@ const features = [
   {
     n: "01",
     title: "Structured intake requests",
-    desc: "Planned workflow for consented contact requests with controlled support-topic summaries.",
+    desc: "Implemented domain workflow for consented contact requests with controlled support-topic summaries; no real requests are sent by the public demo.",
   },
   {
     n: "02",
     title: "Demand analytics",
-    desc: "Planned aggregate analytics for support topics and trends, using demonstration data in the university MVP.",
+    desc: "Thresholded aggregate analytics foundations for support topics and trends, using demonstration data in the university MVP.",
   },
   {
     n: "03",
     title: "Regional insights",
-    desc: "Planned district-level aggregate trends with minimum-sample suppression and no individual locations.",
+    desc: "District-level aggregate foundations with minimum-sample suppression and no individual locations.",
   },
   {
     n: "04",
     title: "Request management",
-    desc: "Planned provider workflow for assigning and updating consented demo contact requests.",
+    desc: "Implemented provider workflow foundations for assigning and updating consented demo contact requests.",
   },
 ];
 
@@ -100,7 +100,7 @@ export default function ForNGOs() {
 
             <div className="mt-8 rounded-2xl border border-border bg-surface p-4">
               <p className="text-xs leading-relaxed text-muted">
-                Illustrative values only. The completed MVP will use thresholded aggregate analytics and will not plot individual users.
+                Illustrative values only. The MVP analytics layer uses thresholded aggregates and does not plot individual users.
               </p>
             </div>
           </div>
