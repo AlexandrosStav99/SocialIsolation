@@ -4,16 +4,16 @@ const promises = [
     desc: "Complete the process without creating an account or sharing your name.",
   },
   {
-    title: "Anonymous by default",
-    desc: "Your answers are not linked to your identity unless you choose to request contact.",
+    title: "Anonymous check-in target",
+    desc: "The MVP is designed so the anonymous check-in remains separate from any optional contact request.",
   },
   {
-    title: "Your data, your choice",
-    desc: "Personal details are collected only when you actively choose to share them.",
+    title: "User-directed contact",
+    desc: "The MVP will request contact details only when you actively choose an assisted contact flow.",
   },
   {
-    title: "Minimum necessary data",
-    desc: "We only ask for what is needed to guide you toward the right support path.",
+    title: "Data minimisation",
+    desc: "The frozen MVP specification limits collection to data required for navigation or a consented contact request.",
   },
 ];
 
@@ -41,8 +41,8 @@ export default function PrivacySection() {
           </h2>
 
           <p className="max-w-md text-base leading-relaxed text-muted lg:pb-3">
-            We ask only what is needed, explain why it matters, and never use
-            personal information without your clear consent.
+            The MVP is being built to minimise personal data, separate anonymous
+            navigation from contact requests, and make sharing choices explicit.
           </p>
         </div>
 
@@ -78,12 +78,12 @@ export default function PrivacySection() {
         {/* Bottom note */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-xs leading-relaxed text-sage">
-            Built with privacy by design principles, data minimization, and
-            consent-based contact flows.
+            Privacy and consent behaviours remain subject to implementation and
+            validation before any real-world deployment.
           </p>
 
           <div className="w-fit rounded-full border border-border px-4 py-2 text-xs font-medium text-muted">
-            No tracking by default
+            MVP privacy target
           </div>
         </div>
       </div>
