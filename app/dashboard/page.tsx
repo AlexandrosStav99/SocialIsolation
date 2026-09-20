@@ -7,6 +7,7 @@ import { MapPin, Users, TrendingUp, Clock } from "lucide-react";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
+// Demonstration-only values. Replace with aggregate application data in Phase 8.
 const stats = [
     { label: "Total check-ins", value: "1,247", change: "+12% this week", icon: Users },
     { label: "Support matched", value: "89%", change: "match rate", icon: TrendingUp },
@@ -22,6 +23,7 @@ const categories = [
     { label: "Other", count: 83, pct: 7 },
 ];
 
+// Demonstration-only contact requests. These are not real users or live provider cases.
 const requests = [
     { id: "TP-1089", time: "2 min ago", category: "Mental health", urgency: "high", status: "new", region: "Nicosia", ageGroup: "18-24" },
     { id: "TP-1088", time: "14 min ago", category: "Social isolation", urgency: "medium", status: "new", region: "Limassol", ageGroup: "25-30" },
@@ -79,27 +81,18 @@ function CyprusMap() {
 
         mapInstance.current = map;
 
-        // Generate scattered points around each district center
-        function generatePoints(lat: number, lng: number, count: number, radius: number) {
-            return Array.from({ length: count }, () => ({
+        // Demonstration points are fixed district centroids only.
+        // They do not represent users, addresses, GPS positions, or real check-ins.
+        const allPoints = districts
+            .filter((district) => district.count >= 10)
+            .map((district) => ({
                 type: "Feature" as const,
                 geometry: {
                     type: "Point" as const,
-                    coordinates: [
-                        lng + (Math.random() - 0.5) * radius,
-                        lat + (Math.random() - 0.5) * radius,
-                    ],
+                    coordinates: [district.lng, district.lat],
                 },
-                properties: { weight: Math.random() },
+                properties: { weight: district.intensity },
             }));
-        }
-
-        const allPoints = [
-            ...generatePoints(35.1856, 33.3823, 120, 0.4), // Nicosia
-            ...generatePoints(34.6786, 33.0440, 90, 0.35),  // Limassol
-            ...generatePoints(34.9009, 33.6249, 55, 0.3),   // Larnaca
-            ...generatePoints(34.7757, 32.4241, 45, 0.3),   // Paphos
-        ];
 
         map.on("load", () => {
             map.addSource("heatmap-points", {
@@ -180,7 +173,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="h-2 w-2 rounded-full bg-teal animate-pulse" />
-                        <span className="text-xs text-muted">Live · Updated just now</span>
+                        <span className="text-xs text-muted">Demonstration Data</span>
                         <div className="ml-4 flex h-8 w-8 items-center justify-center rounded-full bg-warm-surface text-xs font-bold text-teal">
                             YC
                         </div>
@@ -221,7 +214,7 @@ export default function DashboardPage() {
                         <div className="border-b border-border px-5 py-4">
                             <p className="text-sm font-semibold text-text">Geographic distribution</p>
                             <p className="text-xs text-muted mt-0.5">
-                                District level only · Min. 10 responses per area (GDPR compliant)
+                                Illustrative district-level data · not real population data
                             </p>
                         </div>
                         <div className="h-72">
@@ -293,7 +286,7 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between border-b border-border px-6 py-4">
                         <div>
                             <p className="text-sm font-semibold text-text">Incoming requests</p>
-                            <p className="text-xs text-muted">Anonymous · consent-based contact only</p>
+                            <p className="text-xs text-muted">Demonstration requests · not real users</p>
                         </div>
                         <span className="rounded-full bg-teal/10 px-3 py-1 text-xs font-semibold text-teal">
                             {requests.filter(r => r.status === "new").length} new
@@ -339,7 +332,7 @@ export default function DashboardPage() {
 
                     <div className="border-t border-border px-6 py-3">
                         <p className="text-xs text-muted">
-                            Showing {filtered.length} of {requests.length} requests · All data anonymized unless contact consent given
+                            Showing {filtered.length} of {requests.length} requests · All rows on this screen are demonstration data
                         </p>
                     </div>
                 </div>
