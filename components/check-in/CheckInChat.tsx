@@ -141,6 +141,7 @@ Your personal information is never shared unless you choose to contact an organi
       lang: string;
       interimResults: boolean;
       continuous: boolean;
+      onstart: (() => void) | null;
       onresult: ((event: SpeechRecognitionEventLike) => void) | null;
       onend: (() => void) | null;
       start: () => void;
