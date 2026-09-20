@@ -14,7 +14,7 @@ import { ProviderAuditEvents } from "@/payload/collections/ProviderAuditEvents";
 
 export default buildConfig({
   secret: getPayloadSecret(),
-  db: postgresAdapter({ pool: { connectionString: getDatabaseUrl() } }),
+  db: postgresAdapter({\n    pool: { connectionString: getDatabaseUrl() },\n    migrationDir: "./migrations",\n  }),
   collections: [ProviderOrganisations, ProviderUsers, Providers, Services, EphemeralSessions, AnonymousAnalyticsEvents, ContactRequests, ConsentRecords, ProviderAuditEvents],
   typescript: { outputFile: "payload-types.ts" },
 });
