@@ -65,7 +65,7 @@ export default function HeroSection() {
 
           <div className="hero-text-delay-2 max-w-lg">
             <p className="mb-5 text-base leading-relaxed text-muted">
-              A private-by-design guided check-in can help you explore support services related to what you choose to share.
+              TalkPoint is a university prototype for future support navigation. Explore the demonstration using fictional text only.
             </p>
 
             <button
@@ -73,12 +73,12 @@ export default function HeroSection() {
               onClick={handleStartCheckIn}
               className="inline-flex items-center gap-2 rounded-xl bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
             >
-              Start anonymous check-in
+              View check-in demo
               <ArrowRight size={14} />
             </button>
 
             <p className="mt-3 text-xs text-sage">
-              No account required. The check-in starts on the next screen.
+              No account required. Service discovery and contact requests are not available yet.
             </p>
           </div>
 

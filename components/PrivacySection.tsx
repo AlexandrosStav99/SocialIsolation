@@ -1,7 +1,7 @@
 const promises = [
   {
     title: "No account required",
-    desc: "Complete the process without creating an account or sharing your name.",
+    desc: "Explore the demonstration without an account. Use fictional text only.",
   },
   {
     title: "Anonymous check-in target",
@@ -35,9 +35,9 @@ export default function PrivacySection() {
         {/* Main statement */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <h2 className="max-w-4xl text-[clamp(2.4rem,5.5vw,5.8rem)] font-bold leading-[0.96] tracking-tight text-text">
-            Your answers
+            Privacy is
             <br />
-            stay yours.
+            a design requirement.
           </h2>
 
           <p className="max-w-md text-base leading-relaxed text-muted lg:pb-3">
@@ -49,7 +49,7 @@ export default function PrivacySection() {
         {/* Quiet quote */}
         <div className="mt-16 border-y border-border py-8">
           <p className="max-w-3xl text-[clamp(1.4rem,3vw,2.4rem)] font-medium leading-[1.25] tracking-tight text-text">
-            “You can share how you feel without having to explain who you are.”
+            “The planned check-in will not require an account or a name.”
           </p>
         </div>
 

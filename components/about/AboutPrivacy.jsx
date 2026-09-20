@@ -8,8 +8,8 @@ export default function AboutPrivacy() {
 
   const points = [
     "You can stop at any time.",
-    "Your private conversation is not treated as a public record.",
-    "Support requests require clear consent.",
+    "Use fictional text only in this demonstration.",
+    "Consented support requests are planned, not available yet.",
   ];
 
 
@@ -167,7 +167,7 @@ export default function AboutPrivacy() {
           >
 
             TalkPoint is designed to avoid unnecessary data collection.
-            Users stay informed and in control of what is shared.
+            Privacy and consent controls remain subject to implementation and validation.
 
           </p>
 

@@ -1,13 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Privacy", href: "#privacy" },
-  { label: "For NGOs", href: "#for-ngos" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Privacy", href: "/#privacy" },
+  { label: "For NGOs", href: "/#for-ngos" },
   { label: "About us", href: "/about" },
 ];
 
@@ -81,10 +82,11 @@ export default function Navbar() {
           className="flex items-center gap-3"
         >
 
-          <img
+          <Image
             src="/Logo.svg"
             alt="TalkPoint Logo"
             width={90}
+            height={60}
             style={{scale: 1.5}}
           />
 
@@ -178,7 +180,7 @@ export default function Navbar() {
             "
           >
 
-            Start safely
+            View demo
 
           </Link>
 
@@ -303,7 +305,7 @@ export default function Navbar() {
               "
             >
 
-              Start safely
+              View demo
 
             </Link>
 

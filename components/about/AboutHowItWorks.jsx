@@ -121,7 +121,7 @@ export default function AboutHowItWorks() {
             text-teal
             "
           >
-            How it works
+            Planned journey
           </span>
 
 
@@ -149,7 +149,7 @@ export default function AboutHowItWorks() {
             text-muted
             "
           >
-            TalkPoint is designed as a simple journey. The user stays in control
+            The following journey is planned and not yet implemented. The user will stay in control
             at every step.
           </p>
 

@@ -12,21 +12,37 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_MAPBOX_TOKEN: ""
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 24
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
+      - name: Dependency security audit (all severities)
+        run: npm run audit
+
+      - name: Lint (zero warnings)
         run: npm run lint
+
+      - name: TypeScript
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Production regression tests
+        run: npm test

@@ -21,9 +21,9 @@ export default function Footer() {
         {/* Nav */}
         <nav className="flex flex-wrap gap-x-8 gap-y-2">
           {[
-            { label: "How it works", href: "#how-it-works" },
-            { label: "Privacy", href: "#privacy" },
-            { label: "For NGOs", href: "#for-ngos" },
+            { label: "How it works", href: "/#how-it-works" },
+            { label: "Privacy", href: "/#privacy" },
+            { label: "For NGOs", href: "/#for-ngos" },
             { label: "About", href: "/about" },
           ].map((l) => (
             <Link
