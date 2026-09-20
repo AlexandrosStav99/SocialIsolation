@@ -47,6 +47,9 @@ jobs:
       - name: Phase 3 conversation checks
         run: npm run test:conversation
 
+      - name: Phase 4 routing and safety checks
+        run: npm run test:routing
+
       - name: Build
         run: npm run build
 
