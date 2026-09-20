@@ -65,3 +65,11 @@ test("about route resolves with its linked lowercase path", async ({ page }) => 
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("link", { name: "Privacy", exact: true }).first()).toHaveAttribute("href", "/#privacy");
 });
+
+
+test("help-now action enters deterministic accessible safety state", async ({ page }) => {
+  await page.goto("/check-in");
+  await page.getByRole("button",{name:"I need help now"}).click();
+  await expect(page.getByRole("status")).toContainText("Immediate support");
+  await expect(page.getByText("Safety route: immediate_support")).toBeAttached();
+});
