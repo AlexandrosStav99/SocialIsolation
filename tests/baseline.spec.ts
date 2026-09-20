@@ -24,6 +24,12 @@ test("integrated journey keeps optional text local and reaches deterministic res
   await page.getByRole("button",{name:"Explore relevant services"}).click();
   await expect(page.getByText("Demonstration Community Support")).toBeVisible();
   await page.getByRole("button",{name:"Run controlled handoff demo"}).click();
+  await expect(page.getByRole("heading",{name:"Sharing preview"})).toBeVisible();
+  const confirm=page.getByRole("button",{name:"Confirm and run demo"});
+  await expect(confirm).toBeDisabled();
+  await page.getByRole("checkbox",{name:/explicitly consent/}).check();
+  await expect(confirm).toBeEnabled();
+  await confirm.click();
   await expect(page.getByRole("status")).toContainText("Provider queue status: contact_attempted");
   await expect(page.getByRole("status")).toContainText("No real request was sent.");
   expect(outbound.join("\n")).not.toContain(sample);
@@ -72,4 +78,16 @@ test("help-now action enters deterministic accessible safety state", async ({ pa
   await page.getByRole("button",{name:"I need help now"}).click();
   await expect(page.getByRole("status")).toContainText("Immediate support");
   await expect(page.getByText("Safety route: immediate_support")).toBeAttached();
+});
+
+
+test("demo handoff API rejects missing consent and client provider spoofing", async ({ request }) => {
+  const base={serviceId:"demo-community-online",primarySupportTopic:"social_connection",secondarySupportTopics:[],serviceArea:"anywhere_cyprus"};
+  const withoutConsent=await request.post("/api/demo-handoff",{data:base});
+  expect(withoutConsent.status()).toBe(400);
+  const spoofed=await request.post("/api/demo-handoff",{data:{...base,consentAccepted:true,providerOrganisationId:"attacker-controlled-org"}});
+  expect(spoofed.status()).toBe(200);
+  expect((await spoofed.json()).realRequestSent).toBe(false);
+  const unknown=await request.post("/api/demo-handoff",{data:{...base,serviceId:"unknown-service",consentAccepted:true}});
+  expect(unknown.status()).toBe(400);
 });
