@@ -22,7 +22,7 @@ test("integrated journey keeps optional text local and reaches deterministic res
   await page.getByRole("button",{name:"Anywhere in Cyprus"}).click();
   await page.getByRole("button",{name:"Continue without additional preferences"}).click();
   await page.getByRole("button",{name:"Explore relevant services"}).click();
-  await expect(page.getByText("Demonstration Community Support")).toBeVisible();
+  await expect(page.getByText("Demonstration Community Support")).toBeVisible();\n  await page.getByRole("button",{name:"Run controlled handoff demo"}).click();\n  await expect(page.getByRole("status")).toContainText("Provider queue status: contact_attempted");\n  await expect(page.getByRole("status")).toContainText("No real request was sent.");
   expect(outbound.join("\n")).not.toContain(sample);
   expect(JSON.stringify(await page.evaluate(()=>[localStorage,sessionStorage]))).not.toContain(sample);
 });
