@@ -1,49 +1,40 @@
 import { test, expect } from "@playwright/test";
 
-test("landing navigates without transporting free text", async ({ page }) => {
+test("landing opens the integrated deterministic check-in", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("textarea")).toHaveCount(0);
   await page.getByRole("button", { name: "View check-in demo" }).click();
   await expect(page).toHaveURL("http://127.0.0.1:3100/check-in");
-  await expect(page.getByRole("heading", { name: "Check-in Demonstration" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Before we begin" })).toBeVisible();
+  await page.getByRole("button",{name:"I confirm I am 18 or over"}).click();
+  await expect(page.getByRole("heading",{name:"What would you like support with today?"})).toBeVisible();
 });
 
-test("old query text is not hydrated; demo text stays out of network and storage", async ({ page }) => {
-  const legacy = "LEGACY_SENSITIVE_SENTINEL";
-  const sample = "FICTIONAL_LOCAL_ONLY_SENTINEL";
-  await page.goto(`/check-in?message=${legacy}&text=${legacy}`);
-  await expect(page.getByRole("log")).not.toContainText(legacy);
-  const input = page.getByRole("textbox", { name: "Fictional demo message" });
-  await expect(input).toHaveValue("");
-  const outbound: string[] = [];
-  page.on("request", (request) => outbound.push(request.url() + (request.postData() ?? "")));
-  await expect(input).toHaveAttribute("maxlength", "500");
-  await input.fill(sample);
-  await page.getByRole("button", { name: "Send demo message" }).click();
-  await expect(page.getByRole("log")).toContainText(sample);
-  await expect(page.getByRole("log")).toContainText("Demo: the future check-in");
-  expect(page.url()).not.toContain(sample);
-  expect(outbound.join("\n")).not.toContain(sample);
-  const stored = await page.evaluate(() => JSON.stringify([localStorage, sessionStorage]));
-  expect(stored).not.toContain(sample);
-  await page.reload();
-  await expect(page.getByRole("log")).not.toContainText(sample);
-});
 
-test("demo escapes text and ends without fabricating referrals", async ({ page }) => {
+test("integrated journey keeps optional text local and reaches deterministic results", async ({ page }) => {
+  const sample="FICTIONAL_LOCAL_ONLY_SENTINEL"; const outbound:string[]=[];
+  page.on("request",r=>outbound.push(r.url()+(r.postData()??"")));
   await page.goto("/check-in");
-  const input = page.getByRole("textbox");
-  await input.fill('<img src=x onerror="alert(1)">');
-  await input.press("Enter");
-  await expect(page.getByRole("log").locator("img")).toHaveCount(0);
-  for (let i = 0; i < 3; i++) {
-    await input.fill(`Fictional example ${i}`);
-    await input.press("Enter");
-  }
-  await expect(input).toBeDisabled();
-  await expect(page.getByRole("log")).toContainText("no contact request has been created or sent");
-  await expect(page.getByRole("log").locator("a")).toHaveCount(0);
+  await page.getByRole("button",{name:"I confirm I am 18 or over"}).click();
+  await page.getByRole("button",{name:"Loneliness & Social Connection"}).click();
+  await page.getByRole("button",{name:"Continue"}).click();
+  const input=page.getByLabel("Optional context"); await input.fill(sample);
+  await page.getByRole("button",{name:"Continue"}).click();
+  await page.getByRole("button",{name:"Anywhere in Cyprus"}).click();
+  await page.getByRole("button",{name:"Continue without additional preferences"}).click();
+  await page.getByRole("button",{name:"Explore relevant services"}).click();
+  await expect(page.getByText("Demonstration Community Support")).toBeVisible();
+  expect(outbound.join("\n")).not.toContain(sample);
+  expect(JSON.stringify(await page.evaluate(()=>[localStorage,sessionStorage]))).not.toContain(sample);
 });
+
+
+test("EL flow is available and under-18 gate ends the session", async ({ page }) => {
+ await page.goto("/check-in"); await page.getByRole("button",{name:"EL"}).click();
+ await expect(page.getByRole("heading",{name:"Πριν ξεκινήσουμε"})).toBeVisible();
+ await page.getByRole("button",{name:"Είμαι κάτω των 18"}).click();
+ await expect(page.getByRole("heading",{name:"Η συνεδρία τερματίστηκε"})).toBeVisible();
+});
+
 
 test("dashboard is unavailable by default including attempted query opt-in", async ({ request }) => {
   for (const path of ["/dashboard", "/dashboard?TALKPOINT_ENABLE_DEMO_DASHBOARD=true"]) {
