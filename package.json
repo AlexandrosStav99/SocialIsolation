@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "playwright test",
     "audit": "npm audit --audit-level=low",
-    "test:boundaries": "node scripts/check-phase1-boundaries.mjs"
+    "test:boundaries": "node scripts/check-phase1-boundaries.mjs",
+    "test:directory": "node scripts/check-phase2-directory.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",

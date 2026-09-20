@@ -41,6 +41,9 @@ jobs:
       - name: Phase 1 privacy/data-boundary checks
         run: npm run test:boundaries
 
+      - name: Phase 2 directory checks
+        run: npm run test:directory
+
       - name: Build
         run: npm run build
 
