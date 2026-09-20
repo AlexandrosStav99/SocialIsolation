@@ -44,6 +44,9 @@ jobs:
       - name: Phase 2 directory checks
         run: npm run test:directory
 
+      - name: Phase 3 conversation checks
+        run: npm run test:conversation
+
       - name: Build
         run: npm run build
 
