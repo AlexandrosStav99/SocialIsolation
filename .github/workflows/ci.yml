@@ -59,6 +59,9 @@ jobs:
       - name: Phase 7 RBAC and provider-workspace checks
         run: npm run test:rbac
 
+      - name: Phase 8 privacy-safe analytics checks
+        run: npm run test:analytics
+
       - name: Build
         run: npm run build
 
