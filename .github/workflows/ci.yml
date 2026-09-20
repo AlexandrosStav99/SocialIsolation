@@ -78,6 +78,9 @@ jobs:
       - name: Privacy-domain persistence checks
         run: npm run test:persistence
 
+      - name: Provider RBAC and consent hardening checks
+        run: npm run test:provider-consent
+
       - name: Build
         env:
           DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
