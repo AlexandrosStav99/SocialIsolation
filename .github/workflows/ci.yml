@@ -97,9 +97,24 @@ jobs:
       - name: Provider RBAC and consent hardening checks
         run: npm run test:provider-consent
 
-      - name: Initialize Payload schema on CI PostgreSQL
+      - name: Generate initial Payload migration artifact
         env:
           NODE_ENV: development
+        run: |
+          timeout 120s npm run payload -- migrate:create initial_runtime_schema
+          test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' -print -quit)"
+          echo "Generated migration files:"
+          find migrations -maxdepth 1 -type f -print
+
+      - name: Verify generated migration on clean PostgreSQL
+        run: |
+          PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "DROP DATABASE talkpoint WITH (FORCE);"
+          PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "CREATE DATABASE talkpoint OWNER talkpoint;"
+          timeout 120s npm run payload -- migrate
+
+      - name: Verify live PostgreSQL round trip after migration
+        env:
+          NODE_ENV: production
         run: timeout 120s npm run test:postgres
 
       - name: Build
