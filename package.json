@@ -22,7 +22,8 @@
     "test:verification": "node scripts/check-phase10-verification.mjs",
     "audit:full": "npm audit --audit-level=low",
     "test:payload": "node scripts/check-payload-runtime.mjs",
-    "test:persistence": "node scripts/check-persistence-boundaries.mjs"
+    "test:persistence": "node scripts/check-persistence-boundaries.mjs",
+    "test:provider-consent": "node scripts/check-provider-consent-hardening.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.1",
