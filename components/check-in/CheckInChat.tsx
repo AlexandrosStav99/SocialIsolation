@@ -16,11 +16,7 @@ type ChatMessage = {
   text: string;
 };
 
-type CheckInChatProps = {
-  firstPrompt: string;
-};
-
-export default function CheckInChat({ firstPrompt }: CheckInChatProps) {
+export default function CheckInChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -82,26 +78,13 @@ Your personal information is never shared unless you choose to contact an organi
   ];
 
   useEffect(() => {
-    if (firstPrompt && firstPrompt.trim()) {
-      setMessages([
-        {
-          role: "user",
-          text: firstPrompt,
-        },
-        {
-          role: "bot",
-          text: "Thank you for sharing that. I’ll help you find the right support. I’d like to ask you a few short questions so I can better understand what kind of support may help.",
-        },
-      ]);
-    } else {
-      setMessages([
-        {
-          role: "bot",
-          text: "Hi, I’m here to help you find the right support. You can tell me what’s going on, and I’ll guide you step by step.",
-        },
-      ]);
-    }
-  }, [firstPrompt]);
+    setMessages([
+      {
+        role: "bot",
+        text: "This prototype check-in is being rebuilt around the TalkPoint MVP specification. For now, share only what you are comfortable entering.",
+      },
+    ]);
+  }, []);
 
   useEffect(() => {
     if (isAtBottom) {
@@ -236,7 +219,7 @@ Your personal information is never shared unless you choose to contact an organi
 
             <div className="flex items-center gap-1 text-sm text-[#6B7B73]">
               <ShieldCheck size={15} className="text-[#6FAF8F]" />
-              Anonymous and private
+              Prototype check-in
             </div>
           </div>
         </div>
@@ -337,7 +320,7 @@ Your personal information is never shared unless you choose to contact an organi
         </div>
 
         <p className="mt-2 text-center text-xs text-[#7A867F]">
-          No account needed. Share only what you want.
+          Prototype flow · Do not enter identifying information.
         </p>
       </div>
     </main>
