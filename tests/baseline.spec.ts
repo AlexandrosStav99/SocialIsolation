@@ -29,7 +29,7 @@ test("integrated journey keeps optional text local and reaches deterministic res
 
 
 test("EL flow is available and under-18 gate ends the session", async ({ page }) => {
- await page.goto("/check-in"); await page.getByRole("button",{name:"EL"}).click();
+ await page.goto("/check-in"); await page.getByRole("button",{name:"EL",exact:true}).click();
  await expect(page.getByRole("heading",{name:"Πριν ξεκινήσουμε"})).toBeVisible();
  await page.getByRole("button",{name:"Είμαι κάτω των 18"}).click();
  await expect(page.getByRole("heading",{name:"Η συνεδρία τερματίστηκε"})).toBeVisible();
