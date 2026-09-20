@@ -75,6 +75,9 @@ jobs:
       - name: Payload PostgreSQL runtime checks
         run: npm run test:payload
 
+      - name: Privacy-domain persistence checks
+        run: npm run test:persistence
+
       - name: Build
         env:
           DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
