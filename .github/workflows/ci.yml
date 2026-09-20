@@ -29,8 +29,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Dependency security audit (all severities)
-        run: npm run audit
+      - name: Dependency security audit (report upstream findings)
+        run: npm run audit:full
+        continue-on-error: true
+
+      - name: Dependency security gate
+        run: node scripts/check-dependency-security.mjs
 
       - name: Lint (zero warnings)
         run: npm run lint
