@@ -50,6 +50,9 @@ jobs:
       - name: Phase 4 routing and safety checks
         run: npm run test:routing
 
+      - name: Phase 5 AI boundary and fallback checks
+        run: npm run test:ai
+
       - name: Build
         run: npm run build
 
