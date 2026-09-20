@@ -9,7 +9,8 @@
     "lint": "eslint --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "playwright test",
-    "audit": "npm audit --audit-level=low"
+    "audit": "npm audit --audit-level=low",
+    "test:boundaries": "node scripts/check-phase1-boundaries.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
