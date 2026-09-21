@@ -103,7 +103,13 @@ jobs:
           NODE_OPTIONS: --experimental-transform-types
         run: |
           timeout 120s npm run payload -- migrate:create initial_runtime_schema
-          test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' -print -quit)"
+          test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' ! -name 'index.ts' -print -quit)"
+          # Payload's generated migration imports type-only symbols as runtime ESM exports.
+          # Normalize them before executing the migration under Node 24.
+          for migration in migrations/*.ts; do
+            [ "$(basename "$migration")" = "index.ts" ] && continue
+            sed -i "s/import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms\/db-postgres'/import { sql } from '@payloadcms\/db-postgres'\\nimport type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms\/db-postgres'/" "$migration"
+          done
           echo "Generated migration files:"
           find migrations -maxdepth 1 -type f -print
 
