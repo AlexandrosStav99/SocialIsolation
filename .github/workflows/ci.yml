@@ -129,7 +129,9 @@ jobs:
       - name: Verify live PostgreSQL round trip after migration
         env:
           NODE_ENV: production
-        run: timeout 120s npm run test:postgres
+        run: |
+          set -euo pipefail
+          timeout 120s npm run payload -- run scripts/check-postgres-integration.mjs
 
       - name: Build
         env:
