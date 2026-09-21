@@ -1,14 +1,5 @@
 import { getPayload } from "payload";
-import { postgresAdapter } from "@payloadcms/db-postgres";
-import { buildConfig } from "payload";
-import { ProviderOrganisations } from "../payload/collections/ProviderOrganisations.ts";
-import { EphemeralSessions } from "../payload/collections/EphemeralSessions.ts";
-
-const config = buildConfig({
-  secret: process.env.PAYLOAD_SECRET,
-  db: postgresAdapter({ pool: { connectionString: process.env.DATABASE_URL } }),
-  collections: [ProviderOrganisations, EphemeralSessions],
-});
+import config from "../payload.config.ts";
 
 const payload = await getPayload({ config });
 const marker = `CI PostgreSQL ${Date.now()}`;
@@ -71,7 +62,5 @@ try {
     await payload.delete({ collection: "provider-organisations", id: organisationId, overrideAccess: true });
   }
   await payload.destroy();
-  // Payload/Drizzle can retain background handles after destroy in this isolated
-  // CI harness. The round-trip and cleanup have completed, so terminate cleanly.
   process.exit(0);
 }
