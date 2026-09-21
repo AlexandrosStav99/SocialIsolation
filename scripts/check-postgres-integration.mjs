@@ -1,7 +1,7 @@
 import { getPayload } from "payload";
 import config from "../payload.config.ts";
 
-const payload = await getPayload({ config });
+const payload = await getPayload({ config: await config });
 const marker = `CI PostgreSQL ${Date.now()}`;
 let organisationId;
 
