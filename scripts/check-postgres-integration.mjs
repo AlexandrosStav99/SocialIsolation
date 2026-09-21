@@ -1,4 +1,4 @@
-import { getPayload } from "payload";
+import { getPayload } from "payload/node";
 import config from "../payload.config.ts";
 
 const payload = await getPayload({ config });
