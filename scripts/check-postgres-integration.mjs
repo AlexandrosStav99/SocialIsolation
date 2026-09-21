@@ -1,7 +1,9 @@
 import { getPayload } from "payload";
-import config from "../payload.config.ts";
+import configPromise from "../payload.config.ts";
 
-const payload = await getPayload({ config: await config });
+const config = await configPromise;
+if (!config.secret) config.secret = process.env.PAYLOAD_SECRET;
+const payload = await getPayload({ config });
 const marker = `CI PostgreSQL ${Date.now()}`;
 let organisationId;
 
