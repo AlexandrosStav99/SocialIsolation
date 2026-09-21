@@ -1,5 +1,5 @@
 import type { CollectionConfig } from "payload";
-import { serviceAreas, supportTopics } from "@/lib/domain/data-boundaries";
+import { serviceAreas, supportTopics } from "../../lib/domain/data-boundaries.ts";
 
 export const Services: CollectionConfig = {
   slug: "services",
