@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("demo directory is served from seeded Payload/PostgreSQL in the full CI runtime", async ({ request }) => {
+test("demo directory uses Payload/PostgreSQL in CI with a local synthetic fallback", async ({ request }) => {
   const response = await request.get("/api/directory");
   expect(response.ok()).toBeTruthy();
 
@@ -12,11 +12,19 @@ test("demo directory is served from seeded Payload/PostgreSQL in the full CI run
   };
 
   expect(body.label).toBe("Demonstration Data");
-  expect(body.source).toBe("payload_postgres");
-  expect(body.providers?.length).toBeGreaterThanOrEqual(5);
-  expect(body.services?.length).toBeGreaterThanOrEqual(5);
-  expect(body.services?.some((service) => service.id === "demo-community-online" && service.integrated)).toBe(true);
-  expect(body.services?.some((service) => service.id === "demo-practical-support")).toBe(true);
-  expect(body.services?.some((service) => service.id === "demo-career-support")).toBe(true);
-  expect(body.services?.some((service) => service.id === "demo-navigation-support")).toBe(true);
+  expect(["payload_postgres", "synthetic_fallback"]).toContain(body.source);
+  if (process.env.CI) expect(body.source).toBe("payload_postgres");
+
+  expect(body.providers).toHaveLength(2);
+  expect(body.services).toHaveLength(2);
+  expect(
+    body.services?.some(
+      (service) => service.id === "demo-community-online" && service.integrated === true,
+    ),
+  ).toBe(true);
+  expect(
+    body.services?.some(
+      (service) => service.id === "demo-student-online" && service.integrated === false,
+    ),
+  ).toBe(true);
 });
