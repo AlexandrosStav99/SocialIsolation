@@ -44,17 +44,17 @@ export default function PrivacySection() {
         </div>
 
         <div className="mt-4">
-          {promises.map((p, i) => (
-            <div key={p.title} className="grid grid-cols-1 gap-4 border-b border-border py-7 transition hover:bg-surface/40 sm:grid-cols-[80px_0.8fr_1.2fr] sm:items-start">
-              <span className="text-xs font-bold text-teal opacity-50">{String(i + 1).padStart(2, "0")}</span>
-              <h3 className="text-base font-bold tracking-tight text-text">{p.title}</h3>
-              <p className="max-w-xl text-sm leading-relaxed text-muted">{p.desc}</p>
+          {promises.map((promise, index) => (
+            <div key={promise.title} className="grid grid-cols-1 gap-4 border-b border-border py-7 transition hover:bg-surface/40 sm:grid-cols-[80px_0.8fr_1.2fr] sm:items-start">
+              <span className="text-xs font-bold text-teal opacity-70">{String(index + 1).padStart(2, "0")}</span>
+              <h3 className="text-base font-bold tracking-tight text-text">{promise.title}</h3>
+              <p className="max-w-xl text-sm leading-relaxed text-muted">{promise.desc}</p>
             </div>
           ))}
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="max-w-2xl text-xs leading-relaxed text-sage">
+          <p className="max-w-2xl text-xs leading-relaxed text-muted">
             This is a university demonstration. Privacy and consent behaviour must be fully validated before any real-world deployment, and you should enter fictional text only here.
           </p>
           <div className="w-fit rounded-full border border-border px-4 py-2 text-xs font-medium text-muted">University MVP</div>
