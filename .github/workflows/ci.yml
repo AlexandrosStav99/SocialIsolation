@@ -107,6 +107,9 @@ jobs:
           PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "CREATE DATABASE talkpoint OWNER talkpoint;"
           timeout 120s npm run payload -- migrate
 
+      - name: Seed synthetic demonstration directory
+        run: timeout 120s npm run seed:demo
+
       - name: Verify live PostgreSQL round trip after migration
         env:
           NODE_ENV: production
