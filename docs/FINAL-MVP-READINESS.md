@@ -16,6 +16,9 @@ Implemented and CI-verified foundations include:
 - live PostgreSQL round-trip verification;
 - provider organisations and organisation-scoped RBAC foundations;
 - checked-directory and synthetic-directory contracts;
+- idempotent seeding of the controlled synthetic provider/service directory into Payload/PostgreSQL;
+- a Payload-backed directory API consumed by the public check-in, with a clearly synthetic static fallback when DB configuration/data is unavailable;
+- browser verification that the full CI runtime serves the demonstration directory from PostgreSQL rather than the fallback;
 - deterministic conversation, discovery and safety boundaries;
 - optional AI provider abstraction with deterministic fallback;
 - consent/contact-request domain boundaries;
@@ -24,6 +27,8 @@ Implemented and CI-verified foundations include:
 - accessibility/mobile/reduced-motion browser regressions;
 - dependency security gate, zero-warning lint, TypeScript and production build;
 - Playwright coverage of privacy, consent, no-match, handoff failure/retry and critical UX states.
+
+The synthetic directory remains deliberately small: two fictional providers and two fictional services. This is enough to demonstrate directory-backed matching and the controlled assisted-handoff path while preserving an honest no-exact-match scenario. It must not be presented as comprehensive Cyprus service coverage.
 
 ## Validation gates still open
 
@@ -39,7 +44,7 @@ These are not code failures and must not be represented as complete until real e
 
 ## Production deployment boundary
 
-Payload/PostgreSQL runtime is no longer a future implementation item. What remains unproven is a real production environment and real-provider operation, including as applicable:
+Payload/PostgreSQL runtime and the controlled synthetic directory integration are no longer future implementation items. What remains unproven is a real production environment and real-provider operation, including as applicable:
 
 - production infrastructure provisioning and configuration;
 - production identity, session management, MFA and onboarding;
