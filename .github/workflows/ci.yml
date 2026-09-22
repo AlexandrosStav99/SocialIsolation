@@ -1,18 +1,14 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
+    branches: [main, "phase-*", "production/**"]
+  pull_request:
+    branches: [main]
 
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16
@@ -23,23 +19,22 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U talkpoint -d talkpoint"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="pg_isready -U talkpoint -d talkpoint"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     env:
-      NEXT_TELEMETRY_DISABLED: 1
       DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
       PAYLOAD_SECRET: ci-only-not-for-deployment
-      NEXT_PUBLIC_MAPBOX_TOKEN: ""
+
     steps:
       - name: Checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -52,13 +47,13 @@ jobs:
       - name: Dependency security gate
         run: node scripts/check-dependency-security.mjs
 
-      - name: Lint (zero warnings)
+      - name: Lint
         run: npm run lint
 
-      - name: TypeScript
+      - name: Typecheck
         run: npm run typecheck
 
-      - name: Phase 1 privacy/data-boundary checks
+      - name: Phase 1 architecture boundary checks
         run: npm run test:boundaries
 
       - name: Phase 2 directory checks
@@ -70,13 +65,13 @@ jobs:
       - name: Phase 4 routing and safety checks
         run: npm run test:routing
 
-      - name: Phase 5 AI boundary and fallback checks
+      - name: Phase 5 AI boundary checks
         run: npm run test:ai
 
       - name: Phase 6 handoff and consent checks
         run: npm run test:handoff
 
-      - name: Phase 7 RBAC and provider-workspace checks
+      - name: Phase 7 RBAC checks
         run: npm run test:rbac
 
       - name: Phase 8 privacy-safe analytics checks
@@ -104,8 +99,8 @@ jobs:
         run: |
           timeout 120s npm run payload -- migrate:create initial_runtime_schema
           test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' ! -name 'index.ts' -print -quit)"
-          # Payload's generated migration imports type-only symbols as runtime ESM exports.
-          # Normalize them before executing the migration under Node 24.
+          # Temporary compatibility normalization until the generated migration is
+          # reviewed and committed as the repository's initial Payload migration.
           for migration in migrations/*.ts; do
             [ "$(basename "$migration")" = "index.ts" ] && continue
             sed -i "s/import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms\/db-postgres'/import { sql } from '@payloadcms\/db-postgres'\\nimport type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms\/db-postgres'/" "$migration"
@@ -129,9 +124,7 @@ jobs:
       - name: Verify live PostgreSQL round trip after migration
         env:
           NODE_ENV: production
-        run: |
-          set -euo pipefail
-          timeout 120s npm run payload -- run scripts/check-postgres-integration.mjs
+        run: timeout 120s npm run test:postgres
 
       - name: Build
         env:
