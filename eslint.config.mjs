@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Payload migration files are generated artifacts. Keep them versioned and
+    // validated by the migration/clean-database CI checks rather than rewriting
+    // generated function signatures to satisfy application lint rules.
+    "migrations/**",
   ]),
 ]);
 

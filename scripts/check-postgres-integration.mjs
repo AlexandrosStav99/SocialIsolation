@@ -1,18 +1,10 @@
 import { getPayload } from "payload";
-import { postgresAdapter } from "@payloadcms/db-postgres";
-import { buildConfig } from "payload";
-import { ProviderOrganisations } from "../payload/collections/ProviderOrganisations.ts";
-import { EphemeralSessions } from "../payload/collections/EphemeralSessions.ts";
-
-const config = buildConfig({
-  secret: process.env.PAYLOAD_SECRET,
-  db: postgresAdapter({ pool: { connectionString: process.env.DATABASE_URL } }),
-  collections: [ProviderOrganisations, EphemeralSessions],
-});
+import config from "../payload.config.ts";
 
 const payload = await getPayload({ config });
 const marker = `CI PostgreSQL ${Date.now()}`;
 let organisationId;
+let exitCode = 0;
 
 try {
   const organisation = await payload.create({
@@ -57,6 +49,7 @@ try {
     where: { sessionId: { equals: sessionId } },
     overrideAccess: true,
   });
+
   const removed = await payload.find({
     collection: "ephemeral-sessions",
     where: { sessionId: { equals: sessionId } },
@@ -66,12 +59,27 @@ try {
   if (removed.docs.length !== 0) throw new Error("Ephemeral session deletion failed");
 
   console.log("Live PostgreSQL Payload round-trip passed.");
+} catch (error) {
+  exitCode = 1;
+  console.error(error);
 } finally {
-  if (organisationId) {
-    await payload.delete({ collection: "provider-organisations", id: organisationId, overrideAccess: true });
+  try {
+    if (organisationId) {
+      await payload.delete({
+        collection: "provider-organisations",
+        id: organisationId,
+        overrideAccess: true,
+      });
+    }
+  } catch (cleanupError) {
+    exitCode = 1;
+    console.error("PostgreSQL integration cleanup failed:", cleanupError);
   }
-  await payload.destroy();
-  // Payload/Drizzle can retain background handles after destroy in this isolated
-  // CI harness. The round-trip and cleanup have completed, so terminate cleanly.
-  process.exit(0);
+
+  // Payload 3.90.1's Postgres adapter leaks the bootstrap client checked out
+  // during connect(), so payload.destroy()/pool.end() cannot drain and hangs.
+  // Upstream fixed this in payloadcms/payload#17831, but that fix is not in
+  // the v3.90.1 release branch. Force termination only in this one-shot CI
+  // proof after all CRUD assertions and cleanup have completed.
+  process.exit(exitCode);
 }

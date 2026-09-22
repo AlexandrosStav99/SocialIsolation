@@ -32,6 +32,7 @@ jobs:
       DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
       PAYLOAD_SECRET: ci-only-not-for-deployment
       NEXT_PUBLIC_MAPBOX_TOKEN: ""
+
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -97,9 +98,18 @@ jobs:
       - name: Provider RBAC and consent hardening checks
         run: npm run test:provider-consent
 
-      - name: Initialize Payload schema on CI PostgreSQL
+      - name: Verify committed Payload migration on clean PostgreSQL
+        run: |
+          set -euo pipefail
+          test -f migrations/index.ts
+          test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' ! -name 'index.ts' -print -quit)"
+          PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "DROP DATABASE talkpoint WITH (FORCE);"
+          PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "CREATE DATABASE talkpoint OWNER talkpoint;"
+          timeout 120s npm run payload -- migrate
+
+      - name: Verify live PostgreSQL round trip after migration
         env:
-          NODE_ENV: development
+          NODE_ENV: production
         run: timeout 120s npm run test:postgres
 
       - name: Build

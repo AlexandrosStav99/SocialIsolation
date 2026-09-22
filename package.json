@@ -25,7 +25,7 @@
     "test:persistence": "node scripts/check-persistence-boundaries.mjs",
     "test:provider-consent": "node scripts/check-provider-consent-hardening.mjs",
     "payload": "payload",
-    "test:postgres": "tsx scripts/check-postgres-integration.mjs"
+    "test:postgres": "node --experimental-transform-types scripts/check-postgres-integration.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.1",
