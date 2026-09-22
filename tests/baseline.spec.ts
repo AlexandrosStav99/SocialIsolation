@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("landing navigates without transporting free text", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("textarea")).toHaveCount(0);
-  await page.getByRole("button", { name: "View check-in demo" }).click();
+  await page.getByRole("button", { name: "Start the check-in" }).click();
   await expect(page).toHaveURL("http://127.0.0.1:3100/check-in");
   await expect(page.getByRole("heading", { name: "Check-in Demonstration" })).toBeVisible();
 });
