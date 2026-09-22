@@ -19,7 +19,9 @@ import {
 import type { ServiceDirectoryRecord } from "@/lib/directory/contracts";
 import { discoverServices } from "@/lib/routing/discovery";
 import { routeSafety } from "@/lib/safety/router";
+import { safetyContent } from "@/lib/safety/content";
 import { demoProviders, demoServices } from "@/data/demo-directory";
+import HandoffPreview from "./HandoffPreview";
 
 const topicLabels: Record<ConversationLanguage, Record<SupportTopic, string>> = {
   en: {
@@ -188,8 +190,19 @@ export default function IntegratedCheckIn() {
     [state, language],
   );
 
+  const pendingService = useMemo(
+    () => (pendingDemo ? demoServices.find((service) => service.id === pendingDemo.serviceId) ?? null : null),
+    [pendingDemo],
+  );
+
   function clearResultActions() {
     setBrowseAll(false);
+    setPendingDemo(null);
+    setDemoConsent(false);
+    setDemoStatus("");
+  }
+
+  function cancelDemoHandoff() {
     setPendingDemo(null);
     setDemoConsent(false);
     setDemoStatus("");
@@ -413,7 +426,7 @@ export default function IntegratedCheckIn() {
               setDemoStatus("");
             }}
           >
-            {language === "en" ? "Run controlled handoff demo" : "Εκτέλεση ελεγχόμενης επίδειξης handoff"}
+            {language === "en" ? "Preview assisted handoff demo" : "Προεπισκόπηση επίδειξης υποβοηθούμενης παραπομπής"}
           </button>
         ) : (
           <p className="mt-4 text-xs leading-relaxed text-muted">
@@ -463,18 +476,23 @@ export default function IntegratedCheckIn() {
             onClick={() => setSafetySignal(true)}
           >
             <LifeBuoy size={16} aria-hidden="true" />
-            {language === "en" ? "I need help now" : "Χρειάζομαι βοήθεια τώρα"}
+            {safetyContent[language].action}
           </button>
         </div>
 
         {safety.state === "immediate_support" && (
-          <div role="status" className="mb-5 rounded-2xl border border-clay/60 bg-white p-4 text-sm leading-relaxed text-text shadow-sm">
-            <p className="font-semibold">{language === "en" ? "Immediate support" : "Άμεση υποστήριξη"}</p>
-            <p className="mt-1 text-muted">
-              {language === "en"
-                ? "TalkPoint does not provide emergency or clinical services. Immediate-support wording and Cyprus resources require domain-expert validation before real use."
-                : "Το TalkPoint δεν παρέχει υπηρεσίες έκτακτης ανάγκης ή κλινικές υπηρεσίες. Η διατύπωση και οι πόροι άμεσης υποστήριξης στην Κύπρο απαιτούν επικύρωση από ειδικό πριν από πραγματική χρήση."}
-            </p>
+          <div className="mb-5 rounded-2xl border border-clay/60 bg-white p-4 text-sm leading-relaxed text-text shadow-sm">
+            <div role="status">
+              <p className="font-semibold">{safetyContent[language].heading}</p>
+              <p className="mt-1 text-muted">{safetyContent[language].notice}</p>
+            </div>
+            <button
+              type="button"
+              className={`${secondaryAction} mt-3`}
+              onClick={() => setSafetySignal(false)}
+            >
+              {safetyContent[language].continueAction}
+            </button>
           </div>
         )}
         <span className="sr-only">Safety route: {safety.state}</span>
@@ -725,31 +743,19 @@ export default function IntegratedCheckIn() {
                 </div>
               )}
 
-              {pendingDemo && (
-                <div className="mt-4 rounded-2xl border border-border bg-warm-bg/60 p-4 sm:p-5">
-                  <h2 className="font-bold text-text">{language === "en" ? "Sharing preview" : "Προεπισκόπηση κοινοποίησης"}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    {language === "en"
-                      ? "Demonstration Data only. The selected service will receive a fictional .invalid email, your selected support topics and area, and a synthetic summary. No optional text or real contact data will be shared."
-                      : "Μόνο Δεδομένα Επίδειξης. Η επιλεγμένη υπηρεσία θα λάβει ένα φανταστικό email .invalid, τα επιλεγμένα θέματα και την περιοχή σου, και μια συνθετική περίληψη. Δεν θα κοινοποιηθεί προαιρετικό κείμενο ή πραγματικό στοιχείο επικοινωνίας."}
-                  </p>
-                  <label className="mt-4 flex items-start gap-3 text-sm leading-relaxed text-text">
-                    <input
-                      type="checkbox"
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-teal"
-                      checked={demoConsent}
-                      onChange={(event) => setDemoConsent(event.target.checked)}
-                    />
-                    <span>
-                      {language === "en"
-                        ? "I explicitly consent to run this fictional provider-specific demonstration."
-                        : "Συναινώ ρητά στην εκτέλεση αυτής της φανταστικής επίδειξης για τον συγκεκριμένο πάροχο."}
-                    </span>
-                  </label>
-                  <button className={`${primaryAction} mt-4`} disabled={!demoConsent} onClick={runDemoHandoff}>
-                    {language === "en" ? "Confirm and run demo" : "Επιβεβαίωση και εκτέλεση επίδειξης"}
-                  </button>
-                </div>
+              {pendingDemo && pendingService && state.primarySupportTopic && state.serviceArea && (
+                <HandoffPreview
+                  language={language}
+                  providerName={providerNameFor(pendingService)}
+                  serviceName={pendingService.name}
+                  primaryTopic={topicLabels[language][state.primarySupportTopic]}
+                  secondaryTopics={state.secondarySupportTopics.map((topic) => topicLabels[language][topic])}
+                  serviceArea={areaLabels[language][state.serviceArea]}
+                  consentAccepted={demoConsent}
+                  onConsentChange={setDemoConsent}
+                  onConfirm={runDemoHandoff}
+                  onCancel={cancelDemoHandoff}
+                />
               )}
 
               {demoStatus && <p role="status" className="mt-4 text-sm leading-relaxed text-text">{demoStatus}</p>}
