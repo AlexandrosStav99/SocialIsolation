@@ -16,9 +16,10 @@ import {
   type ServiceArea,
   type SupportTopic,
 } from "@/lib/domain/data-boundaries";
+import type { ServiceDirectoryRecord } from "@/lib/directory/contracts";
 import { discoverServices } from "@/lib/routing/discovery";
 import { routeSafety } from "@/lib/safety/router";
-import { demoServices } from "@/data/demo-directory";
+import { demoProviders, demoServices } from "@/data/demo-directory";
 
 const topicLabels: Record<ConversationLanguage, Record<SupportTopic, string>> = {
   en: {
@@ -66,6 +67,19 @@ const areaLabels: Record<ConversationLanguage, Record<ServiceArea, string>> = {
   },
 };
 
+const deliveryLabels: Record<
+  ConversationLanguage,
+  Record<ServiceDirectoryRecord["deliveryModes"][number], string>
+> = {
+  en: { online: "Online", in_person: "In person", phone: "Phone" },
+  el: { online: "Online", in_person: "Με φυσική παρουσία", phone: "Τηλεφωνικά" },
+};
+
+const languageLabels: Record<ConversationLanguage, Record<"en" | "el", string>> = {
+  en: { en: "English", el: "Greek" },
+  el: { en: "Αγγλικά", el: "Ελληνικά" },
+};
+
 const stageLabels: Record<ConversationLanguage, Partial<Record<ConversationStage, string>>> = {
   en: {
     primary_topic: "What matters",
@@ -100,6 +114,51 @@ const previousStage: Partial<Record<ConversationStage, ConversationStage>> = {
   review: "service_area",
 };
 
+function providerNameFor(service: ServiceDirectoryRecord) {
+  return demoProviders.find((provider) => provider.id === service.providerId)?.name ?? "Demonstration provider";
+}
+
+function explainService(
+  service: ServiceDirectoryRecord,
+  language: ConversationLanguage,
+  primaryTopic: SupportTopic,
+  secondaryTopics: SupportTopic[],
+  serviceArea: ServiceArea,
+) {
+  const explanations: string[] = [];
+
+  if (service.topics.includes(primaryTopic)) {
+    explanations.push(
+      language === "en"
+        ? `Supports your main topic: ${topicLabels.en[primaryTopic]}`
+        : `Υποστηρίζει το κύριο θέμα σου: ${topicLabels.el[primaryTopic]}`,
+    );
+  } else {
+    const relatedTopic = secondaryTopics.find((topic) => service.topics.includes(topic));
+    if (relatedTopic) {
+      explanations.push(
+        language === "en"
+          ? `Supports a related topic you selected: ${topicLabels.en[relatedTopic]}`
+          : `Υποστηρίζει σχετικό θέμα που επέλεξες: ${topicLabels.el[relatedTopic]}`,
+      );
+    }
+  }
+
+  if (service.coverage.includes(serviceArea)) {
+    explanations.push(
+      language === "en"
+        ? `Available for your selected support area: ${areaLabels.en[serviceArea]}`
+        : `Διαθέσιμη για την περιοχή υποστήριξης που επέλεξες: ${areaLabels.el[serviceArea]}`,
+    );
+  } else if (service.coverage.includes("anywhere_cyprus")) {
+    explanations.push(language === "en" ? "Available across Cyprus" : "Διαθέσιμη σε όλη την Κύπρο");
+  } else if (service.coverage.includes("online")) {
+    explanations.push(language === "en" ? "Available online" : "Διαθέσιμη online");
+  }
+
+  return explanations;
+}
+
 export default function IntegratedCheckIn() {
   const [language, setLanguage] = useState<ConversationLanguage>("en");
   const [state, setState] = useState<ConversationState>(() => createConversation(crypto.randomUUID(), "en"));
@@ -109,6 +168,7 @@ export default function IntegratedCheckIn() {
   const [pendingDemo, setPendingDemo] = useState<{ serviceId: string } | null>(null);
   const [demoConsent, setDemoConsent] = useState(false);
   const [safetySignal, setSafetySignal] = useState(false);
+  const [browseAll, setBrowseAll] = useState(false);
 
   const prompt = getConversationPrompt(language, state.stage);
   const safety = routeSafety({ explicitSignals: safetySignal ? ["user_requests_help_now"] : [] });
@@ -128,7 +188,15 @@ export default function IntegratedCheckIn() {
     [state, language],
   );
 
+  function clearResultActions() {
+    setBrowseAll(false);
+    setPendingDemo(null);
+    setDemoConsent(false);
+    setDemoStatus("");
+  }
+
   function dispatch(action: ConversationAction) {
+    clearResultActions();
     setState((current) => {
       let next = transitionConversation({ ...current, language }, action);
 
@@ -151,10 +219,8 @@ export default function IntegratedCheckIn() {
   function reset() {
     setSecondary([]);
     setText("");
-    setDemoStatus("");
-    setPendingDemo(null);
-    setDemoConsent(false);
     setSafetySignal(false);
+    clearResultActions();
     setState(createConversation(crypto.randomUUID(), language));
   }
 
@@ -166,9 +232,16 @@ export default function IntegratedCheckIn() {
       setSecondary(state.secondarySupportTopics);
     }
 
-    setPendingDemo(null);
-    setDemoConsent(false);
-    setDemoStatus("");
+    clearResultActions();
+    setState((current) => ({ ...current, stage: target }));
+  }
+
+  function reopenForEdit(target: "primary_topic" | "secondary_topics" | "service_area") {
+    if (target === "secondary_topics") {
+      setSecondary(state.secondarySupportTopics);
+    }
+
+    clearResultActions();
     setState((current) => ({ ...current, stage: target }));
   }
 
@@ -186,9 +259,7 @@ export default function IntegratedCheckIn() {
     dispatch({ type: "end_session" });
     setText("");
     setSecondary([]);
-    setPendingDemo(null);
-    setDemoConsent(false);
-    setDemoStatus("");
+    clearResultActions();
   }
 
   async function runDemoHandoff() {
@@ -226,12 +297,134 @@ export default function IntegratedCheckIn() {
 
   const primaryAction =
     "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45";
+  const secondaryAction =
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text transition hover:border-sage hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2";
   const quietAction =
     "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-text underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2";
+  const editAction =
+    "mt-2 inline-flex min-h-9 items-center rounded-lg px-2 text-xs font-semibold text-teal underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal";
   const choiceClass = (selected = false, disabled = false) =>
     `group flex min-h-14 w-full items-center justify-between gap-4 rounded-2xl border px-4 py-3.5 text-left text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 ${
       selected ? "border-teal bg-warm-surface text-text" : "border-border bg-white text-text hover:border-sage hover:bg-warm-bg"
     } ${disabled ? "cursor-not-allowed opacity-45" : ""}`;
+
+  function renderServiceCard(service: ServiceDirectoryRecord, exact: boolean) {
+    const explanations =
+      exact && state.primarySupportTopic && state.serviceArea
+        ? explainService(service, language, state.primarySupportTopic, state.secondarySupportTopics, state.serviceArea)
+        : [];
+
+    return (
+      <article key={service.id} className="rounded-2xl border border-border bg-white p-4 sm:p-5">
+        {!exact && (
+          <p className="mb-3 inline-flex rounded-full bg-warm-surface px-3 py-1 text-xs font-bold text-text">
+            {language === "en" ? "Broader directory option · not an exact match" : "Ευρύτερη επιλογή καταλόγου · όχι ακριβής αντιστοίχιση"}
+          </p>
+        )}
+
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{providerNameFor(service)}</p>
+        <h2 className="mt-1 text-lg font-bold text-text">{service.name}</h2>
+
+        {!exact && (
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            {language === "en"
+              ? "This synthetic service is shown only for broader directory browsing. It may not match the topic or area you selected."
+              : "Αυτή η συνθετική υπηρεσία εμφανίζεται μόνο για ευρύτερη περιήγηση στον κατάλογο. Μπορεί να μην ταιριάζει με το θέμα ή την περιοχή που επέλεξες."}
+          </p>
+        )}
+
+        {exact && explanations.length > 0 && (
+          <div className="mt-4 rounded-xl bg-warm-bg/70 p-3">
+            <h3 className="text-sm font-bold text-text">{language === "en" ? "Why this may fit" : "Γιατί μπορεί να είναι σχετική"}</h3>
+            <ul className="mt-2 grid gap-1.5 text-sm leading-relaxed text-muted">
+              {explanations.map((explanation) => (
+                <li key={explanation} className="flex gap-2">
+                  <Check size={15} className="mt-0.5 shrink-0 text-teal" aria-hidden="true" />
+                  <span>{explanation}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {language === "en" ? "Support offered" : "Υποστήριξη"}
+            </dt>
+            <dd className="mt-1 leading-relaxed text-text">
+              {service.topics.map((topic) => topicLabels[language][topic]).join(" · ")}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {language === "en" ? "Coverage" : "Κάλυψη"}
+            </dt>
+            <dd className="mt-1 leading-relaxed text-text">
+              {service.coverage.map((area) => areaLabels[language][area]).join(" · ")}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {language === "en" ? "How support is offered" : "Τρόπος υποστήριξης"}
+            </dt>
+            <dd className="mt-1 leading-relaxed text-text">
+              {service.deliveryModes.map((mode) => deliveryLabels[language][mode]).join(" · ")}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+              {language === "en" ? "Languages available" : "Διαθέσιμες γλώσσες"}
+            </dt>
+            <dd className="mt-1 leading-relaxed text-text">
+              {service.languages.map((availableLanguage) => languageLabels[language][availableLanguage]).join(" · ")}
+            </dd>
+          </div>
+          {service.eligibility.length > 0 && (
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                {language === "en" ? "Eligibility / access" : "Προϋποθέσεις / πρόσβαση"}
+              </dt>
+              <dd className="mt-1 leading-relaxed text-text">{service.eligibility.join(" · ")}</dd>
+            </div>
+          )}
+          {service.availability && (
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                {language === "en" ? "Availability" : "Διαθεσιμότητα"}
+              </dt>
+              <dd className="mt-1 leading-relaxed text-text">{service.availability}</dd>
+            </div>
+          )}
+        </dl>
+
+        <p className="mt-4 text-xs font-semibold text-teal">
+          {language === "en"
+            ? "Synthetic demonstration service. No real request will be sent."
+            : "Συνθετική υπηρεσία επίδειξης. Δεν θα σταλεί πραγματικό αίτημα."}
+        </p>
+
+        {service.integrated ? (
+          <button
+            className={`${primaryAction} mt-4`}
+            onClick={() => {
+              setPendingDemo({ serviceId: service.id });
+              setDemoConsent(false);
+              setDemoStatus("");
+            }}
+          >
+            {language === "en" ? "Run controlled handoff demo" : "Εκτέλεση ελεγχόμενης επίδειξης handoff"}
+          </button>
+        ) : (
+          <p className="mt-4 text-xs leading-relaxed text-muted">
+            {language === "en"
+              ? "Assisted handoff is not enabled for this demonstration service."
+              : "Η υποβοηθούμενη παραπομπή δεν είναι ενεργοποιημένη για αυτή την υπηρεσία επίδειξης."}
+          </p>
+        )}
+      </article>
+    );
+  }
 
   return (
     <main className="min-h-[calc(100vh-6rem)] bg-warm-bg px-4 py-8 sm:px-6 sm:py-12">
@@ -457,24 +650,61 @@ export default function IntegratedCheckIn() {
 
               {state.stage === "review" && (
                 <>
-                  <dl className="grid gap-3 rounded-2xl border border-border bg-warm-bg/60 p-4 text-sm sm:grid-cols-2">
-                    <div>
+                  <dl className="grid gap-3 text-sm">
+                    <div className="rounded-2xl border border-border bg-warm-bg/60 p-4">
                       <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
                         {language === "en" ? "Main topic" : "Κύριο θέμα"}
                       </dt>
                       <dd className="mt-1 font-semibold text-text">
                         {state.primarySupportTopic && topicLabels[language][state.primarySupportTopic]}
                       </dd>
+                      <button className={editAction} onClick={() => reopenForEdit("primary_topic")}>
+                        {language === "en" ? "Edit main topic" : "Αλλαγή κύριου θέματος"}
+                      </button>
                     </div>
-                    <div>
+
+                    <div className="rounded-2xl border border-border bg-warm-bg/60 p-4">
+                      <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                        {language === "en" ? "Related topics" : "Σχετικά θέματα"}
+                      </dt>
+                      <dd className="mt-1 font-semibold leading-relaxed text-text">
+                        {state.secondarySupportTopics.length
+                          ? state.secondarySupportTopics.map((topic) => topicLabels[language][topic]).join(" · ")
+                          : language === "en"
+                            ? "Nothing else selected"
+                            : "Δεν επιλέχθηκε κάτι άλλο"}
+                      </dd>
+                      <button className={editAction} onClick={() => reopenForEdit("secondary_topics")}>
+                        {language === "en" ? "Edit related topics" : "Αλλαγή σχετικών θεμάτων"}
+                      </button>
+                    </div>
+
+                    <div className="rounded-2xl border border-border bg-warm-bg/60 p-4">
                       <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
                         {language === "en" ? "Support area" : "Περιοχή υποστήριξης"}
                       </dt>
                       <dd className="mt-1 font-semibold text-text">
                         {state.serviceArea && areaLabels[language][state.serviceArea]}
                       </dd>
+                      <button className={editAction} onClick={() => reopenForEdit("service_area")}>
+                        {language === "en" ? "Edit area" : "Αλλαγή περιοχής"}
+                      </button>
                     </div>
                   </dl>
+
+                  {state.optionalFreeText && (
+                    <div className="rounded-2xl border border-border bg-white p-4 text-sm">
+                      <p className="font-semibold text-text">
+                        {language === "en" ? "Optional private context added" : "Προστέθηκε προαιρετικό ιδιωτικό πλαίσιο"}
+                      </p>
+                      <p className="mt-1 leading-relaxed text-muted">
+                        {language === "en"
+                          ? "Your text is not shown here, is not used to match services in this demonstration, and is not shared with providers."
+                          : "Το κείμενό σου δεν εμφανίζεται εδώ, δεν χρησιμοποιείται για αντιστοίχιση υπηρεσιών σε αυτή την επίδειξη και δεν κοινοποιείται σε παρόχους."}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="mt-3 flex justify-end">
                     <button className={primaryAction} onClick={submitReview}>
                       {language === "en" ? "Explore relevant services" : "Δες σχετικές υπηρεσίες"}
@@ -486,29 +716,12 @@ export default function IntegratedCheckIn() {
 
               {state.stage === "complete" && results?.kind === "matches" && (
                 <div className="grid gap-4">
-                  {results.services.map(({ service, reasons }) => (
-                    <article key={service.id} className="rounded-2xl border border-border p-4 sm:p-5">
-                      <h2 className="font-bold text-text">{service.name}</h2>
-                      <p className="mt-2 text-xs leading-relaxed text-muted">{reasons.join(" · ")}</p>
-                      <p className="mt-3 text-xs font-semibold text-teal">
-                        {language === "en"
-                          ? "Demonstration service. No real request will be sent."
-                          : "Υπηρεσία επίδειξης. Δεν θα σταλεί πραγματικό αίτημα."}
-                      </p>
-                      {service.integrated && (
-                        <button
-                          className={`${primaryAction} mt-4`}
-                          onClick={() => {
-                            setPendingDemo({ serviceId: service.id });
-                            setDemoConsent(false);
-                            setDemoStatus("");
-                          }}
-                        >
-                          {language === "en" ? "Run controlled handoff demo" : "Εκτέλεση ελεγχόμενης επίδειξης handoff"}
-                        </button>
-                      )}
-                    </article>
-                  ))}
+                  <div className="rounded-2xl bg-warm-bg/60 p-4 text-sm leading-relaxed text-muted">
+                    {language === "en"
+                      ? "These synthetic services meet the structured criteria from your check-in. TalkPoint does not score or clinically assess suitability."
+                      : "Αυτές οι συνθετικές υπηρεσίες πληρούν τα δομημένα κριτήρια του check-in σου. Το TalkPoint δεν βαθμολογεί ούτε αξιολογεί κλινικά την καταλληλότητα."}
+                  </div>
+                  {results.services.map(({ service }) => renderServiceCard(service, true))}
                 </div>
               )}
 
@@ -542,15 +755,47 @@ export default function IntegratedCheckIn() {
               {demoStatus && <p role="status" className="mt-4 text-sm leading-relaxed text-text">{demoStatus}</p>}
 
               {state.stage === "complete" && results?.kind === "no_match" && (
-                <div>
-                  <p className="text-sm leading-relaxed text-muted">
-                    {language === "en"
-                      ? "No matching demonstration services were found. Change your area/topic or restart."
-                      : "Δεν βρέθηκαν αντίστοιχες υπηρεσίες επίδειξης. Άλλαξε περιοχή/θέμα ή ξεκίνησε ξανά."}
-                  </p>
-                  <button className={`${primaryAction} mt-4`} onClick={reset}>
-                    {language === "en" ? "Start again" : "Ξεκίνα ξανά"}
-                  </button>
+                <div className="grid gap-4">
+                  <div className="rounded-2xl border border-border bg-warm-bg/60 p-4 sm:p-5">
+                    <h2 className="text-lg font-bold text-text">
+                      {language === "en" ? "No exact demonstration match found" : "Δεν βρέθηκε ακριβής αντιστοίχιση επίδειξης"}
+                    </h2>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">
+                      {language === "en"
+                        ? "The current synthetic directory does not contain a service that matches these structured choices. That does not mean suitable support does not exist."
+                        : "Ο τρέχων συνθετικός κατάλογος δεν περιέχει υπηρεσία που να ταιριάζει με αυτές τις δομημένες επιλογές. Αυτό δεν σημαίνει ότι δεν υπάρχει κατάλληλη υποστήριξη."}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button className={secondaryAction} onClick={() => reopenForEdit("primary_topic")}>
+                        {language === "en" ? "Change main topic" : "Αλλαγή κύριου θέματος"}
+                      </button>
+                      <button className={secondaryAction} onClick={() => reopenForEdit("service_area")}>
+                        {language === "en" ? "Change area" : "Αλλαγή περιοχής"}
+                      </button>
+                      <button className={secondaryAction} onClick={() => setBrowseAll(true)}>
+                        {language === "en" ? "Browse all demonstration services" : "Προβολή όλων των υπηρεσιών επίδειξης"}
+                      </button>
+                    </div>
+                    <button className={`${quietAction} mt-2`} onClick={reset}>
+                      {language === "en" ? "Start again" : "Ξεκίνα ξανά"}
+                    </button>
+                  </div>
+
+                  {browseAll && (
+                    <section aria-labelledby="broader-directory-heading" className="grid gap-4">
+                      <div>
+                        <h2 id="broader-directory-heading" className="text-lg font-bold text-text">
+                          {language === "en" ? "Broader demonstration directory" : "Ευρύτερος κατάλογος επίδειξης"}
+                        </h2>
+                        <p className="mt-1 text-sm leading-relaxed text-muted">
+                          {language === "en"
+                            ? "These are existing synthetic directory records, not replacements for an exact match. Review their details before choosing any next action."
+                            : "Αυτές είναι υπάρχουσες συνθετικές εγγραφές καταλόγου και όχι αντικατάσταση μιας ακριβούς αντιστοίχισης. Δες τις πληροφορίες τους πριν επιλέξεις οποιοδήποτε επόμενο βήμα."}
+                        </p>
+                      </div>
+                      {demoServices.map((service) => renderServiceCard(service, false))}
+                    </section>
+                  )}
                 </div>
               )}
 

@@ -9,7 +9,7 @@ test("landing opens the integrated deterministic check-in", async ({ page }) => 
   await expect(page.getByRole("heading", { name: "What feels most important right now?" })).toBeVisible();
 });
 
-test("integrated journey keeps optional text local and reaches deterministic results", async ({ page }) => {
+test("integrated journey keeps optional text local and reaches explainable deterministic results", async ({ page }) => {
   const sample = "FICTIONAL_LOCAL_ONLY_SENTINEL";
   const outbound: string[] = [];
   page.on("request", (request) => outbound.push(request.url() + (request.postData() ?? "")));
@@ -22,10 +22,20 @@ test("integrated journey keeps optional text local and reaches deterministic res
   await input.fill(sample);
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: "Anywhere in Cyprus" }).click();
+
   await expect(page.getByRole("heading", { name: "Does this look right?" })).toBeVisible();
   await expect(page.getByText("Support preferences", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Optional private context added")).toBeVisible();
+  await expect(page.getByText(sample)).toHaveCount(0);
+
   await page.getByRole("button", { name: "Explore relevant services" }).click();
+  await expect(page.getByText("Demonstration Community Service")).toBeVisible();
   await expect(page.getByText("Demonstration Community Support")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Why this may fit" })).toBeVisible();
+  await expect(page.getByText("Supports your main topic: Loneliness & Social Connection")).toBeVisible();
+  await expect(page.getByText("Eligibility / access")).toBeVisible();
+  await expect(page.getByText(/language preference/i)).toHaveCount(0);
+
   await page.getByRole("button", { name: "Run controlled handoff demo" }).click();
   await expect(page.getByRole("heading", { name: "Sharing preview" })).toBeVisible();
   const confirm = page.getByRole("button", { name: "Confirm and run demo" });
@@ -37,6 +47,71 @@ test("integrated journey keeps optional text local and reaches deterministic res
   await expect(page.getByRole("status")).toContainText("No real request was sent.");
   expect(outbound.join("\n")).not.toContain(sample);
   expect(JSON.stringify(await page.evaluate(() => [localStorage, sessionStorage]))).not.toContain(sample);
+});
+
+test("review exposes routing inputs and edits area without losing selections", async ({ page }) => {
+  await page.goto("/check-in");
+  await page.getByRole("button", { name: "Yes, I’m 18 or over" }).click();
+  await page.getByRole("button", { name: "Loneliness & Social Connection" }).click();
+  await page.getByRole("checkbox", { name: "Family & Relationships" }).check();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Skip this question" }).click();
+  await page.getByRole("button", { name: "Nicosia" }).click();
+
+  await expect(page.getByRole("heading", { name: "Does this look right?" })).toBeVisible();
+  await expect(page.getByText("Loneliness & Social Connection", { exact: true })).toBeVisible();
+  await expect(page.getByText("Family & Relationships", { exact: true })).toBeVisible();
+  await expect(page.getByText("Nicosia", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Edit area" }).click();
+  await page.getByRole("button", { name: "Limassol" }).click();
+  await expect(page.getByRole("heading", { name: "Does this look right?" })).toBeVisible();
+  await expect(page.getByText("Loneliness & Social Connection", { exact: true })).toBeVisible();
+  await expect(page.getByText("Family & Relationships", { exact: true })).toBeVisible();
+  await expect(page.getByText("Limassol", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Edit main topic" }).click();
+  await expect(page.getByRole("heading", { name: "What feels most important right now?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "A quick check before we start" })).toHaveCount(0);
+});
+
+test("no-match recovery preserves choices and labels broader directory records honestly", async ({ page }) => {
+  await page.goto("/check-in");
+  await page.getByRole("button", { name: "Yes, I’m 18 or over" }).click();
+  await page.getByRole("button", { name: "Financial & Basic Needs" }).click();
+  await page.getByRole("button", { name: "Nothing else" }).click();
+  await page.getByRole("button", { name: "Skip this question" }).click();
+  await page.getByRole("button", { name: "Nicosia" }).click();
+  await page.getByRole("button", { name: "Explore relevant services" }).click();
+
+  await expect(page.getByRole("heading", { name: "No exact demonstration match found" })).toBeVisible();
+  await expect(page.getByText(/does not mean suitable support does not exist/i)).toBeVisible();
+  await page.getByRole("button", { name: "Browse all demonstration services" }).click();
+  await expect(page.getByRole("heading", { name: "Broader demonstration directory" })).toBeVisible();
+  await expect(page.getByText("Broader directory option · not an exact match")).toHaveCount(2);
+  await expect(page.getByText(/recommended for you/i)).toHaveCount(0);
+  await expect(page.getByText(/best match/i)).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Change area" }).click();
+  await page.getByRole("button", { name: "Limassol" }).click();
+  await expect(page.getByRole("heading", { name: "Does this look right?" })).toBeVisible();
+  await expect(page.getByText("Financial & Basic Needs", { exact: true })).toBeVisible();
+  await expect(page.getByText("Limassol", { exact: true })).toBeVisible();
+});
+
+test("Greek result cards include explainable service information", async ({ page }) => {
+  await page.goto("/check-in");
+  await page.getByRole("button", { name: "EL", exact: true }).click();
+  await page.getByRole("button", { name: "Ναι, είμαι 18 ετών ή άνω" }).click();
+  await page.getByRole("button", { name: "Μοναξιά & Κοινωνική Σύνδεση" }).click();
+  await page.getByRole("button", { name: "Τίποτα άλλο" }).click();
+  await page.getByRole("button", { name: "Παράλειψη ερώτησης" }).click();
+  await page.getByRole("button", { name: "Οπουδήποτε στην Κύπρο" }).click();
+  await page.getByRole("button", { name: "Δες σχετικές υπηρεσίες" }).click();
+
+  await expect(page.getByRole("heading", { name: "Γιατί μπορεί να είναι σχετική" })).toBeVisible();
+  await expect(page.getByText("Διαθέσιμες γλώσσες")).toBeVisible();
+  await expect(page.getByText("Προϋποθέσεις / πρόσβαση")).toBeVisible();
 });
 
 test("check-in supports back navigation and language switching without restarting", async ({ page }) => {
