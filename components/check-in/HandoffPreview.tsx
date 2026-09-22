@@ -121,8 +121,8 @@ export default function HandoffPreview({
 
       <p className="mt-4 rounded-xl bg-white p-3 text-xs leading-relaxed text-muted">
         {en
-          ? "Demonstration Data only. The server still derives the provider from the selected service and requires explicit consent before a fictional request can be created."
-          : "Μόνο Δεδομένα Επίδειξης. Ο διακομιστής εξακολουθεί να καθορίζει τον πάροχο από την επιλεγμένη υπηρεσία και απαιτεί ρητή συγκατάθεση πριν δημιουργηθεί ένα φανταστικό αίτημα."}
+          ? "Demonstration Data only. This demo can create a fictional request only for the service shown above, and only after you explicitly consent."
+          : "Μόνο Δεδομένα Επίδειξης. Αυτή η επίδειξη μπορεί να δημιουργήσει φανταστικό αίτημα μόνο για την υπηρεσία που εμφανίζεται παραπάνω και μόνο αφού δώσεις ρητή συγκατάθεση."}
       </p>
 
       <label className="mt-4 flex items-start gap-3 rounded-xl border border-border bg-white p-4 text-sm leading-relaxed text-text">
