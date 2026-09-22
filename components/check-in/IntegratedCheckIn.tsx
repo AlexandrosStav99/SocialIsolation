@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Check, ChevronRight, LifeBuoy, LockKeyhole } from "lucide-react";
 import { createConversation, transitionConversation } from "@/lib/conversation/engine";
 import { getConversationPrompt } from "@/lib/conversation/prompts";
@@ -169,8 +169,19 @@ export default function IntegratedCheckIn() {
   const [demoStatus, setDemoStatus] = useState("");
   const [pendingDemo, setPendingDemo] = useState<{ serviceId: string } | null>(null);
   const [demoConsent, setDemoConsent] = useState(false);
+  const [demoSubmitting, setDemoSubmitting] = useState(false);
   const [safetySignal, setSafetySignal] = useState(false);
   const [browseAll, setBrowseAll] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const previousLanguage = root.lang || "en";
+    root.lang = language;
+
+    return () => {
+      root.lang = previousLanguage;
+    };
+  }, [language]);
 
   const prompt = getConversationPrompt(language, state.stage);
   const safety = routeSafety({ explicitSignals: safetySignal ? ["user_requests_help_now"] : [] });
@@ -199,10 +210,12 @@ export default function IntegratedCheckIn() {
     setBrowseAll(false);
     setPendingDemo(null);
     setDemoConsent(false);
+    setDemoSubmitting(false);
     setDemoStatus("");
   }
 
   function cancelDemoHandoff() {
+    if (demoSubmitting) return;
     setPendingDemo(null);
     setDemoConsent(false);
     setDemoStatus("");
@@ -276,36 +289,62 @@ export default function IntegratedCheckIn() {
   }
 
   async function runDemoHandoff() {
-    if (!pendingDemo || !demoConsent || !state.primarySupportTopic || !state.serviceArea) return;
+    if (
+      demoSubmitting ||
+      !pendingDemo ||
+      !demoConsent ||
+      !state.primarySupportTopic ||
+      !state.serviceArea
+    ) {
+      return;
+    }
 
+    setDemoSubmitting(true);
     setDemoStatus(language === "en" ? "Running controlled handoff…" : "Εκτέλεση ελεγχόμενης επίδειξης…");
-    const response = await fetch("/api/demo-handoff", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        serviceId: pendingDemo.serviceId,
-        consentAccepted: true,
-        primarySupportTopic: state.primarySupportTopic,
-        secondarySupportTopics: state.secondarySupportTopics,
-        serviceArea: state.serviceArea,
-      }),
-    });
-    const data = (await response.json()) as {
-      requestCreated?: boolean;
-      queueVisible?: boolean;
-      status?: string;
-      realRequestSent?: boolean;
-    };
 
-    setDemoStatus(
-      response.ok && data.requestCreated && data.queueVisible && data.realRequestSent === false
-        ? language === "en"
-          ? `Demo handoff completed. Provider queue status: ${data.status}. No real request was sent.`
-          : `Η επίδειξη handoff ολοκληρώθηκε. Κατάσταση ουράς παρόχου: ${data.status}. Δεν στάλθηκε πραγματικό αίτημα.`
-        : language === "en"
-          ? "Demo handoff could not be completed."
-          : "Η επίδειξη handoff δεν ολοκληρώθηκε.",
-    );
+    try {
+      const response = await fetch("/api/demo-handoff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serviceId: pendingDemo.serviceId,
+          consentAccepted: true,
+          primarySupportTopic: state.primarySupportTopic,
+          secondarySupportTopics: state.secondarySupportTopics,
+          serviceArea: state.serviceArea,
+        }),
+      });
+      const data = (await response.json()) as {
+        requestCreated?: boolean;
+        queueVisible?: boolean;
+        status?: string;
+        realRequestSent?: boolean;
+      };
+
+      if (response.ok && data.requestCreated && data.queueVisible && data.realRequestSent === false) {
+        setDemoStatus(
+          language === "en"
+            ? `Demo handoff completed. Provider queue status: ${data.status}. No real request was sent.`
+            : `Η επίδειξη handoff ολοκληρώθηκε. Κατάσταση ουράς παρόχου: ${data.status}. Δεν στάλθηκε πραγματικό αίτημα.`,
+        );
+        setPendingDemo(null);
+        setDemoConsent(false);
+      } else {
+        setDemoStatus(
+          language === "en"
+            ? "The demo handoff could not be confirmed. You can keep exploring or try again."
+            : "Η επίδειξη handoff δεν μπόρεσε να επιβεβαιωθεί. Μπορείς να συνεχίσεις την εξερεύνηση ή να δοκιμάσεις ξανά.",
+        );
+      }
+    } catch {
+      setDemoStatus(
+        language === "en"
+          ? "The demo handoff could not be confirmed. You can keep exploring or try again."
+          : "Η επίδειξη handoff δεν μπόρεσε να επιβεβαιωθεί. Μπορείς να συνεχίσεις την εξερεύνηση ή να δοκιμάσεις ξανά.",
+      );
+    } finally {
+      setDemoSubmitting(false);
+    }
   }
 
   const primaryAction =
@@ -752,13 +791,14 @@ export default function IntegratedCheckIn() {
                   secondaryTopics={state.secondarySupportTopics.map((topic) => topicLabels[language][topic])}
                   serviceArea={areaLabels[language][state.serviceArea]}
                   consentAccepted={demoConsent}
+                  submitting={demoSubmitting}
                   onConsentChange={setDemoConsent}
                   onConfirm={runDemoHandoff}
                   onCancel={cancelDemoHandoff}
                 />
               )}
 
-              {demoStatus && <p role="status" className="mt-4 text-sm leading-relaxed text-text">{demoStatus}</p>}
+              {demoStatus && <p role="status" aria-live="polite" className="mt-4 text-sm leading-relaxed text-text">{demoStatus}</p>}
 
               {state.stage === "complete" && results?.kind === "no_match" && (
                 <div className="grid gap-4">
