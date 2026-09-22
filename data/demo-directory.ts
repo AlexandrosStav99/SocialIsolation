@@ -1,18 +1,22 @@
 import type { ProviderDirectoryRecord, ServiceDirectoryRecord } from "@/lib/directory/contracts";
 
+export const DEMO_INFORMATION_SOURCE = "Synthetic university demonstration record";
+export const DEMO_INFORMATION_CHECKED_AT = new Date("2026-09-20T00:00:00Z");
+
 // Synthetic records only. They prove the directory shape without implying partnerships or checked real-world information.
+// Coverage is intentionally incomplete so the required no-match recovery path remains demonstrable.
 export const demoProviders: ProviderDirectoryRecord[] = [
   {
     id: "demo-community-provider",
     name: "Demonstration Community Service",
     type: "public_community",
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
   {
     id: "demo-student-provider",
     name: "Demonstration Student Support",
     type: "university_student",
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
 ];
 
@@ -30,7 +34,7 @@ export const demoServices: ServiceDirectoryRecord[] = [
     availability: "Demonstration hours only",
     immediateSupportCapable: false,
     integrated: true,
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
   {
     id: "demo-student-online",
@@ -44,6 +48,6 @@ export const demoServices: ServiceDirectoryRecord[] = [
     contactChannels: ["Demo contact channel"],
     immediateSupportCapable: false,
     integrated: false,
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
 ];

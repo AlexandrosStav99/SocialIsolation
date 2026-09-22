@@ -25,4 +25,19 @@ for (const field of ["topics","coverage","languages","deliveryModes","contactCha
   if (!schema.includes(field)) throw new Error("Directory validation missing: " + field);
 }
 
+const payloadLoader = fs.readFileSync("lib/directory/payload-demo.ts", "utf8");
+for (const phrase of ["collection: \"providers\"", "collection: \"services\"", "DEMO_INFORMATION_SOURCE"]) {
+  if (!payloadLoader.includes(phrase)) throw new Error("Payload-backed demo directory loader missing: " + phrase);
+}
+
+const directoryRoute = fs.readFileSync("app/api/directory/route.ts", "utf8");
+for (const phrase of ["payload_postgres", "synthetic_fallback", "Demonstration Data"]) {
+  if (!directoryRoute.includes(phrase)) throw new Error("Directory API source boundary missing: " + phrase);
+}
+
+const seed = fs.readFileSync("scripts/seed-demo-directory.ts", "utf8");
+for (const phrase of ["provider-organisations", "providers", "services", "DEMO_INFORMATION_SOURCE"]) {
+  if (!seed.includes(phrase)) throw new Error("Synthetic directory seed missing: " + phrase);
+}
+
 console.log("Phase 2 directory checks passed.");

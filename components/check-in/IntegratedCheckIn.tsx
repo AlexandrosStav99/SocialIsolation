@@ -16,7 +16,7 @@ import {
   type ServiceArea,
   type SupportTopic,
 } from "@/lib/domain/data-boundaries";
-import type { ServiceDirectoryRecord } from "@/lib/directory/contracts";
+import type { ProviderDirectoryRecord, ServiceDirectoryRecord } from "@/lib/directory/contracts";
 import { discoverServices } from "@/lib/routing/discovery";
 import { routeSafety } from "@/lib/safety/router";
 import { safetyContent } from "@/lib/safety/content";
@@ -116,8 +116,21 @@ const previousStage: Partial<Record<ConversationStage, ConversationStage>> = {
   review: "service_area",
 };
 
-function providerNameFor(service: ServiceDirectoryRecord) {
-  return demoProviders.find((provider) => provider.id === service.providerId)?.name ?? "Demonstration provider";
+type SerializedProvider = Omit<ProviderDirectoryRecord, "information"> & {
+  information: { source: string; checkedAt: string };
+};
+
+type SerializedService = Omit<ServiceDirectoryRecord, "information"> & {
+  information: { source: string; checkedAt: string };
+};
+
+type DirectoryApiResponse = {
+  providers?: SerializedProvider[];
+  services?: SerializedService[];
+};
+
+function providerNameFor(service: ServiceDirectoryRecord, providers: ProviderDirectoryRecord[]) {
+  return providers.find((provider) => provider.id === service.providerId)?.name ?? "Demonstration provider";
 }
 
 function explainService(
@@ -172,6 +185,8 @@ export default function IntegratedCheckIn() {
   const [demoSubmitting, setDemoSubmitting] = useState(false);
   const [safetySignal, setSafetySignal] = useState(false);
   const [browseAll, setBrowseAll] = useState(false);
+  const [directoryProviders, setDirectoryProviders] = useState<ProviderDirectoryRecord[]>(demoProviders);
+  const [directoryServices, setDirectoryServices] = useState<ServiceDirectoryRecord[]>(demoServices);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -183,6 +198,46 @@ export default function IntegratedCheckIn() {
     };
   }, [language]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function hydrateDirectory() {
+      try {
+        const response = await fetch("/api/directory", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as DirectoryApiResponse;
+        if (!Array.isArray(data.providers) || !Array.isArray(data.services)) return;
+
+        const providers = data.providers.map((provider) => ({
+          ...provider,
+          information: {
+            ...provider.information,
+            checkedAt: new Date(provider.information.checkedAt),
+          },
+        }));
+        const services = data.services.map((service) => ({
+          ...service,
+          information: {
+            ...service.information,
+            checkedAt: new Date(service.information.checkedAt),
+          },
+        }));
+
+        if (!cancelled && providers.length > 0 && services.length > 0) {
+          setDirectoryProviders(providers);
+          setDirectoryServices(services);
+        }
+      } catch {
+        // The static synthetic directory remains the explicit university-demo fallback.
+      }
+    }
+
+    void hydrateDirectory();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const prompt = getConversationPrompt(language, state.stage);
   const safety = routeSafety({ explicitSignals: safetySignal ? ["user_requests_help_now"] : [] });
   const currentProgress = progressByStage[state.stage];
@@ -191,19 +246,22 @@ export default function IntegratedCheckIn() {
   const results = useMemo(
     () =>
       state.stage === "complete" && state.primarySupportTopic && state.serviceArea
-        ? discoverServices(demoServices, {
+        ? discoverServices(directoryServices, {
             primaryTopic: state.primarySupportTopic,
             secondaryTopics: state.secondarySupportTopics,
             serviceArea: state.serviceArea,
             preferredLanguages: [language],
           })
         : null,
-    [state, language],
+    [directoryServices, state, language],
   );
 
   const pendingService = useMemo(
-    () => (pendingDemo ? demoServices.find((service) => service.id === pendingDemo.serviceId) ?? null : null),
-    [pendingDemo],
+    () =>
+      pendingDemo
+        ? directoryServices.find((service) => service.id === pendingDemo.serviceId) ?? null
+        : null,
+    [directoryServices, pendingDemo],
   );
 
   function clearResultActions() {
@@ -374,7 +432,9 @@ export default function IntegratedCheckIn() {
           </p>
         )}
 
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{providerNameFor(service)}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+          {providerNameFor(service, directoryProviders)}
+        </p>
         <h2 className="mt-1 text-lg font-bold text-text">{service.name}</h2>
 
         {!exact && (
@@ -785,7 +845,7 @@ export default function IntegratedCheckIn() {
               {pendingDemo && pendingService && state.primarySupportTopic && state.serviceArea && (
                 <HandoffPreview
                   language={language}
-                  providerName={providerNameFor(pendingService)}
+                  providerName={providerNameFor(pendingService, directoryProviders)}
                   serviceName={pendingService.name}
                   primaryTopic={topicLabels[language][state.primarySupportTopic]}
                   secondaryTopics={state.secondarySupportTopics.map((topic) => topicLabels[language][topic])}
@@ -839,7 +899,7 @@ export default function IntegratedCheckIn() {
                             : "Αυτές είναι υπάρχουσες συνθετικές εγγραφές καταλόγου και όχι αντικατάσταση μιας ακριβούς αντιστοίχισης. Δες τις πληροφορίες τους πριν επιλέξεις οποιοδήποτε επόμενο βήμα."}
                         </p>
                       </div>
-                      {demoServices.map((service) => renderServiceCard(service, false))}
+                      {directoryServices.map((service) => renderServiceCard(service, false))}
                     </section>
                   )}
                 </div>

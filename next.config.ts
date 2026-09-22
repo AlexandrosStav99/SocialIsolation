@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
+import { withPayload } from "@payloadcms/next/withPayload";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+const nextConfig: NextConfig = {};
 
-export default nextConfig;
+// Payload's Next.js plugin externalizes server-only dependencies such as
+// drizzle-kit so Turbopack does not try to bundle database tooling into app routes.
+export default withPayload(nextConfig);
