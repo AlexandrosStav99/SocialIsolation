@@ -78,12 +78,12 @@ export function providerUserAdminCollection(collection: CollectionConfig): Colle
     },
     access: {
       ...collection.access,
-      admin: platformAdminOnly,
+      admin: ({ req }) => isPlatformAdminUser(req.user),
       create: createProviderUser,
       read: readSelfOrSuperAdmin,
       update: superAdminOnly,
       delete: superAdminOnly,
-      unlock: superAdminOnly,
+      unlock: ({ req }) => isSuperAdminUser(req.user),
     },
   };
 }
