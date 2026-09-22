@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { PenLine } from "lucide-react";
 
@@ -33,8 +34,10 @@ export default function AboutThread() {
             transition={{ duration: 5, repeat: Infinity }}
             className="relative z-10 flex items-center justify-center"
           >
-            <img
+            <Image
               src="/Logo.svg"
+              width={256}
+              height={171}
               alt="TalkPoint continuous thread logo"
               className="w-64 h-auto scale-[2.2]"
             />

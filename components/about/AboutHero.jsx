@@ -118,7 +118,7 @@ export default function AboutHero() {
             "
           >
 
-            A safe space where{" "}
+            A future space where{" "}
             <span className="text-teal">
               connection
             </span>{" "}
@@ -142,9 +142,8 @@ export default function AboutHero() {
             "
           >
 
-            TalkPoint helps people share how they feel safely,
-            privately, and without pressure — creating a bridge
-            between people and the support they may need.
+            TalkPoint is a university prototype for future support navigation.
+            This demonstration does not provide support or send contact requests.
 
           </p>
 
@@ -181,7 +180,7 @@ export default function AboutHero() {
               "
             >
 
-              Start safely
+              View demo
 
             </motion.button>
 
@@ -350,7 +349,7 @@ export default function AboutHero() {
             >
 
               Your voice matters.
-              You can share safely,
+              Our goal is a space to share,
               with dignity, clarity and control.
 
             </p>

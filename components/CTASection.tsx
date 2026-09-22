@@ -17,28 +17,27 @@ export default function CTASection() {
               Whatever you
               <br />are going through,
               <br />
-              <span className="text-clay">support is here.</span>
+              <span className="text-clay">connection matters.</span>
             </h2>
           </div>
 
           {/* Right — copy + CTA */}
           <div>
             <p className="mb-8 text-base leading-relaxed" style={{ color: "#6E756F" }}>
-              TalkPoint takes less than 10 minutes. You stay anonymous
-              unless you choose otherwise. No commitment, no pressure.
-              You can stop at any time.
+              Explore the university demonstration with fictional text.
+              No real support request can be made here. You can stop at any time.
             </p>
 
             <Link
               href="/check-in"
               className="inline-flex items-center gap-3 rounded-2xl bg-teal px-7 py-4 text-base font-semibold text-white transition hover:opacity-90"
             >
-              Start safely
+              View demo
               <ArrowRight size={18} />
             </Link>
 
             <p className="mt-4 text-xs" style={{ color: "#4A5249" }}>
-              Anonymous · No account needed · No judgment
+              Demonstration only · No account needed
             </p>
           </div>
 

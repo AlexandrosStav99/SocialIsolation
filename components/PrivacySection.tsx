@@ -1,19 +1,19 @@
 const promises = [
   {
     title: "No account required",
-    desc: "Complete the process without creating an account or sharing your name.",
+    desc: "Explore the demonstration without an account. Use fictional text only.",
   },
   {
-    title: "Anonymous by default",
-    desc: "Your answers are not linked to your identity unless you choose to request contact.",
+    title: "Anonymous check-in target",
+    desc: "The MVP is designed so the anonymous check-in remains separate from any optional contact request.",
   },
   {
-    title: "Your data, your choice",
-    desc: "Personal details are collected only when you actively choose to share them.",
+    title: "User-directed contact",
+    desc: "The MVP will request contact details only when you actively choose an assisted contact flow.",
   },
   {
-    title: "Minimum necessary data",
-    desc: "We only ask for what is needed to guide you toward the right support path.",
+    title: "Data minimisation",
+    desc: "The frozen MVP specification limits collection to data required for navigation or a consented contact request.",
   },
 ];
 
@@ -35,21 +35,21 @@ export default function PrivacySection() {
         {/* Main statement */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
           <h2 className="max-w-4xl text-[clamp(2.4rem,5.5vw,5.8rem)] font-bold leading-[0.96] tracking-tight text-text">
-            Your answers
+            Privacy is
             <br />
-            stay yours.
+            a design requirement.
           </h2>
 
           <p className="max-w-md text-base leading-relaxed text-muted lg:pb-3">
-            We ask only what is needed, explain why it matters, and never use
-            personal information without your clear consent.
+            The MVP is being built to minimise personal data, separate anonymous
+            navigation from contact requests, and make sharing choices explicit.
           </p>
         </div>
 
         {/* Quiet quote */}
         <div className="mt-16 border-y border-border py-8">
           <p className="max-w-3xl text-[clamp(1.4rem,3vw,2.4rem)] font-medium leading-[1.25] tracking-tight text-text">
-            “You can share how you feel without having to explain who you are.”
+            “The planned check-in will not require an account or a name.”
           </p>
         </div>
 
@@ -78,12 +78,12 @@ export default function PrivacySection() {
         {/* Bottom note */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-xl text-xs leading-relaxed text-sage">
-            Built with privacy by design principles, data minimization, and
-            consent-based contact flows.
+            Privacy and consent behaviours remain subject to implementation and
+            validation before any real-world deployment.
           </p>
 
           <div className="w-fit rounded-full border border-border px-4 py-2 text-xs font-medium text-muted">
-            No tracking by default
+            MVP privacy target
           </div>
         </div>
       </div>
