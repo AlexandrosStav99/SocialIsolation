@@ -1,8 +1,9 @@
 import { getPayload } from "payload";
-import configPromise from "../payload.config.ts";
+import config from "../payload.config.ts";
 
-const config = await configPromise;
-if (!config.secret) config.secret = process.env.PAYLOAD_SECRET;
+// Payload's documented Local API pattern accepts the exported config directly.
+// Do not await or mutate buildConfig() output here: getPayload() owns config
+// sanitization and instance caching.
 const payload = await getPayload({ config });
 const marker = `CI PostgreSQL ${Date.now()}`;
 let organisationId;
@@ -50,6 +51,7 @@ try {
     where: { sessionId: { equals: sessionId } },
     overrideAccess: true,
   });
+
   const removed = await payload.find({
     collection: "ephemeral-sessions",
     where: { sessionId: { equals: sessionId } },
@@ -61,8 +63,11 @@ try {
   console.log("Live PostgreSQL Payload round-trip passed.");
 } finally {
   if (organisationId) {
-    await payload.delete({ collection: "provider-organisations", id: organisationId, overrideAccess: true });
+    await payload.delete({
+      collection: "provider-organisations",
+      id: organisationId,
+      overrideAccess: true,
+    });
   }
   await payload.destroy();
-  process.exit(0);
 }
