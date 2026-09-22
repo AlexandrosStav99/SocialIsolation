@@ -8,7 +8,7 @@ import {
 
 async function main() {
   const payload = await getPayload({ config });
-  const providerDocumentIds = new Map<string, string | number>();
+  const providerDocumentIds = new Map<string, number>();
   let exitCode = 0;
 
   try {
@@ -61,6 +61,9 @@ async function main() {
             overrideAccess: true,
           });
 
+      if (typeof providerDocument.id !== "number") {
+        throw new Error(`Expected numeric PostgreSQL provider ID for ${provider.id}`);
+      }
       providerDocumentIds.set(provider.id, providerDocument.id);
     }
 
