@@ -40,7 +40,7 @@ test("integrated journey keeps optional text local and reaches explainable deter
   await expect(page.getByRole("heading", { name: "Sharing preview" })).toBeVisible();
   await expect(page.getByText("What will be shared", { exact: true })).toBeVisible();
   await expect(page.getByText("What will not be shared", { exact: true })).toBeVisible();
-  await expect(page.getByText(/does not retroactively identify or share your anonymous check-in/i)).toBeVisible();
+  await expect(page.getByText(/anonymous session is not identified or linked to the fictional request/i)).toBeVisible();
   await expect(page.getByText("Your optional private free text", { exact: true })).toBeVisible();
   await expect(page.getByText(sample)).toHaveCount(0);
 
