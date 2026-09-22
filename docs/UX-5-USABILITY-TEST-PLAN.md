@@ -42,6 +42,8 @@ Avoid teaching the interface or revealing the expected answer before the partici
 
 ## Evidence to capture
 
+Use `USABILITY-SESSION-RECORD-TEMPLATE.md` for each real participant.
+
 For each participant, record:
 
 - task completion or abandonment;
@@ -85,4 +87,6 @@ Critical and high findings should be reviewed before calling target-user validat
 
 ## Reporting
 
-After actual sessions, produce a separate findings report containing participant count, method, task outcomes, observed issues, prioritisation, changes made and unresolved limitations. Do not backfill or invent findings if sessions have not occurred.
+After actual sessions, produce a separate findings report containing participant count, recruitment/method, task outcomes, observed issues, prioritisation, changes made, retest evidence and unresolved limitations. `ACADEMIC-CLOSURE-TEMPLATE.md` defines how those real findings feed the final evidence chain.
+
+Do not backfill or invent findings, success rates or quotes if sessions have not occurred.

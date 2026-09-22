@@ -1,34 +1,72 @@
-# TalkPoint MVP readiness
+# TalkPoint MVP Readiness
+
+Status: **controlled implementation technically complete; full frozen Definition of Done not yet satisfied**.
 
 ## Automated implementation status
 
-The controlled university demonstration now exercises the product path in the browser from the 18+ gate through structured check-in, deterministic service discovery and a synthetic consented handoff into the provider-queue domain workflow.
+The controlled university demonstration exercises the product path in the browser from the 18+ gate through structured check-in, deterministic service discovery and a synthetic provider-specific consented handoff into the provider-queue workflow boundary.
 
-The handoff endpoint deliberately uses the reserved `.invalid` fictional contact address, creates no persistent record and sends nothing to a real provider. It exists to prove integration without collecting personal data in an unvalidated university prototype.
+The demo handoff deliberately uses fictional `.invalid` contact data and sends no real request to a provider. This proves the consent/handoff integration path without collecting real contact data or implying a live partnership.
 
 Implemented and CI-verified foundations include:
-- four-domain privacy architecture and database constraints;
+
+- four-domain privacy architecture and persistence constraints;
+- Payload CMS + PostgreSQL runtime integration;
+- committed/version-controlled Payload migration applied to clean PostgreSQL in CI;
+- live PostgreSQL round-trip verification;
+- provider organisations and organisation-scoped RBAC foundations;
 - checked-directory and synthetic-directory contracts;
 - deterministic conversation, discovery and safety boundaries;
 - optional AI provider abstraction with deterministic fallback;
 - consent/contact-request domain boundaries;
-- organisation-scoped provider RBAC/workflow;
 - thresholded anonymous analytics;
-- EN/EL core check-in;
-- reduced-motion and automated accessibility regressions;
-- production-build and Playwright regression coverage.
+- EN/EL critical journey;
+- accessibility/mobile/reduced-motion browser regressions;
+- dependency security gate, zero-warning lint, TypeScript and production build;
+- Playwright coverage of privacy, consent, no-match, handoff failure/retry and critical UX states.
 
-## Deliberate deployment gates
+## Validation gates still open
 
-These are not code failures and must not be represented as completed until evidence exists:
+These are not code failures and must not be represented as complete until real evidence exists.
 
-1. **Payload/PostgreSQL runtime deployment.** SQL migrations and repository/domain contracts exist, but the public university demo intentionally does not persist contact requests. A real deployment must provision PostgreSQL, install/configure Payload against the locked dependency graph, run migrations and replace demo repositories with DB-backed implementations.
-2. **Real authentication.** Provider RBAC is implemented at the domain boundary, but production identity, session management and MFA/organisation onboarding require a deployment identity decision.
-3. **Safety expert validation.** Exact trigger wording, matrix and Cyprus immediate-support resources require qualified domain-expert approval.
-4. **Legal/privacy review.** Real Cyprus operation requires review of controller/processor roles, lawful basis, notices, consent wording, retention and data-subject procedures.
-5. **Target-user study.** Usability evidence with adults 18–30 must be collected and analysed.
-6. **Manual accessibility audit.** WCAG 2.2 AA is a target, not a certification claim.
+1. **Problem-validation academic synthesis.** Existing requirements/research evidence must be brought into the final academic chain, including assumptions that remained unvalidated.
+2. **Manual accessibility validation.** Automated regressions exist, but screen-reader, keyboard-only full journey, zoom/reflow, physical-device and final manual contrast/status-announcement evidence still needs to be executed and recorded.
+3. **Safety/domain review.** Exact trigger wording/matrix and any real Cyprus immediate-support resources require qualified safeguarding/domain approval.
+4. **Privacy/legal review.** Real Cyprus operation requires authorised review of lawful bases, notices, roles, retention, data-subject procedures, vendors/transfers and deployment controls.
+5. **Target-user study.** Approximately 5–8 real target participants aged 18–30 must be evaluated, material findings recorded and critical/high problems iterated/retested.
+6. **Real provider/directory validation.** Complete checked real service data, data-freshness ownership and any real integrated-provider pilot require direct validation/agreement.
+7. **Academic closure.** Final evaluation must combine actual technical and human evidence, failures, trade-offs, changes and unresolved limitations.
 
-## Release rule
+## Production deployment boundary
 
-Do not label TalkPoint production-ready until all six deployment gates above have evidence. Green CI proves the controlled MVP implementation and automated invariants only.
+Payload/PostgreSQL runtime is no longer a future implementation item. What remains unproven is a real production environment and real-provider operation, including as applicable:
+
+- production infrastructure provisioning and configuration;
+- production identity, session management, MFA and onboarding;
+- environment-specific security assessment, monitoring and incident response;
+- real operational retention/deletion settings;
+- real provider agreements and DB-backed operational request handling if a pilot requires it;
+- complete checked directory content and revalidation process.
+
+The controlled university demo intentionally does not turn those production-operational gaps into fake live behaviour.
+
+## Evidence sources
+
+Use together:
+
+- `TALKPOINT-MVP-SPEC.md`;
+- `VALIDATION-EVIDENCE-MATRIX.md`;
+- `UX-5-VALIDATION-STATUS.md`;
+- `MANUAL-ACCESSIBILITY-TEST-PROTOCOL.md`;
+- `UX-5-USABILITY-TEST-PLAN.md`;
+- `USABILITY-SESSION-RECORD-TEMPLATE.md`;
+- `SAFETY-CONTENT-VALIDATION-CHECKLIST.md`;
+- `PRIVACY-LEGAL-VALIDATION-CHECKLIST.md`;
+- `PROVIDER-VALIDATION-CHECKLIST.md`;
+- `ACADEMIC-CLOSURE-TEMPLATE.md`.
+
+## Release/claim rule
+
+Green CI supports the claim that the frozen controlled implementation has reproducible technical evidence.
+
+Do **not** call TalkPoint fully MVP-DONE or production-ready until the remaining external validation gates have actual evidence and the final academic Definition-of-Done decision is documented.
