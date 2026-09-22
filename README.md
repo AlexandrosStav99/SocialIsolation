@@ -1,24 +1,172 @@
 # TalkPoint
 
-University prototype for support navigation for adults aged 18–30. Product scope is frozen in [the MVP specification](docs/TALKPOINT-MVP-SPEC.md); phased delivery is defined in [the implementation plan](docs/IMPLEMENTATION-PLAN.md).
+**Support Navigation & User-Directed Referral Platform**
 
-The repository now contains the CI-verified controlled university MVP demonstration described in `docs/FINAL-MVP-READINESS.md`. It exercises the deterministic check-in, synthetic service discovery and a non-persistent fictional handoff into the provider workflow. It is not an operational support or emergency service and must use fictional input only.
+TalkPoint is a controlled university MVP for adults aged 18–30. It helps an anonymous user describe the kind of support they are looking for, discover relevant services through deterministic routing, and optionally make a provider-specific assisted contact request after an explicit Sharing Preview and consent step.
+
+TalkPoint is **not** a therapist, diagnostic system, emergency service, clinical recommender or production support platform.
+
+## MVP status
+
+**Product implementation:** complete for the controlled university demonstration.  
+**Technical verification:** full CI green on the production repository.  
+**External validation / academic closure:** still requires real human and domain evidence.  
+**Production readiness:** not claimed.
+
+The frozen product scope and claim boundary are defined in:
+
+- [`docs/TALKPOINT-MVP-SPEC.md`](docs/TALKPOINT-MVP-SPEC.md)
+- [`docs/FINAL-MVP-READINESS.md`](docs/FINAL-MVP-READINESS.md)
+- [`docs/VALIDATION-EVIDENCE-MATRIX.md`](docs/VALIDATION-EVIDENCE-MATRIX.md)
+
+## Core demonstrable journey
+
+```text
+Anonymous adult user
+→ 18+ confirmation
+→ conversational structured check-in
+→ Support Context
+→ safety navigation where relevant
+→ deterministic Service Discovery
+→ factual service explanations
+→ self-service OR assisted contact
+→ exact Sharing Preview
+→ provider-specific explicit consent
+→ controlled provider workflow boundary
+→ separate privacy-safe aggregate analytics
+```
+
+The user can also recover honestly from a no-exact-match result. TalkPoint does not fabricate a service match merely to complete the flow.
+
+## What is implemented
+
+- anonymous-first check-in with no account requirement;
+- Greek and English critical journey;
+- one primary topic plus optional related topics;
+- optional bounded free text with privacy guidance;
+- deterministic and explainable service discovery;
+- no-match recovery and broader-directory browsing;
+- persistent Help now / safety-navigation entry point;
+- exact Sharing Preview before assisted contact;
+- provider-specific explicit consent;
+- controlled fictional assisted-handoff path;
+- provider organisation, provider user, RBAC and queue foundations;
+- privacy-safe anonymous analytics boundaries;
+- mobile, keyboard, reduced-motion and accessibility regression coverage;
+- full automated CI across security, TypeScript, architecture, database, build and browser tests.
+
+## Architecture and data boundaries
+
+Technology baseline:
+
+- **Next.js**
+- **Payload CMS**
+- **PostgreSQL**
+- optional **OpenAI API** behind a server-side provider abstraction
+- deterministic fallback when AI is unavailable
+
+The implementation deliberately separates:
+
+1. **Ephemeral Conversation** - temporary anonymous navigation state.
+2. **Anonymous Analytics** - de-identified structured aggregate events.
+3. **Identifiable Contact Request** - created only after explicit assisted-contact choice and consent.
+4. **Consent Record** - separate provider-specific authorisation evidence.
+5. **Directory / Identity** - provider organisations, users, providers and services.
+
+Contact details are not part of the anonymous check-in and are not sent to the AI provider.
+
+## PostgreSQL / Payload directory
+
+The MVP uses a real PostgreSQL database integrated through Payload CMS.
+
+The controlled demo flow includes:
+
+- committed Payload migrations;
+- clean-database migration verification in CI;
+- an idempotent synthetic directory seed;
+- two fictional providers and two fictional services stored in Payload/PostgreSQL;
+- `/api/directory` reading the demonstration directory from Payload;
+- the public check-in consuming that API;
+- a clearly synthetic static fallback if the database is unavailable or empty;
+- browser regression evidence that CI serves the directory from `payload_postgres`.
+
+The synthetic dataset is intentionally small so the MVP demonstrates both an exact-match journey and an honest no-match journey.
+
+## Demo-data boundary
+
+Use **fictional information only**.
+
+The current MVP:
+
+- does not claim live provider partnerships;
+- does not send a real provider request;
+- uses fictional `.invalid` contact details in the controlled assisted-handoff path;
+- does not contain a complete Cyprus support-service directory;
+- does not claim legal, safeguarding or WCAG certification;
+- does not claim production readiness.
+
+Do not replace these boundaries with fake live behaviour for a demonstration.
 
 ## Local setup
 
-Use Node 24 (`nvm use`), then:
+Use Node 24:
 
 ```sh
+nvm use
 npm ci
 cp .env.example .env.local
 npm run dev
 ```
 
-No secrets are needed for the default prototype. `/dashboard` returns 404 by default. To preview synthetic dashboard visuals in a controlled environment, set the **server-only** `TALKPOINT_ENABLE_DEMO_DASHBOARD=true` and restart. This flag is not authentication: never enable it with real provider/request data. Organisation isolation is enforced by the Phase 7 domain layer. Real deployment authentication/session infrastructure is an explicit deployment gate and is not simulated by this dashboard flag.
+The UI can still demonstrate the synthetic fallback directory when PostgreSQL is not available.
 
-The optional `NEXT_PUBLIC_MAPBOX_TOKEN` is bundled into the browser at build time. Use only a restricted public Mapbox token with minimal read scopes and URL restrictions. A blank token shows a textual fallback and district totals without calling Mapbox. Enabling it contacts Mapbox for tiles/assets and is not a privacy guarantee. Never prefix API keys, database credentials or secret Mapbox tokens with `NEXT_PUBLIC_`. Keep local values in ignored `.env.local`; use your hosting secret manager for future server-only secrets. Commit only `.env.example` placeholders. Rotate any exposed credential before removing it from history.
+### Full Payload/PostgreSQL demo
+
+For the full database-backed demonstration, run PostgreSQL and configure the server-side values in `.env.local`, then apply the committed migration and seed the synthetic directory:
+
+```sh
+npm run payload -- migrate
+npm run seed:demo
+npm run dev
+```
+
+A successful full demo can be checked at:
+
+```text
+http://localhost:3000/api/directory
+```
+
+The JSON response should show:
+
+```json
+{
+  "label": "Demonstration Data",
+  "source": "payload_postgres"
+}
+```
+
+If the source is `synthetic_fallback`, the UI remains demonstrable but PostgreSQL is not currently serving the directory.
+
+### Synthetic dashboard preview
+
+`/dashboard` returns 404 by default. To preview the controlled synthetic dashboard visuals, set:
+
+```env
+TALKPOINT_ENABLE_DEMO_DASHBOARD=true
+```
+
+Restart the app after changing the flag. This flag is **not authentication** and must never be used as a substitute for real production identity/session controls.
+
+The optional `NEXT_PUBLIC_MAPBOX_TOKEN` is a public browser token. Leave it blank for the default offline-friendly demo unless a restricted Mapbox token is intentionally configured.
+
+## Demo and presentation material
+
+- [`docs/DEMO-VIDEO-INSTRUCTIONS.md`](docs/DEMO-VIDEO-INSTRUCTIONS.md) - recommended recording flow, exact demo scenarios, narration and pre-flight checks.
+- [`docs/PRESENTATION-GPT-BRIEF.md`](docs/PRESENTATION-GPT-BRIEF.md) - master prompt and evidence rules for generating an accurate TalkPoint academic presentation with GPT.
 
 ## Verification
+
+Core local verification:
 
 ```sh
 npm run audit
@@ -29,8 +177,34 @@ npx playwright install --with-deps chromium
 npm test
 ```
 
-Tests launch two production servers: the default deployment on 3100 and the explicitly enabled synthetic dashboard on 3101. Leave `NEXT_PUBLIC_MAPBOX_TOKEN` blank during build/tests. These tests do not contact real support providers.
+CI additionally verifies:
 
-CI runs all commands above with failure propagation, a zero-warning lint gate, strict TypeScript, and an all-severity dependency audit. Update packages through npm and commit the regenerated lockfile together with package.json. Do not hand-edit the lockfile, suppress advisories or bypass checks.
+- Phase 1–10 architecture and evidence invariants;
+- dependency security gate;
+- Payload runtime;
+- privacy persistence boundaries;
+- provider RBAC and consent hardening;
+- committed migration against clean PostgreSQL;
+- synthetic Payload directory seed;
+- live PostgreSQL round trip;
+- production build;
+- Playwright production regressions.
 
-See [final MVP readiness](docs/FINAL-MVP-READINESS.md) for the current implementation boundary and external deployment gates, plus the phase review documents for detailed evidence.
+Green CI is strong engineering evidence. It is not evidence of legal compliance, safeguarding approval, WCAG certification or real-user usability validation.
+
+## Validation still to execute
+
+The repository already contains protocols/templates for the remaining non-code evidence:
+
+- manual accessibility validation;
+- target-user usability sessions;
+- safeguarding/domain review;
+- privacy/legal review where required;
+- provider/data validation for any real pilot;
+- final academic evaluation and limitations synthesis.
+
+Do not fabricate completion rates, participant quotes, expert approvals, provider partnerships or real-world deployment evidence.
+
+## Repository guidance
+
+The frozen MVP specification is the source of truth. Product scope should not be reopened merely because further development is possible. Additional implementation is justified only by a concrete defect, a frozen-requirement failure or a material validation finding.
