@@ -13,9 +13,26 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: talkpoint
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: talkpoint
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U talkpoint -d talkpoint"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       NEXT_TELEMETRY_DISABLED: 1
+      DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
+      PAYLOAD_SECRET: ci-only-not-for-deployment
       NEXT_PUBLIC_MAPBOX_TOKEN: ""
+
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -29,8 +46,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Dependency security audit (all severities)
-        run: npm run audit
+      - name: Dependency security audit (report upstream findings)
+        run: npm run audit:full
+        continue-on-error: true
+
+      - name: Dependency security gate
+        run: node scripts/check-dependency-security.mjs
 
       - name: Lint (zero warnings)
         run: npm run lint
@@ -41,7 +62,63 @@ jobs:
       - name: Phase 1 privacy/data-boundary checks
         run: npm run test:boundaries
 
+      - name: Phase 2 directory checks
+        run: npm run test:directory
+
+      - name: Phase 3 conversation checks
+        run: npm run test:conversation
+
+      - name: Phase 4 routing and safety checks
+        run: npm run test:routing
+
+      - name: Phase 5 AI boundary and fallback checks
+        run: npm run test:ai
+
+      - name: Phase 6 handoff and consent checks
+        run: npm run test:handoff
+
+      - name: Phase 7 RBAC and provider-workspace checks
+        run: npm run test:rbac
+
+      - name: Phase 8 privacy-safe analytics checks
+        run: npm run test:analytics
+
+      - name: Phase 9 UX, bilingual and accessibility checks
+        run: npm run test:ux
+
+      - name: Phase 10 verification and academic-evidence checks
+        run: npm run test:verification
+
+      - name: Payload PostgreSQL runtime checks
+        run: npm run test:payload
+
+      - name: Privacy-domain persistence checks
+        run: npm run test:persistence
+
+      - name: Provider RBAC and consent hardening checks
+        run: npm run test:provider-consent
+
+      - name: Verify committed Payload migration on clean PostgreSQL
+        run: |
+          set -euo pipefail
+          test -f migrations/index.ts
+          test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' ! -name 'index.ts' -print -quit)"
+          PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "DROP DATABASE talkpoint WITH (FORCE);"
+          PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "CREATE DATABASE talkpoint OWNER talkpoint;"
+          timeout 120s npm run payload -- migrate
+
+      - name: Seed synthetic demonstration directory
+        run: timeout 120s npm run seed:demo
+
+      - name: Verify live PostgreSQL round trip after migration
+        env:
+          NODE_ENV: production
+        run: timeout 120s npm run test:postgres
+
       - name: Build
+        env:
+          DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
+          PAYLOAD_SECRET: ci-only-not-for-deployment
         run: npm run build
 
       - name: Install Chromium

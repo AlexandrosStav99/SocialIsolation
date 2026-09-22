@@ -1,0 +1,65 @@
+{
+  "status": "initial_checked_records",
+  "checkedAt": "2026-09-20",
+  "records": [
+    {
+      "id": "cy-sws-adult-social-intervention",
+      "provider": "Cyprus Social Welfare Services",
+      "providerType": "public_community",
+      "service": "Preventive / Social Intervention for Adults",
+      "topics": ["financial_basic_needs", "housing_living", "family_relationships", "social_connection"],
+      "coverage": ["nicosia", "limassol", "larnaca", "paphos", "famagusta"],
+      "languages": ["el"],
+      "deliveryModes": ["in_person", "phone"],
+      "eligibility": ["Adults; actual eligibility and appropriate office must be confirmed by the service"],
+      "contactChannels": ["District Social Welfare Offices"],
+      "informationSource": "https://www.gov.cy/dmsw-sws/documents/proliptiki-kai-koinoniki-paremvasi/",
+      "contactSource": "https://www.gov.cy/dmsw-sws/contact/",
+      "informationCheckedAt": "2026-09-20",
+      "immediateSupportCapable": false,
+      "integrated": false,
+      "notes": "Directory-only. No partnership implied."
+    },
+    {
+      "id": "cy-onek-career-guidance",
+      "provider": "Youth Board of Cyprus",
+      "providerType": "public_community",
+      "service": "Career Counseling and Career Management Services",
+      "topics": ["work_unemployment", "education_student"],
+      "coverage": ["nicosia", "limassol", "larnaca", "paphos", "famagusta", "online"],
+      "languages": ["el", "en"],
+      "deliveryModes": ["in_person", "online", "phone"],
+      "eligibility": ["Young people aged 14–35 according to the official service page"],
+      "contactChannels": ["National appointment telephone 80002757", "Online appointment"],
+      "availability": "Official page states telephone booking daily 07:30–15:00",
+      "informationSource": "https://onek.org.cy/en/programmata-ypiresies/symvouleftikes-ypiresies/ypiresia-kathodigisis-karieras/career-guidance-counselors/",
+      "informationCheckedAt": "2026-09-20",
+      "immediateSupportCapable": false,
+      "integrated": false,
+      "notes": "Directory-only. No partnership implied."
+    },
+    {
+      "id": "cy-ucy-student-welfare",
+      "provider": "University of Cyprus",
+      "providerType": "university_student",
+      "service": "Academic Affairs and Student Welfare Service",
+      "topics": ["education_student", "housing_living"],
+      "coverage": ["nicosia"],
+      "languages": ["el", "en"],
+      "deliveryModes": ["in_person"],
+      "eligibility": ["University of Cyprus student community; individual schemes may have additional criteria"],
+      "contactChannels": ["Official UCY Student Welfare website/helpdesk"],
+      "informationSource": "https://www.ucy.ac.cy/aasw/",
+      "informationCheckedAt": "2026-09-20",
+      "immediateSupportCapable": false,
+      "integrated": false,
+      "notes": "Directory-only. No partnership implied. Specific counselling eligibility/contact should be separately checked before surfacing it as a distinct service."
+    }
+  ],
+  "rules": [
+    "Do not infer partnerships.",
+    "Information checked means source/currency checking, not provider quality accreditation.",
+    "Re-check eligibility, coverage, contact channels and availability before publication or after material source changes.",
+    "Immediate-support records require the separate safety/domain-expert validation gate."
+  ]
+}
