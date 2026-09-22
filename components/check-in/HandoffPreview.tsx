@@ -67,8 +67,8 @@ export default function HandoffPreview({
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted">
             {en
-              ? "Review this before choosing whether to run the controlled assisted-handoff demo. Exploring TalkPoint stays anonymous; this action does not retroactively identify or share your anonymous check-in."
-              : "Δες τα παρακάτω πριν επιλέξεις αν θα εκτελέσεις την ελεγχόμενη επίδειξη υποβοηθούμενης παραπομπής. Η εξερεύνηση στο TalkPoint παραμένει ανώνυμη· αυτή η ενέργεια δεν ταυτοποιεί αναδρομικά ούτε κοινοποιεί το ανώνυμο check-in σου."}
+              ? "Review this before choosing whether to run the controlled assisted-handoff demo. Your anonymous session is not identified or linked to the fictional request; only the structured items listed below are copied into it."
+              : "Δες τα παρακάτω πριν επιλέξεις αν θα εκτελέσεις την ελεγχόμενη επίδειξη υποβοηθούμενης παραπομπής. Η ανώνυμη συνεδρία σου δεν ταυτοποιείται ούτε συνδέεται με το φανταστικό αίτημα· αντιγράφονται μόνο τα δομημένα στοιχεία που αναφέρονται παρακάτω."}
           </p>
         </div>
       </div>
