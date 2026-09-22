@@ -8,14 +8,16 @@ import Footer from "@/components/Footer";
 
 export default function HomePage() {
   return (
-    <main className="bg-warm-bg">
+    <>
       <Navbar />
-      <HeroSection />
-      <HowItWorks />
-      <PrivacySection />
-      <ForNGOs />
-      <CTASection />
+      <main className="bg-warm-bg">
+        <HeroSection />
+        <HowItWorks />
+        <PrivacySection />
+        <ForNGOs />
+        <CTASection />
+      </main>
       <Footer />
-    </main>
+    </>
   );
 }

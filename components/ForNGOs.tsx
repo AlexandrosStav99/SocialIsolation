@@ -26,7 +26,7 @@ const features = [
 export default function ForNGOs() {
   return (
     <section id="for-ngos" className="relative overflow-hidden bg-surface px-6 py-24 lg:px-16">
-      <div aria-hidden className="pointer-events-none absolute right-0 top-0 h-[420px] w-[420px] rounded-full blur-3xl" style={{ background: "#2F6F6814" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute right-0 top-0 h-[420px] w-[420px] rounded-full blur-3xl" style={{ background: "#2F6F6814" }} />
 
       <div className="relative mx-auto max-w-6xl">
         <div className="mb-8 inline-flex items-center rounded-full border border-border bg-warm-bg px-4 py-2">
@@ -46,21 +46,24 @@ export default function ForNGOs() {
             <p className="text-base leading-relaxed text-muted">
               TalkPoint explores how support organisations could receive clearer, user-directed requests while learning from privacy-safe aggregate patterns in unmet and emerging support needs.
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-sage">
+            <p className="mt-3 text-sm leading-relaxed text-muted">
               The current university MVP uses demonstration data and sends no real contact requests.
             </p>
-            <a href="mailto:hello@talkpoint.cy" className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90">
+            <a
+              href="mailto:hello@talkpoint.cy"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            >
               Contact TalkPoint
-              <ArrowUpRight size={15} />
+              <ArrowUpRight size={15} aria-hidden="true" />
             </a>
           </div>
         </div>
 
         <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[2rem] border border-border bg-warm-bg p-6 shadow-sm">
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex items-center justify-between gap-4">
               <p className="text-sm font-semibold text-text">Example demand overview</p>
-              <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-sage">Illustrative data</span>
+              <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-muted">Illustrative data</span>
             </div>
 
             <div className="space-y-5">
@@ -74,7 +77,7 @@ export default function ForNGOs() {
                     <span className="text-muted">{item.label}</span>
                     <span className="font-semibold text-teal">{item.value}</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-surface">
+                  <div className="h-2 overflow-hidden rounded-full bg-surface" aria-hidden="true">
                     <div className="h-full rounded-full bg-teal" style={{ width: item.value }} />
                   </div>
                 </div>
@@ -89,14 +92,14 @@ export default function ForNGOs() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {features.map((f) => (
-              <div key={f.n} className="group rounded-[1.5rem] border border-border bg-warm-bg p-6 transition duration-300 hover:-translate-y-1 hover:shadow-sm">
+            {features.map((feature) => (
+              <div key={feature.n} className="group rounded-[1.5rem] border border-border bg-warm-bg p-6 transition duration-300 hover:-translate-y-1 hover:shadow-sm">
                 <div className="mb-8 flex items-center justify-between">
-                  <span className="text-xs font-bold text-teal opacity-60">{f.n}</span>
-                  <span className="h-2 w-2 rounded-full bg-teal opacity-40 transition group-hover:opacity-100" />
+                  <span className="text-xs font-bold text-teal opacity-70">{feature.n}</span>
+                  <span className="h-2 w-2 rounded-full bg-teal opacity-50 transition group-hover:opacity-100" aria-hidden="true" />
                 </div>
-                <h3 className="mb-3 text-base font-bold tracking-tight text-text">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{f.desc}</p>
+                <h3 className="mb-3 text-base font-bold tracking-tight text-text">{feature.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{feature.desc}</p>
               </div>
             ))}
           </div>

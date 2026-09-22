@@ -11,6 +11,7 @@ type HandoffPreviewProps = {
   secondaryTopics: string[];
   serviceArea: string;
   consentAccepted: boolean;
+  submitting: boolean;
   onConsentChange: (accepted: boolean) => void;
   onConfirm: () => void;
   onCancel: () => void;
@@ -24,6 +25,7 @@ export default function HandoffPreview({
   secondaryTopics,
   serviceArea,
   consentAccepted,
+  submitting,
   onConsentChange,
   onConfirm,
   onCancel,
@@ -32,7 +34,7 @@ export default function HandoffPreview({
   const primaryAction =
     "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45";
   const secondaryAction =
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text transition hover:border-sage hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2";
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text transition hover:border-sage hover:bg-warm-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45";
 
   const sharedItems = [
     en ? "Fictional demo email: fictional-user@example.invalid" : "Φανταστικό email επίδειξης: fictional-user@example.invalid",
@@ -57,6 +59,7 @@ export default function HandoffPreview({
   return (
     <section
       aria-labelledby="sharing-preview-heading"
+      aria-busy={submitting}
       className="mt-4 rounded-2xl border border-border bg-warm-bg/60 p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
@@ -130,6 +133,7 @@ export default function HandoffPreview({
           type="checkbox"
           className="mt-0.5 h-4 w-4 shrink-0 accent-teal"
           checked={consentAccepted}
+          disabled={submitting}
           onChange={(event) => onConsentChange(event.target.checked)}
         />
         <span>
@@ -140,11 +144,17 @@ export default function HandoffPreview({
       </label>
 
       <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
-        <button type="button" className={secondaryAction} onClick={onCancel}>
+        <button type="button" className={secondaryAction} disabled={submitting} onClick={onCancel}>
           {en ? "Cancel and keep exploring" : "Ακύρωση και συνέχιση εξερεύνησης"}
         </button>
-        <button type="button" className={primaryAction} disabled={!consentAccepted} onClick={onConfirm}>
-          {en ? "Confirm and run demo" : "Επιβεβαίωση και εκτέλεση επίδειξης"}
+        <button type="button" className={primaryAction} disabled={!consentAccepted || submitting} onClick={onConfirm}>
+          {submitting
+            ? en
+              ? "Running demo…"
+              : "Εκτέλεση επίδειξης…"
+            : en
+              ? "Confirm and run demo"
+              : "Επιβεβαίωση και εκτέλεση επίδειξης"}
         </button>
       </div>
     </section>

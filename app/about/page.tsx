@@ -11,17 +11,19 @@ import Footer from "@/components/Footer";
 
 export default function AboutPage() {
   return (
-    <main className="bg-warm-bg">
+    <>
       <Navbar />
-      <AboutHero />
-      <AboutMission/>
-      <AboutWhy/>
-      <AboutValue/>
-      <AboutHowItWorks/>
-      <AboutPrivacy/>
-      <AboutThread/>
-      <AboutCTA/>
-      <Footer/>
-    </main>
+      <main className="bg-warm-bg">
+        <AboutHero />
+        <AboutMission />
+        <AboutWhy />
+        <AboutValue />
+        <AboutHowItWorks />
+        <AboutPrivacy />
+        <AboutThread />
+        <AboutCTA />
+      </main>
+      <Footer />
+    </>
   );
 }
