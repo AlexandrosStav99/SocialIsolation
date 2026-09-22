@@ -3,18 +3,18 @@ import { ArrowDownRight } from "lucide-react";
 const steps = [
   {
     n: "01",
-    title: "Share how you feel",
-    desc: "Choose broad support topics without creating an account. Use fictional text only in this university demonstration.",
+    title: "Start with what feels relevant",
+    desc: "You do not need to know what kind of service you need. Choose the broad topics that feel closest to what is going on for you.",
   },
   {
     n: "02",
-    title: "Explore support services",
-    desc: "The demonstration now uses deterministic rules with synthetic service records to show how structured choices drive service discovery.",
+    title: "See support that may fit",
+    desc: "TalkPoint uses your structured choices to surface relevant demonstration services and explain why they may be useful to explore.",
   },
   {
     n: "03",
-    title: "Connect when you're ready",
-    desc: "The consent and handoff domain flow is implemented and tested, but this public demonstration sends no real contact requests.",
+    title: "Choose your next step",
+    desc: "Explore without an account. An identifiable contact step only begins if you actively choose it; real contact requests are disabled in this demonstration.",
   },
 ];
 
@@ -23,75 +23,45 @@ export default function HowItWorks() {
     <section id="how-it-works" className="bg-warm-bg px-6 py-24 lg:px-16">
       <div className="mx-auto max-w-6xl">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-[0.85fr_1.15fr]">
-          {/* Sticky intro */}
           <div className="lg:sticky lg:top-24 lg:h-fit">
-            <p className="mb-8 text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-              Demonstration journey
-            </p>
-
+            <p className="mb-8 text-xs font-semibold uppercase tracking-[0.22em] text-teal">How it works</p>
             <h2 className="max-w-xl text-[clamp(2.6rem,5vw,5.6rem)] font-bold leading-[0.96] tracking-tight text-text">
-              A calm path
+              A clearer path
               <br />
-              from feeling
+              to the right
               <br />
-              to support.
+              next step.
             </h2>
-
             <p className="mt-8 max-w-sm text-base leading-relaxed text-muted">
-              No pressure. No rushed decisions. Just a simple flow that helps
-              you understand what you need and what support is available.
+              You do not have to arrive with the answer. TalkPoint helps you move from uncertainty to relevant support options at your own pace.
             </p>
-
             <div className="mt-10 flex h-12 w-12 items-center justify-center rounded-full border border-border text-teal">
               <ArrowDownRight size={18} />
             </div>
           </div>
 
-          {/* Steps */}
           <div className="relative">
-            {/* Vertical thread */}
-            <div
-              aria-hidden
-              className="absolute left-[18px] top-3 hidden h-[calc(100%-24px)] w-px bg-border sm:block"
-            />
-
+            <div aria-hidden className="absolute left-[18px] top-3 hidden h-[calc(100%-24px)] w-px bg-border sm:block" />
             <div className="space-y-4">
               {steps.map((step, i) => (
-                <article
-                  key={step.n}
-                  className="relative grid grid-cols-1 gap-6 border-t border-border py-12 sm:grid-cols-[64px_1fr]"
-                >
+                <article key={step.n} className="relative grid grid-cols-1 gap-6 border-t border-border py-12 sm:grid-cols-[64px_1fr]">
                   <div className="relative z-10 flex items-start">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-warm-bg text-xs font-bold text-teal">
-                      {step.n}
-                    </span>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-warm-bg text-xs font-bold text-teal">{step.n}</span>
                   </div>
-
                   <div className="max-w-2xl">
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-sage">
-                      Step {i + 1}
-                    </p>
-
-                    <h3 className="text-[clamp(1.8rem,3vw,3rem)] font-bold leading-[1.05] tracking-tight text-text">
-                      {step.title}
-                    </h3>
-
-                    <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">
-                      {step.desc}
-                    </p>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-sage">Step {i + 1}</p>
+                    <h3 className="text-[clamp(1.8rem,3vw,3rem)] font-bold leading-[1.05] tracking-tight text-text">{step.title}</h3>
+                    <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">{step.desc}</p>
                   </div>
                 </article>
               ))}
             </div>
 
-            {/* Closing privacy note */}
             <div className="mt-8 border-y border-border py-8">
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-[160px_1fr] sm:items-start">
-                <p className="text-sm font-bold text-text">Safe first.</p>
-
+                <p className="text-sm font-bold text-text">About this demo</p>
                 <p className="max-w-2xl text-sm leading-relaxed text-muted">
-                  Privacy, consent and data boundaries require implementation and validation.
-                  Do not enter personal information into this demonstration.
+                  TalkPoint is currently a university MVP using demonstration service data. Please use fictional text only. It is not therapy, a clinical assessment or an emergency service.
                 </p>
               </div>
             </div>
