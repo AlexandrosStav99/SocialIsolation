@@ -230,7 +230,7 @@ test("help-now action is honest, accessible and does not destroy check-in progre
   await expect(page.getByText("Safety route: immediate_support")).toBeAttached();
 
   await page.getByRole("button", { name: "Continue with the check-in" }).click();
-  await expect(page.getByText("Safety route: normal_navigation")).toBeAttached();
+  await expect(page.getByText("Safety route: standard")).toBeAttached();
   await expect(page.getByRole("heading", { name: "Is there anything else connected to this?" })).toBeVisible();
 });
 
