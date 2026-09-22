@@ -3,78 +3,64 @@ import { ArrowUpRight } from "lucide-react";
 const features = [
   {
     n: "01",
-    title: "Structured intake requests",
-    desc: "Implemented domain workflow for consented contact requests with controlled support-topic summaries; no real requests are sent by the public demo.",
+    title: "Consented contact requests",
+    desc: "A structured foundation for user-directed requests that shares controlled information only after the required consent step.",
   },
   {
     n: "02",
-    title: "Demand analytics",
-    desc: "Thresholded aggregate analytics foundations for support topics and trends, using demonstration data in the university MVP.",
+    title: "Understand support demand",
+    desc: "Privacy-safe aggregate foundations can help reveal which support topics people are looking for without exposing individual journeys.",
   },
   {
     n: "03",
-    title: "Regional insights",
-    desc: "District-level aggregate foundations with minimum-sample suppression and no individual locations.",
+    title: "See regional patterns",
+    desc: "District-level aggregate foundations use minimum-sample suppression rather than individual user locations.",
   },
   {
     n: "04",
-    title: "Request management",
-    desc: "Implemented provider workflow foundations for assigning and updating consented demo contact requests.",
+    title: "Manage incoming requests",
+    desc: "Provider workflow foundations support assigning and updating consented demonstration contact requests.",
   },
 ];
 
 export default function ForNGOs() {
   return (
     <section id="for-ngos" className="relative overflow-hidden bg-surface px-6 py-24 lg:px-16">
-      {/* Soft background detail */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-0 top-0 h-[420px] w-[420px] rounded-full blur-3xl"
-        style={{ background: "#2F6F6814" }}
-      />
+      <div aria-hidden className="pointer-events-none absolute right-0 top-0 h-[420px] w-[420px] rounded-full blur-3xl" style={{ background: "#2F6F6814" }} />
 
       <div className="relative mx-auto max-w-6xl">
-        {/* Eyebrow */}
         <div className="mb-8 inline-flex items-center rounded-full border border-border bg-warm-bg px-4 py-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">
-            For support organizations
-          </span>
+          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-teal">For support organisations</span>
         </div>
 
-        {/* Header */}
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <h2 className="max-w-3xl text-[clamp(2.4rem,5vw,5rem)] font-bold leading-[0.98] tracking-tight text-text">
-            Better visibility
+            Help people find you.
             <br />
-            into the needs
+            Understand what
             <br />
-            you serve.
+            they need.
           </h2>
 
           <div className="max-w-xl lg:pb-2">
             <p className="text-base leading-relaxed text-muted">
-              The university MVP is designed to demonstrate how NGOs, universities, and community services could receive user-directed requests and view aggregate support-topic trends.
+              TalkPoint explores how support organisations could receive clearer, user-directed requests while learning from privacy-safe aggregate patterns in unmet and emerging support needs.
             </p>
-
-            <a
-              href="mailto:hello@talkpoint.cy"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-            >
+            <p className="mt-3 text-sm leading-relaxed text-sage">
+              The current university MVP uses demonstration data and sends no real contact requests.
+            </p>
+            <a href="mailto:hello@talkpoint.cy" className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90">
               Contact TalkPoint
               <ArrowUpRight size={15} />
             </a>
           </div>
         </div>
 
-        {/* Main content */}
         <div className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          {/* Insight panel */}
           <div className="rounded-[2rem] border border-border bg-warm-bg p-6 shadow-sm">
             <div className="mb-8 flex items-center justify-between">
-              <p className="text-sm font-semibold text-text">Demand overview</p>
-              <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-sage">
-                Demonstration Data
-              </span>
+              <p className="text-sm font-semibold text-text">Example demand overview</p>
+              <span className="rounded-full bg-surface px-3 py-1 text-xs font-medium text-sage">Illustrative data</span>
             </div>
 
             <div className="space-y-5">
@@ -82,17 +68,14 @@ export default function ForNGOs() {
                 { label: "Emotional support", value: "72%" },
                 { label: "Social connection", value: "54%" },
                 { label: "Academic stress", value: "38%" },
-              ].map((item, i) => (
-                <div key={i}>
+              ].map((item) => (
+                <div key={item.label}>
                   <div className="mb-2 flex items-center justify-between text-xs">
                     <span className="text-muted">{item.label}</span>
                     <span className="font-semibold text-teal">{item.value}</span>
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-surface">
-                    <div
-                      className="h-full rounded-full bg-teal"
-                      style={{ width: item.value }}
-                    />
+                    <div className="h-full rounded-full bg-teal" style={{ width: item.value }} />
                   </div>
                 </div>
               ))}
@@ -100,32 +83,20 @@ export default function ForNGOs() {
 
             <div className="mt-8 rounded-2xl border border-border bg-surface p-4">
               <p className="text-xs leading-relaxed text-muted">
-                Illustrative values only. The MVP analytics layer uses thresholded aggregates and does not plot individual users.
+                Illustrative values only. The MVP analytics foundation uses thresholded aggregates and does not plot individual users.
               </p>
             </div>
           </div>
 
-          {/* Features */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {features.map((f) => (
-              <div
-                key={f.n}
-                className="group rounded-[1.5rem] border border-border bg-warm-bg p-6 transition duration-300 hover:-translate-y-1 hover:shadow-sm"
-              >
+              <div key={f.n} className="group rounded-[1.5rem] border border-border bg-warm-bg p-6 transition duration-300 hover:-translate-y-1 hover:shadow-sm">
                 <div className="mb-8 flex items-center justify-between">
-                  <span className="text-xs font-bold text-teal opacity-60">
-                    {f.n}
-                  </span>
+                  <span className="text-xs font-bold text-teal opacity-60">{f.n}</span>
                   <span className="h-2 w-2 rounded-full bg-teal opacity-40 transition group-hover:opacity-100" />
                 </div>
-
-                <h3 className="mb-3 text-base font-bold tracking-tight text-text">
-                  {f.title}
-                </h3>
-
-                <p className="text-sm leading-relaxed text-muted">
-                  {f.desc}
-                </p>
+                <h3 className="mb-3 text-base font-bold tracking-tight text-text">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-muted">{f.desc}</p>
               </div>
             ))}
           </div>
