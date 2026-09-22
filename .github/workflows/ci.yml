@@ -92,31 +92,11 @@ jobs:
       - name: Provider RBAC and consent hardening checks
         run: npm run test:provider-consent
 
-      - name: Generate initial Payload migration artifact
-        env:
-          NODE_ENV: development
-          NODE_OPTIONS: --experimental-transform-types
+      - name: Verify committed Payload migration on clean PostgreSQL
         run: |
-          timeout 120s npm run payload -- migrate:create initial_runtime_schema
+          set -euo pipefail
+          test -f migrations/index.ts
           test -n "$(find migrations -maxdepth 1 -type f -name '*.ts' ! -name 'index.ts' -print -quit)"
-          # Temporary compatibility normalization until the generated migration is
-          # reviewed and committed as the repository's initial Payload migration.
-          for migration in migrations/*.ts; do
-            [ "$(basename "$migration")" = "index.ts" ] && continue
-            sed -i "s/import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms\/db-postgres'/import { sql } from '@payloadcms\/db-postgres'\\nimport type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms\/db-postgres'/" "$migration"
-          done
-          echo "Generated migration files:"
-          find migrations -maxdepth 1 -type f -print
-
-      - name: Upload generated Payload migration artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: payload-initial-migration
-          path: migrations/
-          if-no-files-found: error
-
-      - name: Verify generated migration on clean PostgreSQL
-        run: |
           PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "DROP DATABASE talkpoint WITH (FORCE);"
           PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "CREATE DATABASE talkpoint OWNER talkpoint;"
           timeout 120s npm run payload -- migrate
