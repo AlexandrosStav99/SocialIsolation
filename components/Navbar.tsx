@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
@@ -13,308 +13,103 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-
   const [open, setOpen] = useState(false);
-  const [hideLinks, setHideLinks] = useState(false);
-
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (!open) return;
 
-    const handleScroll = () => {
-
-      setHideLinks(true);
-
-      clearTimeout(timer);
-
-      timer = setTimeout(() => {
-        setHideLinks(false);
-      }, 400);
-
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        requestAnimationFrame(() => toggleRef.current?.focus());
+      }
     };
 
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
-    window.addEventListener("scroll", handleScroll);
-
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(timer);
-    };
-
-  }, []);
-
-
+  const focusRing =
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg";
 
   return (
-    <header
-      className="
-      sticky 
-      top-0 
-      z-[999]
-      w-full
-
-      bg-warm-bg/90
-      backdrop-blur-xl
-
-      border-b 
-      border-border
-      shadow-sm
-      "
-    >
-
-      <div
-        className="
-        mx-auto
-        flex
-        max-w-6xl
-        items-center
-        justify-between
-        px-5
-        py-3
-        "
-      >
-
-
-        {/* Logo */}
-        <Link 
-          href="/" 
-          className="flex items-center gap-3"
-        >
-
+    <header className="sticky top-0 z-[999] w-full border-b border-border bg-warm-bg/90 shadow-sm backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
+        <Link href="/" className={`flex items-center gap-3 rounded-lg ${focusRing}`}>
           <Image
             src="/Logo.svg"
-            alt="TalkPoint Logo"
+            alt=""
             width={90}
             height={60}
-            style={{scale: 1.5}}
+            style={{ scale: 1.5 }}
           />
-
-
-          <span
-            className="
-            text-base
-            font-semibold
-            tracking-tight
-            text-text
-            "
-            style={{scale: 1.5}}
-          >
-            Talk
-            <span className="text-teal">
-              Point
-            </span>
+          <span className="text-base font-semibold tracking-tight text-text" style={{ scale: 1.5 }}>
+            Talk<span className="text-teal">Point</span>
           </span>
-
         </Link>
 
-
-
-        {/* Desktop links */}
-        <nav
-          className={`
-          hidden
-          items-center
-          gap-7
-          md:flex
-
-          transition-all
-          duration-300
-
-          ${
-            hideLinks
-              ? "opacity-0 -translate-y-3 pointer-events-none"
-              : "opacity-100 translate-y-0"
-          }
-          `}
-        >
-
-          {navLinks.map((l) => (
-
+        <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
+          {navLinks.map((link) => (
             <Link
-              key={l.href}
-              href={l.href}
-              className="
-              text-sm
-              text-muted
-              transition
-              hover:text-text
-              "
+              key={link.href}
+              href={link.href}
+              className={`rounded-lg px-1 py-2 text-sm text-muted transition hover:text-text ${focusRing}`}
             >
-
-              {l.label}
-
+              {link.label}
             </Link>
-
           ))}
-
         </nav>
 
-
-
-
-        {/* CTA */}
-        <div
-          className="
-          hidden
-          md:flex
-          items-center
-          gap-3
-          "
-        >
-
+        <div className="hidden items-center gap-3 md:flex">
           <Link
             href="/check-in"
-            className="
-            rounded-xl
-            bg-teal
-            px-5
-            py-2.5
-
-            text-sm
-            font-semibold
-            text-white
-
-            transition
-            hover:opacity-90
-            "
+            className={`rounded-xl bg-teal px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 ${focusRing}`}
           >
-
-            View demo
-
+            Start the check-in
           </Link>
-
         </div>
 
-
-
-
-        {/* Mobile menu button */}
         <button
-          className="
-          flex
-          md:hidden
-          items-center
-          justify-center
-
-          rounded-lg
-          p-2
-
-          transition
-          hover:bg-black/5
-          "
-
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
+          ref={toggleRef}
+          type="button"
+          className={`flex min-h-11 min-w-11 items-center justify-center rounded-lg transition hover:bg-black/5 md:hidden ${focusRing}`}
+          onClick={() => setOpen((current) => !current)}
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-primary-navigation"
         >
-
-          {
-            open
-
-            ? <X 
-                size={20} 
-                className="text-text" 
-              />
-
-            : <Menu 
-                size={20} 
-                className="text-text" 
-              />
-          }
-
+          {open ? <X size={20} className="text-text" aria-hidden="true" /> : <Menu size={20} className="text-text" aria-hidden="true" />}
         </button>
-
       </div>
 
-
-
-
-
-      {/* Mobile menu */}
       {open && (
-
-        <div
-          className="
-          border-t
-          border-border
-          bg-warm-bg
-
-          md:hidden
-          "
+        <nav
+          id="mobile-primary-navigation"
+          aria-label="Mobile primary"
+          className="border-t border-border bg-warm-bg md:hidden"
         >
-
-          <div
-            className="
-            flex
-            flex-col
-            gap-1
-
-            px-5
-            py-4
-            "
-          >
-
-            {navLinks.map((l) => (
-
+          <div className="flex flex-col gap-1 px-5 py-4">
+            {navLinks.map((link) => (
               <Link
-                key={l.href}
-                href={l.href}
+                key={link.href}
+                href={link.href}
                 onClick={() => setOpen(false)}
-
-                className="
-                rounded-lg
-                px-3
-                py-2.5
-
-                text-sm
-                text-text
-
-                transition
-                hover:bg-black/5
-                "
+                className={`min-h-11 rounded-lg px-3 py-2.5 text-sm text-text transition hover:bg-black/5 ${focusRing}`}
               >
-
-                {l.label}
-
+                {link.label}
               </Link>
-
             ))}
-
-
             <Link
               href="/check-in"
-
               onClick={() => setOpen(false)}
-
-              className="
-              mt-2
-
-              rounded-xl
-              bg-teal
-
-              px-5
-              py-3
-
-              text-center
-              text-sm
-              font-semibold
-              text-white
-
-              transition
-              hover:opacity-90
-              "
+              className={`mt-2 min-h-12 rounded-xl bg-teal px-5 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90 ${focusRing}`}
             >
-
-              View demo
-
+              Start the check-in
             </Link>
-
           </div>
-
-        </div>
-
+        </nav>
       )}
-
     </header>
   );
 }
