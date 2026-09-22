@@ -9,7 +9,7 @@ export const demoProviders: ProviderDirectoryRecord[] = [
   {
     id: "demo-community-provider",
     name: "Demonstration Community Service",
-    type: "public_community",
+    type: "ngo_nonprofit",
     information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
   {
@@ -30,8 +30,8 @@ export const demoServices: ServiceDirectoryRecord[] = [
     languages: ["el", "en"],
     deliveryModes: ["online", "phone"],
     eligibility: ["Adults 18–30 for demonstration purposes"],
-    contactChannels: ["Demo contact channel"],
-    availability: "Demonstration hours only",
+    contactChannels: ["Demo NGO contact channel"],
+    availability: "Demonstration NGO support hours only",
     immediateSupportCapable: false,
     integrated: true,
     information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
