@@ -1,11 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-async function expectNoHorizontalOverflow(page: Parameters<typeof test>[0] extends never ? never : any) {
+async function expectNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 }
 
-async function reachCommunityResults(page: any) {
+async function reachCommunityResults(page: Page) {
   await page.goto("/check-in");
   await page.getByRole("button", { name: "Yes, I’m 18 or over" }).click();
   await page.getByRole("button", { name: "Loneliness & Social Connection" }).click();
