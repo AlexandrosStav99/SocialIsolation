@@ -3,8 +3,9 @@
 Last updated: 2026-09-22
 Repository: `AlexandrosStav99/SocialIsolation`
 Current continuation branch: `main`
-UX-2 merge commit: `18c831b24935786928eafc256539e9585cb8a5b8`
-Post-merge CI: run #125, **green**
+Latest completed UX stage: UX-3
+UX-3 merge commit: `533ae587caf4594266e4e83b4b726ed2d413edc8`
+Post-merge CI: run #128, **green**
 
 ## Read this first
 
@@ -15,13 +16,16 @@ This is the operational continuation document for TalkPoint. Before changing pro
 3. `docs/IMPLEMENTATION-PLAN.md`
 4. `docs/PHASE-0-REVIEW.md`
 5. `components/check-in/IntegratedCheckIn.tsx`
-6. `lib/routing/discovery.ts`
-7. `lib/routing/types.ts`
-8. `lib/directory/contracts.ts`
-9. `data/demo-directory.ts`
-10. `tests/baseline.spec.ts`
+6. `lib/handoff/types.ts`
+7. `lib/handoff/preview.ts`
+8. `lib/handoff/create-request.ts`
+9. `app/api/demo-handoff/route.ts`
+10. `lib/safety/router.ts`
+11. `lib/safety/content.ts`
+12. `lib/safety/validated-matrix.ts`
+13. `tests/baseline.spec.ts`
 
-Do not redesign the product from assumptions. The core architecture, privacy domains and production-hardening work are already established and should be reused unless a real defect requires change.
+Do not redesign the product from assumptions. The core architecture, privacy domains, deterministic routing and production-hardening work are established and should be reused unless a real defect requires change.
 
 ## Product boundary
 
@@ -57,7 +61,7 @@ Do not weaken these:
 
 **COMPLETE AND MERGED.** PR #22.
 
-Locked the product proposition, boundaries, human/non-clinical interaction principle, deterministic explainable matching, no-dead-end requirement, privacy/consent contract, safety validation boundary, accessibility baseline and explicit out-of-scope list.
+Locked proposition, boundaries, human/non-clinical interaction, deterministic explainable matching, no-dead-end recovery, privacy/consent expectations, safety validation boundary, accessibility baseline and out-of-scope features.
 
 Primary file: `docs/PRODUCT-UX-CONTRACT.md`.
 
@@ -67,134 +71,152 @@ Primary file: `docs/PRODUCT-UX-CONTRACT.md`.
 
 Merge commit: `957697d2e5aee66a6f40ac270c98ab8b9958ec1c`.
 
-Implemented clear support-navigation positioning, `Start the check-in` CTA hierarchy, understandable privacy language, honest university-demo disclosure, user-journey-focused How It Works and sharper provider positioning.
-
-Important lesson: intentional UI copy changes require Playwright selectors to be updated on the active PR branch.
+Implemented clear support-navigation positioning, `Start the check-in` CTA hierarchy, understandable privacy language, honest university-demo disclosure, user-journey-focused How It Works and provider positioning.
 
 ## UX-2 — Human Check-in
 
 **COMPLETE, CI GREEN, MERGED.** PR #24.
 
-Final PR head: `f8a206cb4d49e656c7072d5c300a50acf19ca2aa`.
 Merge commit: `18c831b24935786928eafc256539e9585cb8a5b8`.
 PR CI #124: **success**.
-Post-merge `main` CI #125: **success**.
+Post-merge CI #125: **success**.
 
 Implemented:
 
-- calmer guided interaction without chatbot/therapist theatre;
-- plain EN/EL non-clinical prompts;
+- calm guided EN/EL interaction without chatbot/therapist theatre;
 - non-numeric progress/context cues;
-- improved primary/secondary selection hierarchy;
-- deliberate Continue / Skip behaviour;
+- improved selection hierarchy and Continue / Skip behaviour;
 - Back navigation;
-- language switching without restarting the check-in;
-- removal of the meaningless visible preferences step while preserving the internal deterministic state;
-- explicit optional-context privacy guidance and character feedback;
-- clearing of the local optional-text copy when the check-in ends/completes;
-- visual alignment with the existing TalkPoint design tokens and UX-1 direction.
+- language switching without restarting;
+- removal of the valueless visible preferences step while preserving the deterministic internal state;
+- explicit optional-context privacy guidance;
+- clearing local optional text when the check-in ends/completes.
 
 The deterministic conversation engine, discovery logic, privacy domains, consent boundary, handoff architecture, Payload/PostgreSQL and migrations were not redesigned.
 
-CI note: an earlier red PR browser run was caused by a stale accessibility selector using the pre-UX-2 age-gate label. The selector was corrected to the intentional new copy while preserving keyboard focus/Enter behaviour. No test requirement was bypassed.
+## UX-3 — Review, Matching & Recovery
+
+**COMPLETE, CI GREEN, MERGED.** PR #25.
+
+Final PR head: `2454bf037e5342138ee6f42c4e4793c14d923d59`.
+Merge commit: `533ae587caf4594266e4e83b4b726ed2d413edc8`.
+PR CI #127: **success**.
+Post-merge `main` CI #128: **success**.
+
+Implemented:
+
+- richer review showing main topic, related topics and support area;
+- direct edit paths for routing inputs without a full restart;
+- optional-context status without displaying the private text;
+- bilingual deterministic `Why this may fit` explanations from actual service metadata;
+- provider/service hierarchy, supported topics, coverage, delivery modes, languages, eligibility/access and availability where data exists;
+- removal of misleading language that implied the UI language was an explicitly selected support-language preference;
+- no-exact-match recovery that preserves selections;
+- broader directory browsing clearly labelled as **not an exact match** rather than fabricating a match;
+- restart kept secondary.
+
+Explicitly unchanged:
+
+- deterministic discovery algorithm and `MAX_RESULTS` behaviour;
+- synthetic directory contents;
+- four-domain privacy architecture;
+- anonymous/identifiable separation;
+- consent/handoff API architecture;
+- safety routing;
+- Payload/PostgreSQL/migrations.
 
 ---
 
-# ACTIVE STAGE — UX-3: Review, Matching & Recovery
+# ACTIVE STAGE — UX-4: Trust, Consent & Safety
 
 ## Goal
 
-Make the review step prove what TalkPoint understood, make service results explainable using actual deterministic directory attributes, and replace the current no-match dead end with transparent recovery options supported by the existing data/routing model.
+Make the anonymous-to-identifiable boundary understandable, make the Sharing Preview genuinely useful before consent, preserve user control, and document the production safety-content validation gate without inventing crisis capability or resources.
 
 ## Current audit
 
-The merged UX-2 flow is strong enough to build on. The main remaining weaknesses are after the check-in:
+The architecture is already strong and should **not** be rebuilt:
 
-1. **Review is too thin.** It currently shows only main topic and area. It should also show related topics and offer direct edit paths where technically feasible.
-2. **Current result cards are under-informative.** They mainly show service name plus machine-oriented reason strings. The locked hierarchy calls for provider/service, support offered, why relevant, area/online availability, eligibility/access info and a clear next action when supported by directory data.
-3. **Reason strings are currently English implementation output.** User-facing explanation must be bilingual and based directly on deterministic attributes. Do not expose scores or fake confidence.
-4. **Interface language currently participates in discovery as a language constraint.** Do not describe this as an explicit user “language preference” unless the user actually selected one. User-facing copy should state factual availability such as “Available in English/Greek”.
-5. **No-match is a dead end.** Current copy says to change area/topic or restart. UX-3 must preserve selections and offer controlled recovery.
-6. **The routing model already returns recovery capabilities**: `change_area`, `change_preferences`, `browse_directory`. The visible preferences step was intentionally removed in UX-2 because the MVP currently exposes no genuine preferences, so do not resurrect a meaningless preference screen merely because the recovery enum exists.
-7. **The current synthetic directory is very small.** Do not invent production coverage or false “better matches” to demonstrate recovery. Broader/browse results must be clearly labelled as non-exact and based only on existing synthetic directory records.
+- `app/api/demo-handoff/route.ts` requires explicit consent server-side.
+- The selected service determines provider organisation server-side; client-supplied provider identity is not trusted.
+- Only integrated demo services can create an assisted demo request.
+- `createConsentedContactRequest` requires explicit consent and creates a separate Consent Record.
+- Optional notes require separate authorisation before they can enter a request.
+- The controlled demo uses a fictional `.invalid` email and a synthetic support summary; no real request is sent.
+- Existing tests verify optional check-in text does not leave the browser/storage path used by the demo.
 
-## Existing deterministic discovery behaviour
+The weaknesses are primarily comprehension/control in the current UI:
 
-`lib/routing/discovery.ts`:
+1. **Sharing Preview is a dense paragraph.** It should clearly answer: who receives data, exactly what is shared, why, and what is not shared.
+2. **Recipient identity is too implicit.** Name the selected demonstration provider/service in the preview.
+3. **Anonymous separation needs clearer wording.** The UI must not imply that starting the handoff retroactively identifies or shares the anonymous check-in.
+4. **Consent wording is generic.** It should be provider-specific and tied to the listed data categories.
+5. **There is no explicit cancel action.** The user must be able to close the Sharing Preview and continue exploring without losing service results.
+6. **The safety route is honest but incomplete as a production boundary.** It correctly says TalkPoint is not an emergency/clinical service and does not invent resources, but UX-4 should make clear that production resources/copy remain blocked pending qualified domain/safeguarding validation.
+7. **User agency on the safety route should remain visible.** The user may continue the normal navigation flow; do not turn the immediate-support notice into a forced terminal state.
 
-- filters by selected topics;
-- accepts exact selected area, `anywhere_cyprus` or `online` coverage;
-- filters by language/delivery modes when provided;
-- prioritises services supporting the primary topic;
-- returns up to 3 results;
-- returns `no_match` rather than forcing a match;
-- does not use scores.
+## UX-4 implementation direction
 
-Do not replace this with AI ranking or opaque suitability scoring.
+Work on a dedicated branch from current green `main`, recommended: `ux/trust-consent-safety`.
 
-## UX-3 implementation direction
+Implement only within the locked MVP:
 
-Work on a dedicated branch from current green `main`, recommended: `ux/review-matching-recovery`.
+1. Replace the dense Sharing Preview paragraph with structured sections:
+   - recipient provider/service;
+   - purpose of the demo handoff;
+   - exactly what will be shared;
+   - explicitly what will **not** be shared.
+2. State clearly that the anonymous exploration session is not retroactively identified or shared by this controlled demo action.
+3. Make consent explicitly recipient-specific and tied to the listed sharing preview.
+4. Add a clear Cancel / Keep exploring action that closes the preview without resetting results or selections and sends no request.
+5. Keep the confirm action disabled until explicit consent is checked.
+6. Preserve the server-side provider derivation and consent enforcement. Do not move trust to the client.
+7. Keep optional private check-in text excluded from the demo handoff.
+8. Improve the immediate-support notice only within validated boundaries: no invented phone numbers, organisations, resources or emergency instructions.
+9. Add a safety-content validation checklist documenting what a qualified domain/safeguarding owner must verify before real deployment.
+10. Keep EN/EL complete.
+11. Extend regression coverage for preview content, cancel-without-request, provider-specific consent, optional-text exclusion, and continuing after the safety notice.
 
-Implement only what the frozen spec/data can support:
-
-1. Enrich the review summary with main topic, related topics and service area.
-2. Add direct edit actions for those routing inputs without forcing a full restart.
-3. Keep optional free text out of matching claims. If its status is surfaced, say clearly that it is private/not used for matching in this demonstration.
-4. Render bilingual human-readable “Why this may fit” explanations from actual service attributes and selected criteria.
-5. Show provider identity from the synthetic provider directory, service name, relevant supported topics, coverage/online mode, delivery mode, eligibility/availability where present, and demo status.
-6. Keep integrated handoff action only where `service.integrated === true`; do not imply a provider action exists where it does not.
-7. Replace no-match dead-end copy with:
-   - edit the selected topic/area;
-   - browse existing demonstration services as broader, explicitly non-exact options where appropriate;
-   - keep restart secondary.
-8. Preserve the user’s existing selections during recovery/editing.
-9. Never label broader directory browsing as a match when it does not satisfy the selected topic/area.
-10. Add EN/EL regression coverage for review edits, explainable result content and no-match recovery.
-
-## Likely files for UX-3
+## Likely UX-4 files
 
 Primary:
 
 - `components/check-in/IntegratedCheckIn.tsx`
 - `tests/baseline.spec.ts`
+- new safety validation documentation under `docs/`
 
-Inspect and change only if required by a clean deterministic implementation:
+Inspect but change only if a real defect is found:
 
-- `lib/routing/discovery.ts`
-- `lib/routing/types.ts`
-- `lib/directory/contracts.ts`
-- `data/demo-directory.ts`
+- `app/api/demo-handoff/route.ts`
+- `lib/handoff/types.ts`
+- `lib/handoff/preview.ts`
+- `lib/handoff/create-request.ts`
+- `lib/privacy/contact-request.ts`
+- `lib/safety/router.ts`
+- `lib/safety/content.ts`
+- `lib/safety/validated-matrix.ts`
 
-Avoid changing conversation-engine, privacy, handoff, Payload/PostgreSQL or migrations unless a real blocker is discovered.
+Do not add real identity collection or production crisis resources in this UX stage.
 
-## UX-3 acceptance criteria
+## UX-4 acceptance criteria
 
 Before merge:
 
-- Review shows all meaningful routing inputs in plain EN/EL language.
-- User can correct main topic, related topics and area without restarting the full journey.
-- Exact result cards explain why they appear using real service metadata.
-- No scores, percentages, “best match”, clinical suitability or unsupported recommendation language appears.
-- Provider/service hierarchy and relevant access information are understandable.
-- Demo/synthetic disclosure remains visible.
-- No-match says no **exact** match was found, not that no help exists.
-- Recovery preserves current selections.
-- Broader/browse results are explicitly labelled as broader/non-exact.
-- Optional free text still does not leave the browser through discovery/handoff/storage paths already protected by tests.
-- Immediate-support access remains available.
-- EN/EL behaviour remains complete.
+- Sharing Preview names the recipient provider/service.
+- The user can understand exactly what is shared and what is not shared without reading implementation terminology.
+- The UI explicitly preserves the anonymous/identifiable separation.
+- Optional free text remains excluded unless a future formally scoped flow adds separate explicit authorisation; the current demo must not add that capability.
+- Consent is explicit and provider-specific.
+- Confirm stays disabled before consent.
+- Cancel closes the preview, preserves service exploration and creates no request.
+- Server-side provider derivation and consent checks remain unchanged or stronger.
+- Immediate-support access remains available throughout the check-in.
+- The safety notice does not invent resources or imply emergency capability.
+- A production safety-content validation checklist exists and clearly states that current content/resources are not validated for real deployment.
+- EN/EL behaviour is complete.
 - Full CI is green, including security gate, lint, TypeScript, Phase 1–10 checks, migration/PostgreSQL checks, production build and Playwright.
 
 ---
-
-# UX-4 — Trust, Consent & Safety
-
-**PLANNED AFTER UX-3.**
-
-Refine the anonymous-to-identifiable transition, sharing preview, consent comprehension and safety production-boundary documentation. Reuse the existing privacy/consent architecture rather than redesigning it.
-
-Do not imply that entering contact details retroactively identifies the anonymous check-in. Do not invent emergency resources.
 
 # UX-5 — Accessibility, Mobile & Validation
 
@@ -245,7 +267,7 @@ Migration rule: do not reintroduce dynamic `migrate:create` in CI as a substitut
 
 # Immediate continuation
 
-> Continue TalkPoint from `main` after UX-2. Read the frozen MVP spec, Product & UX Contract and this handoff. Take ownership of UX-3 Review, Matching & Recovery on a dedicated branch. Improve review/editability, deterministic explainability and no-match recovery without inventing matches or changing the four-domain privacy architecture. Keep EN/EL complete, update regression coverage, and require full green CI before merge.
+> Continue TalkPoint from `main` after UX-3. Read the frozen MVP spec, Product & UX Contract and this handoff. Take ownership of UX-4 Trust, Consent & Safety on a dedicated branch. Improve the Sharing Preview, consent comprehension, user cancellation/control and safety production-boundary documentation without changing the four-domain privacy architecture or inventing real-world safety resources. Keep EN/EL complete, update regression coverage, and require full green CI before merge.
 
 # Current checkpoint
 
@@ -253,7 +275,7 @@ Migration rule: do not reintroduce dynamic `migrate:create` in CI as a substitut
 - Production migration/runtime hardening: complete and merged.
 - UX-0 Product Contract: complete and merged.
 - UX-1 Homepage & Positioning: complete and merged.
-- UX-2 Human Check-in: complete, PR #24 merged, post-merge CI #125 green.
-- **UX-3 Review, Matching & Recovery: ACTIVE NEXT STAGE.**
-- UX-4 Trust, Consent & Safety: pending.
+- UX-2 Human Check-in: complete and merged.
+- UX-3 Review, Matching & Recovery: complete, PR #25 merged, post-merge CI #128 green.
+- **UX-4 Trust, Consent & Safety: ACTIVE NEXT STAGE.**
 - UX-5 Accessibility, Mobile & Validation: pending.
