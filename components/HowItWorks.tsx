@@ -35,21 +35,21 @@ export default function HowItWorks() {
             <p className="mt-8 max-w-sm text-base leading-relaxed text-muted">
               You do not have to arrive with the answer. TalkPoint helps you move from uncertainty to relevant support options at your own pace.
             </p>
-            <div className="mt-10 flex h-12 w-12 items-center justify-center rounded-full border border-border text-teal">
+            <div className="mt-10 flex h-12 w-12 items-center justify-center rounded-full border border-border text-teal" aria-hidden="true">
               <ArrowDownRight size={18} />
             </div>
           </div>
 
           <div className="relative">
-            <div aria-hidden className="absolute left-[18px] top-3 hidden h-[calc(100%-24px)] w-px bg-border sm:block" />
+            <div aria-hidden="true" className="absolute left-[18px] top-3 hidden h-[calc(100%-24px)] w-px bg-border sm:block" />
             <div className="space-y-4">
-              {steps.map((step, i) => (
+              {steps.map((step, index) => (
                 <article key={step.n} className="relative grid grid-cols-1 gap-6 border-t border-border py-12 sm:grid-cols-[64px_1fr]">
                   <div className="relative z-10 flex items-start">
                     <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-warm-bg text-xs font-bold text-teal">{step.n}</span>
                   </div>
                   <div className="max-w-2xl">
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-sage">Step {i + 1}</p>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-teal">Step {index + 1}</p>
                     <h3 className="text-[clamp(1.8rem,3vw,3rem)] font-bold leading-[1.05] tracking-tight text-text">{step.title}</h3>
                     <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">{step.desc}</p>
                   </div>
