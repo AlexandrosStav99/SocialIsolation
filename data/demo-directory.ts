@@ -1,18 +1,40 @@
 import type { ProviderDirectoryRecord, ServiceDirectoryRecord } from "@/lib/directory/contracts";
 
-// Synthetic records only. They prove the directory shape without implying partnerships or checked real-world information.
+export const DEMO_INFORMATION_SOURCE = "Synthetic university demonstration record";
+export const DEMO_INFORMATION_CHECKED_AT = new Date("2026-09-20T00:00:00Z");
+
+// Synthetic records only. They make the university MVP demonstrable without implying
+// partnerships, checked real-world availability or clinical suitability.
 export const demoProviders: ProviderDirectoryRecord[] = [
   {
     id: "demo-community-provider",
     name: "Demonstration Community Service",
     type: "public_community",
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
   {
     id: "demo-student-provider",
     name: "Demonstration Student Support",
     type: "university_student",
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
+  },
+  {
+    id: "demo-practical-provider",
+    name: "Demonstration Practical Support",
+    type: "ngo_nonprofit",
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
+  },
+  {
+    id: "demo-career-provider",
+    name: "Demonstration Career Support",
+    type: "public_community",
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
+  },
+  {
+    id: "demo-navigation-provider",
+    name: "Demonstration Support Navigation",
+    type: "ngo_nonprofit",
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
 ];
 
@@ -30,7 +52,7 @@ export const demoServices: ServiceDirectoryRecord[] = [
     availability: "Demonstration hours only",
     immediateSupportCapable: false,
     integrated: true,
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
   {
     id: "demo-student-online",
@@ -42,8 +64,54 @@ export const demoServices: ServiceDirectoryRecord[] = [
     deliveryModes: ["online"],
     eligibility: ["Student status required in a future real service"],
     contactChannels: ["Demo contact channel"],
+    availability: "Demonstration hours only",
     immediateSupportCapable: false,
     integrated: false,
-    information: { source: "Synthetic university demonstration record", checkedAt: new Date("2026-09-20T00:00:00Z") },
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
+  },
+  {
+    id: "demo-practical-support",
+    providerId: "demo-practical-provider",
+    name: "Demonstration Practical Needs Support",
+    topics: ["financial_basic_needs", "housing_living"],
+    coverage: ["anywhere_cyprus", "online"],
+    languages: ["el", "en"],
+    deliveryModes: ["online", "phone", "in_person"],
+    eligibility: ["Adults 18–30 for demonstration purposes"],
+    contactChannels: ["Demo contact channel"],
+    availability: "Demonstration hours only",
+    immediateSupportCapable: false,
+    integrated: false,
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
+  },
+  {
+    id: "demo-career-support",
+    providerId: "demo-career-provider",
+    name: "Demonstration Work and Career Support",
+    topics: ["work_unemployment", "education_student"],
+    coverage: ["anywhere_cyprus", "online"],
+    languages: ["el", "en"],
+    deliveryModes: ["online", "phone"],
+    eligibility: ["Adults 18–30 for demonstration purposes"],
+    contactChannels: ["Demo contact channel"],
+    availability: "Demonstration hours only",
+    immediateSupportCapable: false,
+    integrated: false,
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
+  },
+  {
+    id: "demo-navigation-support",
+    providerId: "demo-navigation-provider",
+    name: "Demonstration General Support Navigation",
+    topics: ["other_unsure", "social_connection"],
+    coverage: ["anywhere_cyprus", "online"],
+    languages: ["el", "en"],
+    deliveryModes: ["online", "phone"],
+    eligibility: ["Adults 18–30 for demonstration purposes"],
+    contactChannels: ["Demo contact channel"],
+    availability: "Demonstration hours only",
+    immediateSupportCapable: false,
+    integrated: false,
+    information: { source: DEMO_INFORMATION_SOURCE, checkedAt: DEMO_INFORMATION_CHECKED_AT },
   },
 ];
