@@ -15,8 +15,8 @@ test("demo directory uses Payload/PostgreSQL in CI with a local synthetic fallba
   expect(["payload_postgres", "synthetic_fallback"]).toContain(body.source);
   if (process.env.CI) expect(body.source).toBe("payload_postgres");
 
-  expect(body.providers).toHaveLength(2);
-  expect(body.services).toHaveLength(2);
+  expect(body.providers).toHaveLength(8);
+  expect(body.services).toHaveLength(10);
   expect(
     body.services?.some(
       (service) => service.id === "demo-community-online" && service.integrated === true,
