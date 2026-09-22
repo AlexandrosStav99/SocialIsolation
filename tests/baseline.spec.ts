@@ -119,7 +119,7 @@ test("no-match recovery preserves choices and labels broader directory records h
   await expect(page.getByText(/does not mean suitable support does not exist/i)).toBeVisible();
   await page.getByRole("button", { name: "Browse all demonstration services" }).click();
   await expect(page.getByRole("heading", { name: "Broader demonstration directory" })).toBeVisible();
-  await expect(page.getByText("Broader directory option · not an exact match")).toHaveCount(2);
+  await expect(page.getByText("Broader directory option · not an exact match")).toHaveCount(10);
   await expect(page.getByText(/recommended for you/i)).toHaveCount(0);
   await expect(page.getByText(/best match/i)).toHaveCount(0);
 
