@@ -25,6 +25,7 @@
     "test:persistence": "node scripts/check-persistence-boundaries.mjs",
     "test:provider-consent": "node scripts/check-provider-consent-hardening.mjs",
     "payload": "payload",
+    "seed:demo": "tsx scripts/seed-demo-directory.ts",
     "test:postgres": "node --experimental-transform-types scripts/check-postgres-integration.mjs"
   },
   "dependencies": {
