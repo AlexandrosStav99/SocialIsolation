@@ -13,6 +13,9 @@ export default function HeroSection() {
     router.push("/check-in");
   }
 
+  const focusRing =
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg";
+
   return (
     <section className="relative flex min-h-[90vh] items-center overflow-hidden bg-warm-bg px-6 pb-16 pt-16 lg:px-16 lg:pt-24">
       <style>{`
@@ -33,7 +36,7 @@ export default function HeroSection() {
         }
       `}</style>
 
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="hero-blob" style={{ width: 500, height: 500, top: "-10%", left: "-10%", background: "#DCA77A", opacity: 0.15 }} />
         <div className="hero-blob" style={{ width: 400, height: 400, bottom: "-5%", right: "20%", background: "#2F6F68", opacity: 0.08, animationDelay: "3s" }} />
       </div>
@@ -41,7 +44,7 @@ export default function HeroSection() {
       <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
         <div>
           <div className="hero-text mb-7 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-2 text-xs font-medium text-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+            <span className="h-1.5 w-1.5 rounded-full bg-teal" aria-hidden="true" />
             University MVP · Demonstration environment
           </div>
 
@@ -60,18 +63,21 @@ export default function HeroSection() {
               <button
                 type="button"
                 onClick={handleStartCheckIn}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal px-6 py-3.5 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2"
+                className={`inline-flex items-center justify-center gap-2 rounded-xl bg-teal px-6 py-3.5 text-sm font-semibold text-white transition hover:opacity-90 ${focusRing}`}
               >
                 Start the check-in
-                <ArrowRight size={15} />
+                <ArrowRight size={15} aria-hidden="true" />
               </button>
-              <a href="#how-it-works" className="inline-flex items-center justify-center px-3 py-3 text-sm font-semibold text-text underline-offset-4 hover:underline">
+              <a
+                href="#how-it-works"
+                className={`inline-flex items-center justify-center rounded-lg px-3 py-3 text-sm font-semibold text-text underline-offset-4 hover:underline ${focusRing}`}
+              >
                 See how it works
               </a>
             </div>
 
-            <div className="mt-5 flex max-w-lg items-start gap-2 text-xs leading-relaxed text-sage">
-              <LockKeyhole className="mt-0.5 shrink-0" size={14} />
+            <div className="mt-5 flex max-w-lg items-start gap-2 text-xs leading-relaxed text-muted">
+              <LockKeyhole className="mt-0.5 shrink-0" size={14} aria-hidden="true" />
               <p>No account or name is required to explore. Please use fictional text in this demonstration. Real contact requests are disabled.</p>
             </div>
           </div>
@@ -81,11 +87,11 @@ export default function HeroSection() {
               { n: "01", label: "Tell us what matters" },
               { n: "02", label: "Explore relevant support" },
               { n: "03", label: "You choose what happens next" },
-            ].map((s, i) => (
-              <div key={s.n} className="flex items-center gap-2">
-                <span className="text-xs font-bold text-teal opacity-60">{s.n}</span>
-                <span className="text-xs text-muted">{s.label}</span>
-                {i < 2 && <span className="mx-1 hidden text-border sm:block">·</span>}
+            ].map((step, index) => (
+              <div key={step.n} className="flex items-center gap-2">
+                <span className="text-xs font-bold text-teal opacity-70">{step.n}</span>
+                <span className="text-xs text-muted">{step.label}</span>
+                {index < 2 && <span className="mx-1 hidden text-border sm:block" aria-hidden="true">·</span>}
               </div>
             ))}
           </div>
