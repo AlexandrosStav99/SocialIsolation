@@ -36,17 +36,48 @@ test("integrated journey keeps optional text local and reaches explainable deter
   await expect(page.getByText("Eligibility / access")).toBeVisible();
   await expect(page.getByText(/language preference/i)).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Run controlled handoff demo" }).click();
+  await page.getByRole("button", { name: "Preview assisted handoff demo" }).click();
   await expect(page.getByRole("heading", { name: "Sharing preview" })).toBeVisible();
+  await expect(page.getByText("What will be shared", { exact: true })).toBeVisible();
+  await expect(page.getByText("What will not be shared", { exact: true })).toBeVisible();
+  await expect(page.getByText(/does not retroactively identify or share your anonymous check-in/i)).toBeVisible();
+  await expect(page.getByText("Your optional private free text", { exact: true })).toBeVisible();
+  await expect(page.getByText(sample)).toHaveCount(0);
+
   const confirm = page.getByRole("button", { name: "Confirm and run demo" });
   await expect(confirm).toBeDisabled();
-  await page.getByRole("checkbox", { name: /explicitly consent/ }).check();
+  await page.getByRole("checkbox", { name: /explicitly consent.*Demonstration Community Service/i }).check();
   await expect(confirm).toBeEnabled();
   await confirm.click();
   await expect(page.getByRole("status")).toContainText("Provider queue status: contact_attempted");
   await expect(page.getByRole("status")).toContainText("No real request was sent.");
   expect(outbound.join("\n")).not.toContain(sample);
   expect(JSON.stringify(await page.evaluate(() => [localStorage, sessionStorage]))).not.toContain(sample);
+});
+
+test("sharing preview can be cancelled without creating a request or losing results", async ({ page }) => {
+  let handoffRequests = 0;
+  page.on("request", (request) => {
+    if (request.url().includes("/api/demo-handoff") && request.method() === "POST") handoffRequests += 1;
+  });
+
+  await page.goto("/check-in");
+  await page.getByRole("button", { name: "Yes, I’m 18 or over" }).click();
+  await page.getByRole("button", { name: "Loneliness & Social Connection" }).click();
+  await page.getByRole("button", { name: "Nothing else" }).click();
+  await page.getByRole("button", { name: "Skip this question" }).click();
+  await page.getByRole("button", { name: "Anywhere in Cyprus" }).click();
+  await page.getByRole("button", { name: "Explore relevant services" }).click();
+
+  await page.getByRole("button", { name: "Preview assisted handoff demo" }).click();
+  await expect(page.getByText("Demonstration Community Service", { exact: true }).last()).toBeVisible();
+  await expect(page.getByText("Demonstration Community Support", { exact: true }).last()).toBeVisible();
+  await expect(page.getByText("Fictional demo email: fictional-user@example.invalid", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel and keep exploring" }).click();
+
+  await expect(page.getByRole("heading", { name: "Sharing preview" })).toHaveCount(0);
+  await expect(page.getByText("Demonstration Community Support", { exact: true })).toBeVisible();
+  expect(handoffRequests).toBe(0);
 });
 
 test("review exposes routing inputs and edits area without losing selections", async ({ page }) => {
@@ -99,7 +130,7 @@ test("no-match recovery preserves choices and labels broader directory records h
   await expect(page.getByText("Limassol", { exact: true })).toBeVisible();
 });
 
-test("Greek result cards include explainable service information", async ({ page }) => {
+test("Greek result and sharing preview content remain complete", async ({ page }) => {
   await page.goto("/check-in");
   await page.getByRole("button", { name: "EL", exact: true }).click();
   await page.getByRole("button", { name: "Ναι, είμαι 18 ετών ή άνω" }).click();
@@ -112,6 +143,13 @@ test("Greek result cards include explainable service information", async ({ page
   await expect(page.getByRole("heading", { name: "Γιατί μπορεί να είναι σχετική" })).toBeVisible();
   await expect(page.getByText("Διαθέσιμες γλώσσες")).toBeVisible();
   await expect(page.getByText("Προϋποθέσεις / πρόσβαση")).toBeVisible();
+
+  await page.getByRole("button", { name: "Προεπισκόπηση επίδειξης υποβοηθούμενης παραπομπής" }).click();
+  await expect(page.getByRole("heading", { name: "Προεπισκόπηση κοινοποίησης" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Τι θα κοινοποιηθεί" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Τι δεν θα κοινοποιηθεί" })).toBeVisible();
+  await page.getByRole("button", { name: "Ακύρωση και συνέχιση εξερεύνησης" }).click();
+  await expect(page.getByRole("heading", { name: "Προεπισκόπηση κοινοποίησης" })).toHaveCount(0);
 });
 
 test("check-in supports back navigation and language switching without restarting", async ({ page }) => {
@@ -180,11 +218,20 @@ test("about route resolves with its linked lowercase path", async ({ page }) => 
   await expect(page.getByRole("link", { name: "Privacy", exact: true }).first()).toHaveAttribute("href", "/#privacy");
 });
 
-test("help-now action enters deterministic accessible safety state", async ({ page }) => {
+test("help-now action is honest, accessible and does not destroy check-in progress", async ({ page }) => {
   await page.goto("/check-in");
+  await page.getByRole("button", { name: "Yes, I’m 18 or over" }).click();
+  await page.getByRole("button", { name: "Loneliness & Social Connection" }).click();
+  await expect(page.getByRole("heading", { name: "Is there anything else connected to this?" })).toBeVisible();
+
   await page.getByRole("button", { name: "I need help now" }).click();
   await expect(page.getByRole("status")).toContainText("Immediate support");
+  await expect(page.getByRole("status")).toContainText("does not publish real Cyprus immediate-support resources");
   await expect(page.getByText("Safety route: immediate_support")).toBeAttached();
+
+  await page.getByRole("button", { name: "Continue with the check-in" }).click();
+  await expect(page.getByText("Safety route: normal_navigation")).toBeAttached();
+  await expect(page.getByRole("heading", { name: "Is there anything else connected to this?" })).toBeVisible();
 });
 
 test("demo handoff API rejects missing consent and client provider spoofing", async ({ request }) => {
