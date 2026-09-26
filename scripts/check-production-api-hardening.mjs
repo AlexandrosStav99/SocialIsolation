@@ -11,7 +11,7 @@ for (const marker of [
   "request_too_large",
   "TextDecoder",
   "assertAllowedBrowserOrigin",
-  "TALKPOINT_PUBLIC_APP_ORIGIN",
+  "getPublicAppOrigin",
 ]) {
   if (!hardening.includes(marker)) throw new Error("HTTP hardening marker missing: " + marker);
 }
@@ -22,7 +22,7 @@ if (hardening.includes("request.json()")) {
 const limiter = read("lib/security/rate-limit.ts");
 for (const marker of [
   'createHmac("sha256"',
-  "TALKPOINT_TRUSTED_CLIENT_IP_HEADER",
+  "getTrustedClientIpHeaderName",
   'INSERT INTO "api_rate_limit_buckets"',
   'ON CONFLICT ("bucket_key") DO UPDATE',
   '"request_count" = "api_rate_limit_buckets"."request_count" + 1',
