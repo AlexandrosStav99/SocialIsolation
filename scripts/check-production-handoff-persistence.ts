@@ -223,7 +223,13 @@ async function main() {
       consentAccepted: true,
       previewToken: previewA.previewToken,
     };
-    const first = await persistProductionHandoff(\n      payload,\n      inputA,\n      idempotencyKey,\n      serverSecret,\n      serverConsentVersion,\n    );
+    const first = await persistProductionHandoff(
+      payload,
+      inputA,
+      idempotencyKey,
+      serverSecret,
+      serverConsentVersion,
+    );
     assert(first.idempotentReplay === false, "First handoff must not be marked as a replay");
     created.requests.push(Number(first.requestId));
 
@@ -285,7 +291,13 @@ async function main() {
       "Persisted consent categories must exactly match the signed Sharing Preview",
     );
 
-    const replay = await persistProductionHandoff(\n      payload,\n      inputA,\n      idempotencyKey,\n      serverSecret,\n      serverConsentVersion,\n    );
+    const replay = await persistProductionHandoff(
+      payload,
+      inputA,
+      idempotencyKey,
+      serverSecret,
+      serverConsentVersion,
+    );
     assert(replay.idempotentReplay === true, "Exact retry must be identified as a replay");
     assert(replay.requestId === first.requestId, "Exact retry created a different request");
     assert(replay.managementId === first.managementId, "Exact retry returned a different management credential");
@@ -305,51 +317,83 @@ async function main() {
 
     await expectHandoffError(
       () =>
-        persistProductionHandoff(\n          payload,\n          {
-            ...inputA,\n            contact: { type: "email", value: "changed-" + emailA },
+        persistProductionHandoff(
+          payload,
+          {
+            ...inputA,
+            contact: { type: "email", value: "changed-" + emailA },
           },
-          idempotencyKey,\n          serverSecret,\n          serverConsentVersion,\n        ),
+          idempotencyKey,
+          serverSecret,
+          serverConsentVersion,
+        ),
       "idempotency_conflict",
     );
 
     await expectHandoffError(
       () =>
-        persistProductionHandoff(\n          payload,\n          {
-            ...inputA,\n            previewToken: "a".repeat(43),
+        persistProductionHandoff(
+          payload,
+          {
+            ...inputA,
+            previewToken: "a".repeat(43),
           },
-          "prod4:" + randomUUID(),\n          serverSecret,\n          serverConsentVersion,\n        ),
+          "prod4:" + randomUUID(),
+          serverSecret,
+          serverConsentVersion,
+        ),
       "preview_token_invalid_or_stale",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(\n          payload,\n          { ...shareA, serviceId: disabledService.id },\n          serverSecret,\n          serverConsentVersion,\n        ),
+        createProductionHandoffPreview(
+          payload,
+          { ...shareA, serviceId: disabledService.id },
+          serverSecret,
+          serverConsentVersion,
+        ),
       "service_not_enabled_for_handoff",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(\n          payload,\n          { ...shareA, serviceId: syntheticService.id },\n          serverSecret,\n          serverConsentVersion,\n        ),
+        createProductionHandoffPreview(
+          payload,
+          { ...shareA, serviceId: syntheticService.id },
+          serverSecret,
+          serverConsentVersion,
+        ),
       "synthetic_service_blocked",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(\n          payload,\n          {
+        createProductionHandoffPreview(
+          payload,
+          {
             ...shareA,
             primarySupportTopic: "education_student",
             secondarySupportTopics: [],
-          },\n          serverSecret,\n          serverConsentVersion,\n        ),
+          },
+          serverSecret,
+          serverConsentVersion,
+        ),
       "service_context_mismatch",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(\n          payload,\n          {
+        createProductionHandoffPreview(
+          payload,
+          {
             ...shareA,
             optionalNote: "This note has no separate consent.",
             optionalNoteAccepted: false,
-          },\n          serverSecret,\n          serverConsentVersion,\n        ),
+          },
+          serverSecret,
+          serverConsentVersion,
+        ),
       "optional_note_consent_required",
     );
 
@@ -363,11 +407,17 @@ async function main() {
       optionalNoteAccepted: false,
     };
     const previewB = await createProductionHandoffPreview(payload, shareB, serverSecret, serverConsentVersion);
-    const second = await persistProductionHandoff(\n      payload,\n      {
-        ...shareB,\n        consentAccepted: true,
+    const second = await persistProductionHandoff(
+      payload,
+      {
+        ...shareB,
+        consentAccepted: true,
         previewToken: previewB.previewToken,
       },
-      "prod4:" + randomUUID(),\n      serverSecret,\n      serverConsentVersion,\n    );
+      "prod4:" + randomUUID(),
+      serverSecret,
+      serverConsentVersion,
+    );
     created.requests.push(Number(second.requestId));
     const storedB = await payload.findByID({
       collection: "contact-requests",
