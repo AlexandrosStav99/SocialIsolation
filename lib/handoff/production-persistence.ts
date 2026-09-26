@@ -659,6 +659,42 @@ async function findExistingRequest(
   return asRecord(result.docs[0]);
 }
 
+async function findDeletedIdempotencyTombstone(
+  payload: Payload,
+  idempotencyKeyHash: string,
+  transactionID?: TransactionID,
+): Promise<RecordLike | null> {
+  const result = await payload.find({
+    collection: "consent-records",
+    where: { deletedIdempotencyKeyHash: { equals: idempotencyKeyHash } },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+    showHiddenFields: true,
+    ...(transactionID ? { req: { transactionID } } : {}),
+  });
+  return asRecord(result.docs[0]);
+}
+
+function assertNoDeletedIdempotencyReplay(
+  tombstone: RecordLike | null,
+  payloadHash: string,
+): void {
+  if (!tombstone) return;
+  if (tombstone.deletedIdempotencyPayloadHash !== payloadHash) {
+    throw new ProductionHandoffError(
+      409,
+      "idempotency_conflict",
+      "Idempotency-Key was already used for a different handoff payload",
+    );
+  }
+  throw new ProductionHandoffError(
+    410,
+    "handoff_previously_deleted",
+    "This assisted-contact request was previously deleted and will not be recreated by retry",
+  );
+}
+
 async function assertExistingConsent(
   payload: Payload,
   existingRequest: RecordLike,
@@ -786,6 +822,10 @@ export async function persistProductionHandoff(
   if (existing) {
     return replayExisting(payload, existing, idempotencyPayloadHash, serverSecret);
   }
+  assertNoDeletedIdempotencyReplay(
+    await findDeletedIdempotencyTombstone(payload, idempotencyKeyHash),
+    idempotencyPayloadHash,
+  );
 
   try {
     return await withTransaction(payload, async (transactionID) => {
@@ -803,6 +843,10 @@ export async function persistProductionHandoff(
           transactionID,
         );
       }
+      assertNoDeletedIdempotencyReplay(
+        await findDeletedIdempotencyTombstone(payload, idempotencyKeyHash, transactionID),
+        idempotencyPayloadHash,
+      );
 
       const recipient = await resolveProductionRecipient(payload, normalized, transactionID);
       const expectedPreviewToken = previewTokenFor(serverSecret, normalized, recipient);
