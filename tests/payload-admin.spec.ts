@@ -164,9 +164,7 @@ test("Payload authentication enforces activation, least privilege, sessions and 
     });
     expect(unlockedLogin.ok()).toBeTruthy();
 
-    const logout = await platform.post("/payload-api/provider-users/logout?allSessions=true", {
-      data: {},
-    });
+    const logout = await platform.post("/payload-api/provider-users/logout?allSessions=true");
     expect(logout.ok()).toBeTruthy();
 
     const meAfterLogout = await platform.get("/payload-api/provider-users/me");
