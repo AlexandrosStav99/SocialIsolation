@@ -91,6 +91,7 @@ async function main() {
   `);
 
   console.log("PostgreSQL API rate-limit persistence checks passed.");
+  process.exit(0);
 }
 
 main().catch((error) => {
