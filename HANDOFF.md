@@ -3,12 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed production checkpoint: **PROD-2 — production authentication hardening**  
-Latest merged production PR: **#33**  
-Latest merged production commit: `86430da4a671613c7736f1cee750ba3883dc12b0`  
-PR #33 final CI: **#172 green**  
+Latest completed production checkpoint: **PROD-3 — real provider workspace foundation**  
+Latest merged production PR: **#34**  
+Latest merged production commit: `0c33650453091abe524d5eacefeb04339c9a4a7b`  
+PR #34 final CI: **#184 green**  
 Active programme: **Production-readiness hardening**  
-Exact next engineering stage: **PROD-3 — real provider workspace foundation**
+Exact next engineering stage: **PROD-4 — production handoff persistence and idempotency**
 
 ## Read this first
 
@@ -110,7 +110,7 @@ Also complete and CI-protected:
 - safety-routing boundary;
 - AI provider abstraction with deterministic fallback;
 - exact Sharing Preview and provider-specific consent;
-- provider queue/domain workflow foundations;
+- persisted provider workspace with authenticated organisation-scoped queue/detail access, assignment, status transitions and audit events;
 - privacy-safe aggregate analytics;
 - dependency security gate;
 - zero-warning lint and strict TypeScript;
@@ -239,12 +239,15 @@ Production hardening is now an authorised programme layered on top of the frozen
 Completed stages:
 - **PROD-1 — production configuration and fail-closed behaviour**, PR #31, CI #165 green.
 - **PROD-2 — production authentication hardening**, PR #33, CI #172 green.
+- **PROD-3 — real provider workspace foundation**, PR #34, CI #184 green.
 
-PROD-2 now uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
+PROD-2 uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
+
+PROD-3 adds a dedicated authenticated provider workspace API over the hidden identifiable request store. Provider managers are restricted to their authenticated organisation; provider staff are further restricted to requests assigned to them. Assignment targets are validated as active same-organisation provider users. Assignment and status mutations are transactionally coupled to minimal audit events, direct Payload REST exposure remains closed, platform roles remain denied identifiable request access, and deactivation invalidates provider workspace access. CI exercises cross-organisation denial, same-organisation assignment, workflow transitions, audit persistence, real session-cookie authentication and deactivation.
 
 PROD-1 established explicit development/demo/production runtime modes. Production cannot silently use synthetic provider records; until verified real directory onboarding exists, unavailable production directory data returns a safe unavailable state and the browser has no embedded synthetic fallback.
 
-Continue with **PROD-3 real provider workspace foundation**. Keep each stage focused and preserve least privilege, organisation isolation and the anonymous/identifiable privacy split.
+Continue with **PROD-4 production handoff persistence and idempotency**. Persist only provider-specific explicitly consented request data, derive provider routing server-side, preserve the anonymous/identifiable split and keep controlled demo handoff behaviour separate from production.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -259,6 +262,8 @@ The external validation programme remains open in parallel. Engineering progress
 - PR #30 Payload Admin / REST boundary: **merged; CI #162 green**.
 - PROD-1 PR #31: **merged; final CI #165 green**.
 - PROD-2 PR #33: **merged; final CI #172 green**; duplicate PR #32 closed unmerged as superseded.
+- PROD-3 PR #34: **merged as `0c33650453091abe524d5eacefeb04339c9a4a7b`; final CI #184 green**.
+- Provider workspace: **Payload/PostgreSQL-backed, organisation-scoped and session-authenticated; staff access is assigned-request-only; mutations are auditable**.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
 - UX-0 through UX-5: **complete and merged**.
@@ -282,8 +287,8 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 
 - PROD-1 production configuration/fail-closed directory: **complete; PR #31, CI #165 green**.
 - PROD-2 production authentication hardening: **complete in PR #33; CI #172 green**.
-- PROD-3 real provider workspace foundation: **next stage**.
-- PROD-4 production handoff: **not started**.
+- PROD-3 real provider workspace foundation: **complete; PR #34, CI #184 green**.
+- PROD-4 production handoff: **next stage**.
 - PROD-5 retention/deletion automation: **not started**.
 - PROD-6 API and abuse hardening: **not started**.
 - PROD-7 observability and operations: **not started**.
@@ -309,4 +314,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Create a focused PROD-3 branch from current `main`. Convert the provider workspace from in-memory/demo domain logic into a persisted, server-authoritative operational request lifecycle. Providers must only access requests for their authenticated organisation; assignment, provider organisation and status transitions must be enforced server-side. Do not join anonymous session history or introduce real provider records.
+Create a focused PROD-4 branch from current `main`. Implement a production handoff persistence boundary that creates the identifiable ContactRequest and its provider-specific ConsentRecord atomically, derives the recipient organisation from the selected integrated service on the server, and is retry-safe/idempotent. Keep the current controlled `/api/demo-handoff` path synthetic and separate. Do not persist or join anonymous session history, free-text conversation state, safety history or AI internals.
