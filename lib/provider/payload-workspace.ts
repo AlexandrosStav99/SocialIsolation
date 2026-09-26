@@ -55,6 +55,14 @@ function relationshipFilterId(value: string): string | number {
   return /^\d+$/.test(value) ? Number(value) : value;
 }
 
+function numericRelationshipId(value: string): number {
+  const id = Number(value);
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    throw new ProviderWorkspaceError(500, "invalid_relationship_id", "Stored provider relationship is invalid");
+  }
+  return id;
+}
+
 function requiredString(record: RecordLike, field: string): string {
   const value = record[field];
   if (typeof value !== "string" || !value) {
@@ -289,7 +297,7 @@ export async function assignProviderRequest(
       collection: "contact-requests",
       id: relationshipFilterId(id),
       data: {
-        assignedProviderUser: relationshipFilterId(assigneeId),
+        assignedProviderUser: numericRelationshipId(assigneeId),
         status: "assigned",
       },
       depth: 0,
