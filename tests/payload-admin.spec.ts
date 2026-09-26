@@ -64,6 +64,11 @@ test("Payload authentication enforces activation, least privilege, sessions and 
     expect(loginBody.token).toBeUndefined();
     expect(loginBody.user?.active).toBe(true);
 
+    const finalAdminGuard = await admin.patch(`/payload-api/provider-users/${adminId}`, {
+      data: { active: false },
+    });
+    expect(finalAdminGuard.ok()).toBeFalsy();
+
     const inactiveCreate = await admin.post("/payload-api/provider-users", {
       data: {
         email: platformEmail,
