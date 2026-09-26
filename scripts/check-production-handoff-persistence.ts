@@ -111,6 +111,8 @@ async function main() {
         immediateSupportCapable: false,
         integrated: true,
         productionHandoffEnabled: true,
+        productionHandoffProvider: providerA.id,
+        productionHandoffOrganisation: organisationA.id,
         informationSource: "Controlled PROD-4 CI fixture - not a real provider",
         informationCheckedAt: new Date().toISOString(),
       },
@@ -131,6 +133,8 @@ async function main() {
         immediateSupportCapable: false,
         integrated: true,
         productionHandoffEnabled: true,
+        productionHandoffProvider: providerB.id,
+        productionHandoffOrganisation: organisationB.id,
         informationSource: "Controlled PROD-4 CI fixture - not a real provider",
         informationCheckedAt: new Date().toISOString(),
       },
@@ -384,6 +388,29 @@ async function main() {
         ),
       "synthetic_service_blocked",
     );
+
+    await payload.update({
+      collection: "services",
+      id: serviceA.id,
+      data: { provider: providerB.id },
+      overrideAccess: true,
+    });
+    await expectHandoffError(
+      () =>
+        createProductionHandoffPreview(
+          payload,
+          shareA,
+          serverSecret,
+          serverConsentVersion,
+        ),
+      "production_handoff_scope_mismatch",
+    );
+    await payload.update({
+      collection: "services",
+      id: serviceA.id,
+      data: { provider: providerA.id },
+      overrideAccess: true,
+    });
 
     await expectHandoffError(
       () =>
