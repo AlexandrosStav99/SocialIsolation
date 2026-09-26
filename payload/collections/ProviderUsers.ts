@@ -31,6 +31,7 @@ export const ProviderUsers: CollectionConfig = {
       name: "password",
       type: "text",
       minLength: PASSWORD_MIN_LENGTH,
+      hidden: true,
     },
     {
       name: "role",
