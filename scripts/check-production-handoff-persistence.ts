@@ -242,6 +242,7 @@ async function main() {
       id: Number(first.requestId),
       depth: 0,
       overrideAccess: true,
+      showHiddenFields: true,
     });
     assert(
       relationId(stored.providerOrganisation) === String(organisationA.id),
