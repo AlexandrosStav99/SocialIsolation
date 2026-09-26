@@ -59,6 +59,7 @@ for (const required of [
   "createCipheriv",
   "createDecipheriv",
   "managementTokenEnvelope",
+  "showHiddenFields: true",
 ]) {
   if (!persistence.includes(required)) throw new Error("Production handoff invariant missing: " + required);
 }
