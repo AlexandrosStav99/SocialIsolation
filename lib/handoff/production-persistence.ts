@@ -1,4 +1,4 @@
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { Payload } from "payload";
 import { SYNTHETIC_DIRECTORY_SOURCE } from "../directory/synthetic.ts";
 import {
@@ -339,14 +339,65 @@ function canonicalFinalPayload(input: NormalizedProductionHandoffInput, previewT
   });
 }
 
-function managementIdFor(
-  serverSecret: string,
-  idempotencyKeyHash: string,
-  idempotencyPayloadHash: string,
-): string {
-  return createHmac("sha256", serverSecret)
-    .update("talkpoint-management-v1:" + idempotencyKeyHash + ":" + idempotencyPayloadHash, "utf8")
-    .digest("base64url");
+function managementEncryptionKey(serverSecret: string): Buffer {
+  return createHash("sha256")
+    .update("talkpoint-management-envelope-key-v1:" + serverSecret, "utf8")
+    .digest();
+}
+
+function encryptManagementId(serverSecret: string, managementId: string): string {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", managementEncryptionKey(serverSecret), iv);
+  const ciphertext = Buffer.concat([
+    cipher.update(managementId, "utf8"),
+    cipher.final(),
+  ]);
+  const authTag = cipher.getAuthTag();
+  return [
+    "v1",
+    iv.toString("base64url"),
+    authTag.toString("base64url"),
+    ciphertext.toString("base64url"),
+  ].join(".");
+}
+
+function decryptManagementId(serverSecret: string, envelope: unknown): string {
+  if (typeof envelope !== "string") {
+    throw new ProductionHandoffError(
+      503,
+      "management_credential_unavailable",
+      "Existing request management credential cannot be safely recovered",
+    );
+  }
+  const parts = envelope.split(".");
+  if (parts.length !== 4 || parts[0] !== "v1") {
+    throw new ProductionHandoffError(
+      503,
+      "management_credential_unavailable",
+      "Existing request management credential cannot be safely recovered",
+    );
+  }
+  try {
+    const iv = Buffer.from(parts[1], "base64url");
+    const authTag = Buffer.from(parts[2], "base64url");
+    const ciphertext = Buffer.from(parts[3], "base64url");
+    if (iv.length !== 12 || authTag.length !== 16 || ciphertext.length === 0) {
+      throw new Error("Invalid management credential envelope");
+    }
+    const decipher = createDecipheriv(
+      "aes-256-gcm",
+      managementEncryptionKey(serverSecret),
+      iv,
+    );
+    decipher.setAuthTag(authTag);
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
+  } catch {
+    throw new ProductionHandoffError(
+      503,
+      "management_credential_key_mismatch",
+      "Existing request cannot be safely replayed with the current management-credential key",
+    );
+  }
 }
 
 function supportTopicLabel(topic: SupportTopic): string {
@@ -597,7 +648,7 @@ async function replayExisting(
   payload: Payload,
   existing: RecordLike,
   payloadHash: string,
-  managementId: string,
+  serverSecret: string,
   transactionID?: TransactionID,
 ): Promise<ProductionHandoffResult> {
   if (existing.idempotencyPayloadHash !== payloadHash) {
@@ -607,15 +658,16 @@ async function replayExisting(
       "Idempotency-Key was already used for a different handoff payload",
     );
   }
+  const managementId = decryptManagementId(serverSecret, existing.managementTokenEnvelope);
   const storedManagementTokenHash = existing.managementTokenHash;
   if (
     typeof storedManagementTokenHash !== "string" ||
     storedManagementTokenHash !== sha256(managementId)
   ) {
     throw new ProductionHandoffError(
-      503,
-      "management_credential_key_mismatch",
-      "Existing request cannot be safely replayed with the current management-credential key",
+      500,
+      "handoff_integrity_error",
+      "Existing request management credential failed its integrity check",
     );
   }
   const requestId = await assertExistingConsent(payload, existing, transactionID);
@@ -676,12 +728,10 @@ export async function persistProductionHandoff(
   const idempotencyKey = normalizeIdempotencyKey(rawIdempotencyKey);
   const idempotencyKeyHash = sha256("talkpoint-handoff-v1:" + idempotencyKey);
   const idempotencyPayloadHash = sha256(canonicalFinalPayload(normalized, previewToken));
-  const managementId = managementIdFor(serverSecret, idempotencyKeyHash, idempotencyPayloadHash);
-  const managementTokenHash = sha256(managementId);
 
   const existing = await findExistingRequest(payload, idempotencyKeyHash);
   if (existing) {
-    return replayExisting(payload, existing, idempotencyPayloadHash, managementId);
+    return replayExisting(payload, existing, idempotencyPayloadHash, serverSecret);
   }
 
   try {
@@ -696,7 +746,7 @@ export async function persistProductionHandoff(
           payload,
           transactionExisting,
           idempotencyPayloadHash,
-          managementId,
+          serverSecret,
           transactionID,
         );
       }
@@ -710,6 +760,10 @@ export async function persistProductionHandoff(
           "Sharing Preview is invalid or no longer matches the selected service and data",
         );
       }
+
+      const managementId = randomBytes(32).toString("base64url");
+      const managementTokenHash = sha256(managementId);
+      const managementTokenEnvelope = encryptManagementId(serverSecret, managementId);
 
       const request = await payload.create({
         collection: "contact-requests",
@@ -727,6 +781,7 @@ export async function persistProductionHandoff(
           optionalNote: normalized.optionalNote,
           status: "new",
           managementTokenHash,
+          managementTokenEnvelope,
           idempotencyKeyHash,
           idempotencyPayloadHash,
         },
@@ -764,7 +819,7 @@ export async function persistProductionHandoff(
     // After rollback, return that committed result only when the exact payload matches.
     const raced = await findExistingRequest(payload, idempotencyKeyHash);
     if (raced) {
-      return replayExisting(payload, raced, idempotencyPayloadHash, managementId);
+      return replayExisting(payload, raced, idempotencyPayloadHash, serverSecret);
     }
     throw error;
   }
