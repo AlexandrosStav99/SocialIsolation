@@ -9,7 +9,7 @@ This document tracks the production-readiness programme without changing the fro
 - Controlled university MVP: implemented and CI-protected.
 - Payload Admin / REST boundary: implemented in PR #30.
 - PROD-1 production configuration and fail-closed directory behaviour: **complete in PR #31; final CI #165 green**.
-- PROD-2 production authentication hardening: **next engineering stage**.
+- PROD-2 production authentication hardening: **in progress in PR #32**.
 - PROD-3 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
 
 Green CI is necessary engineering evidence, not proof of production readiness, legal compliance, safeguarding approval, accessibility conformance or provider validation.
@@ -39,7 +39,7 @@ These are implementation items that can be solved in the repository and should n
 | ID | Area | Status | Notes |
 | --- | --- | --- | --- |
 | ENG-01 | PROD-1 runtime/config fail-closed behaviour | Complete | PR #31; explicit runtime mode, startup validation, server/client synthetic fallback removal in production; CI #165 green |
-| ENG-02 | PROD-2 production authentication hardening | Next | Session security, recovery, deactivation, brute-force controls, MFA readiness |
+| ENG-02 | PROD-2 production authentication hardening | In progress | PR #32: revocable sessions, password policy, lockout, reset-token limits, strict/secure cookies. Real reset-email delivery and MFA/SSO remain deployment identity dependencies; account lifecycle UI/deactivation remains for provider workspace work. |
 | ENG-03 | PROD-3 real provider workspace workflow | Open | DB-backed request queue, assignment, organisation authority |
 | ENG-04 | PROD-4 production handoff | Open | Persisted consented request, routing, idempotency |
 | ENG-05 | PROD-5 retention/deletion automation | Open | Configurable retention; exact legal duration remains external |
@@ -75,3 +75,27 @@ TalkPoint must not be described as production ready until both categories are sa
 2. the external validation gates relevant to the intended real deployment have documented approval/evidence.
 
 Until then, use precise language such as **production engineering hardening in progress** or **controlled university implementation**.
+
+
+## PROD-2 authentication decisions
+
+PR #32 deliberately builds on Payload's supported authentication primitives rather than introducing a second custom identity stack.
+
+Implemented in this stage:
+
+- one-hour authentication token/session lifetime;
+- server-side sessions retained so sessions can be invalidated;
+- auth tokens removed from authentication API response bodies;
+- minimum 12-character passwords;
+- five failed login attempts followed by a 15-minute lock;
+- 30-minute password-reset token expiry and one-minute per-user reset-request throttling;
+- SameSite=Strict authentication cookies, with Secure cookies required in production;
+- existing super-admin/platform-admin Admin boundary and super-admin-only provider-user mutation preserved;
+- provider roles remain organisation-scoped and cannot enter the Payload Admin.
+
+Not falsely claimed:
+
+- password-reset email delivery is not operational until a production email adapter/provider is configured;
+- MFA/SSO is not enabled because no approved production identity provider or MFA delivery mechanism exists yet;
+- real provider account activation/deactivation operations are not claimed until the provider workspace/account lifecycle is implemented and tested;
+- these controls do not constitute an external security or legal approval.
