@@ -12,10 +12,13 @@ This document tracks the production-readiness programme without changing the fro
 - PROD-2 production authentication hardening: **complete in PR #33; final CI #172 green**.
 - PROD-3 real provider workspace foundation: **complete in PR #34; final CI #184 green**.
 - PROD-4 production handoff persistence and idempotency: **complete in PR #36; final PR CI #211 green**.
-- PROD-5 retention/deletion automation: **next engineering stage**.
-- PROD-6 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
+- PROD-5 retention/deletion automation: **complete in PR #38; final PR CI #235 green**.
+- PROD-6 API/abuse hardening: **next engineering stage**.
+- PROD-7 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
 
 PROD-4 establishes the engineering boundary for a future live assisted handoff without asserting that any real provider is participating. It adds a production-only server-authoritative Sharing Preview, derives provider/organisation routing from Payload records, requires a separate fail-closed live-handoff flag, blocks synthetic records, persists ContactRequest + ConsentRecord atomically, binds submission to the exact preview through a signed token, and makes exact retries idempotent. Direct Payload REST access to identifiable requests/consent/audit records remains denied.
+
+PROD-5 adds configurable retention and deletion mechanics without supplying unapproved legal durations. Production withdrawal uses an opaque public request UUID plus the management credential, removes the identifiable ContactRequest transactionally, preserves only a minimal consent/deletion tombstone needed for retry/deletion semantics, and keeps active requests outside automated request-retention deletion. Expired ephemeral sessions, eligible closed requests, orphan consent records, provider audit events and anonymous analytics have explicit retention paths covered by PostgreSQL regression tests.
 
 Real public use still depends on real-provider approval, verified service data, legal/privacy approval, deployment configuration and the remaining production stages.
 
@@ -49,8 +52,8 @@ These are implementation items that can be solved in the repository and should n
 | ENG-02 | PROD-2 production authentication hardening | Complete | PR #33; revocable sessions, lockout, password policy, activation/deactivation, privilege/session invalidation and runtime regression coverage; operational email recovery and MFA remain external deployment gates |
 | ENG-03 | PROD-3 real provider workspace workflow | Complete | PR #34; DB-backed authenticated queue/detail access, manager organisation scope, staff assigned-only scope, same-organisation assignment validation, transactional status/audit mutations; CI #184 green |
 | ENG-04 | PROD-4 production handoff | Complete | PR #36; signed exact Sharing Preview, server-derived recipient, synthetic-service block, atomic ContactRequest + ConsentRecord persistence, random protected management credential and idempotent exact retry; CI #211 green |
-| ENG-05 | PROD-5 retention/deletion automation | Next | Configurable purge/withdrawal mechanics; exact legal durations remain external and must not be invented |
-| ENG-06 | PROD-6 API/abuse hardening | Open | Rate limits, request limits, CSRF/security headers, validation |
+| ENG-05 | PROD-5 retention/deletion automation | Complete | PR #38; configurable no-default retention policy, opaque-ID withdrawal, closed-request/session/audit/analytics purge mechanics, minimal deletion tombstones and PostgreSQL regression coverage; CI #235 green. Exact legal durations remain external |
+| ENG-06 | PROD-6 API/abuse hardening | Next | Rate limits, request/body limits, CSRF/origin protections, security headers and stricter validation |
 | ENG-07 | PROD-7 observability/operations | Open | Health/readiness, logging, incident/runbook, backup expectations |
 | ENG-08 | PROD-8 deployment readiness | Open | Environment separation, migration/deploy/rollback flow |
 | ENG-09 | PROD-9 accessibility execution readiness | Open | Code fixes/evidence preparation only; human validation remains external |
