@@ -1,4 +1,4 @@
-import type { ActorScope } from "@/lib/security/access-scope";
+import type { ActorScope } from "../security/access-scope.ts";
 import { assertValidActorScope } from "@/lib/security/access-scope";
 
 export type AuthenticatedActor=ActorScope & { authenticated:true };
