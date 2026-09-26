@@ -179,6 +179,7 @@ async function main() {
     created.services.push(serviceA.id, serviceB.id, disabledService.id, syntheticService.id);
 
     const serverSecret = "prod4-ci-management-secret-" + suffix;
+    const serverConsentVersion = "prod4-ci-v1";
     const idempotencyKey = "prod4:" + randomUUID();
     const emailA = "prod4-" + suffix + "@example.invalid";
     const shareA: ProductionHandoffPreviewInput = {
@@ -190,11 +191,10 @@ async function main() {
       serviceArea: "online",
       preferences: ["online"],
       optionalNote: "Controlled CI-only optional note.",
-      consentVersion: "prod4-ci-v1",
       optionalNoteAccepted: true,
     };
 
-    const previewA = await createProductionHandoffPreview(payload, shareA, serverSecret);
+    const previewA = await createProductionHandoffPreview(payload, shareA, serverSecret, serverConsentVersion);
     assert(
       previewA.recipient.providerName === providerA.name &&
         previewA.recipient.serviceName === serviceA.name,
@@ -223,12 +223,7 @@ async function main() {
       consentAccepted: true,
       previewToken: previewA.previewToken,
     };
-    const first = await persistProductionHandoff(
-      payload,
-      inputA,
-      idempotencyKey,
-      serverSecret,
-    );
+    const first = await persistProductionHandoff(\n      payload,\n      inputA,\n      idempotencyKey,\n      serverSecret,\n      serverConsentVersion,\n    );
     assert(first.idempotentReplay === false, "First handoff must not be marked as a replay");
     created.requests.push(Number(first.requestId));
 
@@ -290,12 +285,7 @@ async function main() {
       "Persisted consent categories must exactly match the signed Sharing Preview",
     );
 
-    const replay = await persistProductionHandoff(
-      payload,
-      inputA,
-      idempotencyKey,
-      serverSecret,
-    );
+    const replay = await persistProductionHandoff(\n      payload,\n      inputA,\n      idempotencyKey,\n      serverSecret,\n      serverConsentVersion,\n    );
     assert(replay.idempotentReplay === true, "Exact retry must be identified as a replay");
     assert(replay.requestId === first.requestId, "Exact retry created a different request");
     assert(replay.managementId === first.managementId, "Exact retry returned a different management credential");
@@ -315,77 +305,51 @@ async function main() {
 
     await expectHandoffError(
       () =>
-        persistProductionHandoff(
-          payload,
-          {
-            ...inputA,
-            contact: { type: "email", value: "changed-" + emailA },
+        persistProductionHandoff(\n          payload,\n          {
+            ...inputA,\n            contact: { type: "email", value: "changed-" + emailA },
           },
-          idempotencyKey,
-          serverSecret,
-        ),
+          idempotencyKey,\n          serverSecret,\n          serverConsentVersion,\n        ),
       "idempotency_conflict",
     );
 
     await expectHandoffError(
       () =>
-        persistProductionHandoff(
-          payload,
-          {
-            ...inputA,
-            previewToken: "a".repeat(43),
+        persistProductionHandoff(\n          payload,\n          {
+            ...inputA,\n            previewToken: "a".repeat(43),
           },
-          "prod4:" + randomUUID(),
-          serverSecret,
-        ),
+          "prod4:" + randomUUID(),\n          serverSecret,\n          serverConsentVersion,\n        ),
       "preview_token_invalid_or_stale",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(
-          payload,
-          { ...shareA, serviceId: disabledService.id },
-          serverSecret,
-        ),
+        createProductionHandoffPreview(\n          payload,\n          { ...shareA, serviceId: disabledService.id },\n          serverSecret,\n          serverConsentVersion,\n        ),
       "service_not_enabled_for_handoff",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(
-          payload,
-          { ...shareA, serviceId: syntheticService.id },
-          serverSecret,
-        ),
+        createProductionHandoffPreview(\n          payload,\n          { ...shareA, serviceId: syntheticService.id },\n          serverSecret,\n          serverConsentVersion,\n        ),
       "synthetic_service_blocked",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(
-          payload,
-          {
+        createProductionHandoffPreview(\n          payload,\n          {
             ...shareA,
             primarySupportTopic: "education_student",
             secondarySupportTopics: [],
-          },
-          serverSecret,
-        ),
+          },\n          serverSecret,\n          serverConsentVersion,\n        ),
       "service_context_mismatch",
     );
 
     await expectHandoffError(
       () =>
-        createProductionHandoffPreview(
-          payload,
-          {
+        createProductionHandoffPreview(\n          payload,\n          {
             ...shareA,
             optionalNote: "This note has no separate consent.",
             optionalNoteAccepted: false,
-          },
-          serverSecret,
-        ),
+          },\n          serverSecret,\n          serverConsentVersion,\n        ),
       "optional_note_consent_required",
     );
 
@@ -396,20 +360,14 @@ async function main() {
       secondarySupportTopics: [],
       serviceArea: "nicosia",
       preferences: [],
-      consentVersion: "prod4-ci-v1",
       optionalNoteAccepted: false,
     };
-    const previewB = await createProductionHandoffPreview(payload, shareB, serverSecret);
-    const second = await persistProductionHandoff(
-      payload,
-      {
-        ...shareB,
-        consentAccepted: true,
+    const previewB = await createProductionHandoffPreview(payload, shareB, serverSecret, serverConsentVersion);
+    const second = await persistProductionHandoff(\n      payload,\n      {
+        ...shareB,\n        consentAccepted: true,
         previewToken: previewB.previewToken,
       },
-      "prod4:" + randomUUID(),
-      serverSecret,
-    );
+      "prod4:" + randomUUID(),\n      serverSecret,\n      serverConsentVersion,\n    );
     created.requests.push(Number(second.requestId));
     const storedB = await payload.findByID({
       collection: "contact-requests",
