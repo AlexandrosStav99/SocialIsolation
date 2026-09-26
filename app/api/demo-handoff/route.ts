@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { getPayload } from "payload";
-import config from "@payload-config";
 import { createSharingPreview } from "@/lib/handoff/preview";
 import { createConsentedContactRequest } from "@/lib/handoff/create-request";
 import { requireAuthenticatedActor } from "@/lib/provider/auth";
@@ -9,7 +7,6 @@ import { transitionRequestStatus } from "@/lib/provider/workflow";
 import { supportTopics, serviceAreas, type SupportTopic, type ServiceArea } from "@/lib/domain/data-boundaries";
 import { securityErrorResponse } from "@/lib/security/api-response";
 import { assertAllowedBrowserOrigin, noStoreHeaders, readJsonBodyLimited } from "@/lib/security/http-hardening";
-import { consumeRateLimit, publicRateLimitSubject, rateLimitPolicies } from "@/lib/security/rate-limit";
 
 const DEMO_SERVICES = {
   "demo-community-online": { providerOrganisationId: "demo-community-provider", integrated: true },
@@ -46,13 +43,6 @@ function error(message: string, code: string, status = 400) {
 export async function POST(request: Request) {
   try {
     assertAllowedBrowserOrigin(request);
-    const payload = await getPayload({ config });
-    await consumeRateLimit(
-      payload,
-      rateLimitPolicies.demoHandoff,
-      publicRateLimitSubject(request),
-    );
-
     const parsed = asRecord(await readJsonBodyLimited(request, 4 * 1024));
     if (!parsed) return error("Request body must be an object", "invalid_request");
 
