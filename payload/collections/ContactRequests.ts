@@ -3,6 +3,7 @@ export const ContactRequests: CollectionConfig = {
   slug: "contact-requests",
   admin: { useAsTitle: "id" },
   fields: [
+    { name:"publicRequestId", type:"text", required:true, unique:true, index:true, hidden:true },
     { name:"providerOrganisation", type:"relationship", relationTo:"provider-organisations", required:true, index:true },
     { name:"service", type:"relationship", relationTo:"services", required:true },
     { name:"preferredName", type:"text" },
