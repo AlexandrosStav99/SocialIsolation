@@ -134,6 +134,8 @@ try {
       immediateSupportCapable: false,
       integrated: true,
       productionHandoffEnabled: true,
+      productionHandoffProvider: provider.id,
+      productionHandoffOrganisation: organisation.id,
       informationSource: "Controlled PROD-5 CI fixture - not a real provider",
       informationCheckedAt: baseNow.toISOString(),
     },
