@@ -16,6 +16,7 @@ export const Services: CollectionConfig = {
     { name: "availability", type: "text" },
     { name: "immediateSupportCapable", type: "checkbox", required: true, defaultValue: false },
     { name: "integrated", type: "checkbox", required: true, defaultValue: false },
+    { name: "productionHandoffEnabled", type: "checkbox", required: true, defaultValue: false, admin: { description: "Fail-closed production gate. Enable only for a provider/service with approved live assisted-contact participation." } },
     { name: "informationSource", type: "text", required: true },
     { name: "informationCheckedAt", type: "date", required: true },
   ],
