@@ -3,12 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed production checkpoint: **PROD-5 — retention and deletion automation**  
-Latest merged production PR: **#38**  
-Latest merged production commit: `880dcb2cddc493ec74e2b8caf3a52e70d417b951`  
-PR #38 final CI: **#235 green**  
+Latest completed production checkpoint: **PROD-6 — API and abuse hardening**  
+Latest merged production PR: **#40**  
+Latest merged production commit: `944d635a0a94fc2046c23f9208871e1aeb00ad8e`  
+PR #40 final CI: **#245 green**  
 Active programme: **Production-readiness hardening**  
-Exact next engineering stage: **PROD-6 — API and abuse hardening**
+Exact next engineering stage: **PROD-7 — observability and operations**
 
 ## Read this first
 
@@ -242,6 +242,7 @@ Completed stages:
 - **PROD-3 — real provider workspace foundation**, PR #34, CI #184 green.
 - **PROD-4 — production handoff persistence and idempotency**, PR #36, CI #211 green.
 - **PROD-5 — retention and deletion automation**, PR #38, CI #235 green.
+- **PROD-6 — API and abuse hardening**, PR #40, CI #245 green.
 
 PROD-2 uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
 
@@ -251,7 +252,7 @@ PROD-1 established explicit development/demo/production runtime modes. Productio
 
 PROD-4 adds a production-only, server-authoritative Sharing Preview and consented handoff boundary. The recipient organisation is derived from the selected service/provider, synthetic/demo records remain blocked, exact shared data are bound to a signed preview token, ContactRequest and ConsentRecord are persisted transactionally, and exact retries are idempotent. The service-level production handoff gate defaults closed and is super-admin controlled. Management bearer credentials remain random, are stored only as a hash plus encrypted replay envelope, and are never exposed to providers.
 
-Continue with **PROD-6 API and abuse hardening**. Add production-safe request/body limits, strict content-type and validation boundaries, origin/CSRF protections where browser credentials are involved, security headers and rate-limiting controls without inventing or assuming deployment infrastructure. Any shared rate-limit store or trusted-proxy contract that depends on deployment must remain explicit and fail safely.
+Continue with **PROD-7 observability and operations**. Add health/readiness boundaries, privacy-safe structured operational logging, incident/runbook guidance and explicit backup/restore expectations without inventing a hosting provider, monitoring vendor, backup schedule, on-call team or incident-response approval. Operational endpoints must not leak secrets, identities, provider data or sensitive dependency details.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -269,8 +270,10 @@ The external validation programme remains open in parallel. Engineering progress
 - PROD-3 PR #34: **merged as `0c33650453091abe524d5eacefeb04339c9a4a7b`; final CI #184 green**.
 - PROD-4 PR #36: **merged as `c4fab425d49d43b2c5803427d669512a1052b1f9`; final PR CI #211 green**.
 - PROD-5 PR #38: **merged as `880dcb2cddc493ec74e2b8caf3a52e70d417b951`; final PR CI #235 green**.
+- PROD-6 PR #40: **merged as `944d635a0a94fc2046c23f9208871e1aeb00ad8e`; final PR CI #245 green**.
 - Production handoff boundary: **server-derived recipient, signed exact Sharing Preview, atomic request+consent persistence, synthetic-service blocking, hashed idempotency key, random protected management credential and retry-safe exact replay**.
 - Retention/deletion boundary: **explicit retention configuration with no legal defaults, production withdrawal by opaque public request ID plus management credential, closed-request retention purge, expired-session purge, minimal deletion tombstones and PostgreSQL regression coverage**.
+- API/abuse boundary: **bounded JSON parsing, strict JSON content type, production/browser origin controls, shared PostgreSQL fixed-window rate limiting with HMAC-only client buckets, explicit trusted-ingress client-IP configuration, baseline security headers and Next.js 16.3.6 security patch**.
 - Provider workspace: **Payload/PostgreSQL-backed, organisation-scoped and session-authenticated; staff access is assigned-request-only; mutations are auditable**.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
@@ -298,8 +301,8 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 - PROD-3 real provider workspace foundation: **complete; PR #34, CI #184 green**.
 - PROD-4 production handoff: **complete; PR #36, CI #211 green**.
 - PROD-5 retention/deletion automation: **complete; PR #38, CI #235 green**.
-- PROD-6 API and abuse hardening: **next stage**.
-- PROD-7 observability and operations: **not started**.
+- PROD-6 API and abuse hardening: **complete; PR #40, CI #245 green**.
+- PROD-7 observability and operations: **next stage**.
 - PROD-8 deployment readiness: **not started**.
 - PROD-9 accessibility execution readiness: **not started**.
 - PROD-10 real-data onboarding readiness: **not started**.
@@ -322,4 +325,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Create a focused PROD-6 branch from current `main`. Harden public and authenticated API boundaries with explicit request-size/content-type validation, origin/CSRF controls for browser-authenticated mutations, security headers and rate-limiting mechanics that are valid for the intended deployment model. Do not fake a distributed limiter with process-local memory or silently trust proxy headers without an explicit deployment contract.
+Create a focused PROD-7 branch from current `main`. Implement privacy-safe health/readiness and operational telemetry boundaries, document incident response and backup/restore expectations, and make dependencies/failure modes observable without exposing user/provider data. Do not invent a monitoring vendor, production backup policy, RTO/RPO, on-call rota or infrastructure that has not been selected.
