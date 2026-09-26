@@ -30,7 +30,7 @@
     "test:production-config": "node --experimental-transform-types scripts/check-production-config.mjs",
     "test:production-auth": "node scripts/check-production-auth.mjs",
     "test:production-provider-workspace": "node scripts/check-production-provider-workspace.mjs",
-    "test:provider-workspace-postgres": "tsx scripts/check-provider-workspace-persistence.ts"
+    "test:provider-workspace-postgres": "node --experimental-transform-types scripts/check-provider-workspace-persistence.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.1",
