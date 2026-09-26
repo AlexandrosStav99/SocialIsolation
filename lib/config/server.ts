@@ -45,6 +45,66 @@ export function getProductionConsentVersion(): string {
   return value;
 }
 
+export function getPublicAppOrigin(): string {
+  const raw = requireServerValue("TALKPOINT_PUBLIC_APP_ORIGIN");
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error("TALKPOINT_PUBLIC_APP_ORIGIN must be an absolute URL");
+  }
+  if (
+    parsed.protocol !== "https:" ||
+    parsed.username ||
+    parsed.password ||
+    parsed.pathname !== "/" ||
+    parsed.search ||
+    parsed.hash
+  ) {
+    throw new Error(
+      "TALKPOINT_PUBLIC_APP_ORIGIN must be an HTTPS origin without credentials, path, query or fragment",
+    );
+  }
+  return parsed.origin;
+}
+
+export function getTrustedClientIpHeaderName(): string {
+  const configured = process.env.TALKPOINT_TRUSTED_CLIENT_IP_HEADER?.trim().toLowerCase();
+  const value = configured || (getRuntimeMode() === "production" ? "" : "x-forwarded-for");
+  if (!value) {
+    throw new Error(
+      "TALKPOINT_TRUSTED_CLIENT_IP_HEADER must name the ingress-controlled client IP header in production",
+    );
+  }
+  if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(value)) {
+    throw new Error("TALKPOINT_TRUSTED_CLIENT_IP_HEADER is invalid");
+  }
+  if (["authorization", "cookie", "set-cookie", "host", "content-length"].includes(value)) {
+    throw new Error("TALKPOINT_TRUSTED_CLIENT_IP_HEADER cannot use a sensitive HTTP header");
+  }
+  return value;
+}
+
+export function getRateLimitHashSecret(): string {
+  const configured = process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET?.trim();
+  if (!configured) {
+    if (getRuntimeMode() === "production") {
+      throw new Error("Missing required server environment variable: TALKPOINT_RATE_LIMIT_HASH_SECRET");
+    }
+    return getPayloadSecret();
+  }
+  if (configured.length < 32) {
+    throw new Error("TALKPOINT_RATE_LIMIT_HASH_SECRET must be at least 32 characters");
+  }
+  if (
+    getRuntimeMode() === "production" &&
+    /(change-me|changeme|placeholder|example|ci-only|development|dev-secret|test-secret)/i.test(configured)
+  ) {
+    throw new Error("TALKPOINT_RATE_LIMIT_HASH_SECRET contains a development or placeholder value");
+  }
+  return configured;
+}
+
 export function getProductionHandoffSecret(): string {
   const value = requireServerValue("TALKPOINT_HANDOFF_CREDENTIAL_SECRET");
   if (value.length < 32) {
@@ -125,5 +185,8 @@ export function validateRuntimeConfiguration(): TalkPointRuntimeMode {
 
   validateProductionSecret(payloadSecret);
   validateProductionDatabaseUrl(databaseUrl);
+  getPublicAppOrigin();
+  getTrustedClientIpHeaderName();
+  getRateLimitHashSecret();
   return mode;
 }

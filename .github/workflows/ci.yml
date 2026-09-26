@@ -115,6 +115,9 @@ jobs:
       - name: Production retention and deletion boundary checks
         run: npm run test:production-retention
 
+      - name: Production API and abuse hardening checks
+        run: npm run test:production-api-hardening
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
@@ -123,6 +126,9 @@ jobs:
           PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "DROP DATABASE talkpoint WITH (FORCE);"
           PGPASSWORD=ci-only psql -h 127.0.0.1 -U talkpoint -d postgres -c "CREATE DATABASE talkpoint OWNER talkpoint;"
           timeout 120s npm run payload -- migrate
+
+      - name: Verify API rate-limit persistence
+        run: timeout 120s npm run test:api-rate-limit-postgres
 
       - name: Verify provider workspace persistence and organisation isolation
         run: timeout 120s npm run test:provider-workspace-postgres

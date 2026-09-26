@@ -3,6 +3,7 @@ import {
   isSyntheticDirectoryFallbackAllowed,
   validateRuntimeConfiguration,
 } from "../lib/config/server.ts";
+import { assertAllowedBrowserOrigin } from "../lib/security/http-hardening.ts";
 
 const originalEnv = { ...process.env };
 
@@ -39,9 +40,60 @@ try {
   process.env.PAYLOAD_SECRET = "a-strong-production-secret-with-more-than-32-characters";
   process.env.TALKPOINT_ALLOW_SYNTHETIC_DIRECTORY_FALLBACK = "false";
   process.env.TALKPOINT_ENABLE_DEMO_DASHBOARD = "false";
+  process.env.TALKPOINT_PUBLIC_APP_ORIGIN = "https://talkpoint.example.test";
+  process.env.TALKPOINT_TRUSTED_CLIENT_IP_HEADER = "x-talkpoint-client-ip";
+  process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET = "a-dedicated-production-rate-limit-secret-value";
   if (getRuntimeMode() !== "production") throw new Error("Production runtime mode was not preserved");
   if (isSyntheticDirectoryFallbackAllowed()) throw new Error("Production fallback must always be disabled");
   validateRuntimeConfiguration();
+
+  assertAllowedBrowserOrigin(
+    new Request("http://internal-app.local/api/provider/requests", {
+      method: "PATCH",
+      headers: { Origin: "https://talkpoint.example.test" },
+    }),
+    { requireForCookieAuth: true },
+  );
+  expectThrows(
+    "cross-origin production browser request",
+    () =>
+      assertAllowedBrowserOrigin(
+        new Request("http://internal-app.local/api/provider/requests", {
+          method: "PATCH",
+          headers: { Origin: "https://cross-origin.invalid" },
+        }),
+        { requireForCookieAuth: true },
+      ),
+    /origin/i,
+  );
+  expectThrows(
+    "cookie-authenticated mutation without origin",
+    () =>
+      assertAllowedBrowserOrigin(
+        new Request("http://internal-app.local/api/provider/requests", {
+          method: "PATCH",
+          headers: { Cookie: "payload-token=synthetic-ci-cookie" },
+        }),
+        { requireForCookieAuth: true },
+      ),
+    /same-origin/i,
+  );
+
+  delete process.env.TALKPOINT_PUBLIC_APP_ORIGIN;
+  expectThrows("missing public app origin", () => validateRuntimeConfiguration(), /public_app_origin/i);
+  process.env.TALKPOINT_PUBLIC_APP_ORIGIN = "http://talkpoint.example.test";
+  expectThrows("non-HTTPS public app origin", () => validateRuntimeConfiguration(), /public_app_origin/i);
+  process.env.TALKPOINT_PUBLIC_APP_ORIGIN = "https://talkpoint.example.test";
+
+  delete process.env.TALKPOINT_TRUSTED_CLIENT_IP_HEADER;
+  expectThrows("missing trusted client IP header", () => validateRuntimeConfiguration(), /trusted_client_ip_header/i);
+  process.env.TALKPOINT_TRUSTED_CLIENT_IP_HEADER = "x-talkpoint-client-ip";
+
+  delete process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET;
+  expectThrows("missing rate-limit hash secret", () => validateRuntimeConfiguration(), /rate_limit_hash_secret/i);
+  process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET = "change-me";
+  expectThrows("placeholder rate-limit hash secret", () => validateRuntimeConfiguration(), /rate_limit_hash_secret/i);
+  process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET = "a-dedicated-production-rate-limit-secret-value";
 
   process.env.TALKPOINT_ALLOW_SYNTHETIC_DIRECTORY_FALLBACK = "true";
   expectThrows(
