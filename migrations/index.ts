@@ -1,6 +1,7 @@
 import * as migration_20260922_073920_initial_runtime_schema from './20260922_073920_initial_runtime_schema';
 import * as migration_20260926_152500_auth_hardening from './20260926_152500_auth_hardening';
 import * as migration_20260926_190000_production_handoff from './20260926_190000_production_handoff';
+import * as migration_20260926_203000_retention_deletion from './20260926_203000_retention_deletion';
 
 export const migrations = [
   {
@@ -17,5 +18,10 @@ export const migrations = [
     up: migration_20260926_190000_production_handoff.up,
     down: migration_20260926_190000_production_handoff.down,
     name: '20260926_190000_production_handoff'
+  },
+  {
+    up: migration_20260926_203000_retention_deletion.up,
+    down: migration_20260926_203000_retention_deletion.down,
+    name: '20260926_203000_retention_deletion'
   },
 ];
