@@ -37,6 +37,14 @@ export function getPayloadSecret(): string {
   return requireServerValue("PAYLOAD_SECRET");
 }
 
+export function getProductionConsentVersion(): string {
+  const value = requireServerValue("TALKPOINT_PRODUCTION_CONSENT_VERSION");
+  if (value.length > 100) {
+    throw new Error("TALKPOINT_PRODUCTION_CONSENT_VERSION must be 100 characters or fewer");
+  }
+  return value;
+}
+
 export function getEphemeralSessionTtlMinutes(): number {
   const raw = process.env.TALKPOINT_EPHEMERAL_SESSION_TTL_MINUTES ?? "120";
   const value = Number(raw);
