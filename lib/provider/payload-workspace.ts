@@ -1,12 +1,12 @@
 import type { Payload, Where } from "payload";
-import type { AuthenticatedActor } from "./auth";
-import { ProviderWorkspaceError } from "./payload-auth";
+import type { AuthenticatedActor } from "./auth.ts";
+import { ProviderWorkspaceError } from "./payload-auth.ts";
 import {
   assertRequestCanBeAssigned,
   assertRequestStatusTransition,
   requestStatuses,
   type RequestStatus,
-} from "./workflow";
+} from "./workflow.ts";
 
 const PROVIDER_ROLES = new Set(["provider_manager", "provider_staff"]);
 
