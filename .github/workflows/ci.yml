@@ -103,6 +103,9 @@ jobs:
       - name: Production configuration fail-closed checks
         run: npm run test:production-config
 
+      - name: Production authentication hardening checks
+        run: npm run test:production-auth
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
