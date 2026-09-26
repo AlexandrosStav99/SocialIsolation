@@ -269,6 +269,12 @@ async function main() {
         stored.managementTokenHash !== first.managementId,
       "Management credential must be stored only as a hash",
     );
+    assert(
+      typeof stored.managementTokenEnvelope === "string" &&
+        stored.managementTokenEnvelope.startsWith("v1.") &&
+        !stored.managementTokenEnvelope.includes(first.managementId),
+      "Management credential replay envelope must be encrypted rather than plaintext",
+    );
 
     const consentResult = await payload.find({
       collection: "consent-records",
