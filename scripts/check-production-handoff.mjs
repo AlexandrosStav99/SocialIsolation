@@ -35,6 +35,9 @@ for (const forbidden of [
 
 for (const required of [
   "productionHandoffEnabled",
+  "productionHandoffProvider",
+  "productionHandoffOrganisation",
+  "production_handoff_scope_mismatch",
   "createProductionHandoffPreview",
   "previewTokenFor",
   "timingSafeEqual",
@@ -87,7 +90,7 @@ for (const forbidden of ['"providerOrganisationId"', '"structuredSupportSummary"
 if (!services.includes('name: "productionHandoffEnabled"') || !services.includes("defaultValue: false")) {
   throw new Error("Production handoff service gate must default closed");
 }
-if (!services.includes("isSuperAdminUser") || !services.includes("access: { create:")) {
+if (!services.includes("isSuperAdminUser") || !services.includes("productionHandoffProvider") || !services.includes("productionHandoffOrganisation") || !services.includes("access: { create:")) {
   throw new Error("Production handoff activation must be restricted to super admins");
 }
 if (!config.includes("getProductionConsentVersion") || !config.includes("TALKPOINT_PRODUCTION_CONSENT_VERSION")) {
@@ -101,6 +104,8 @@ for (const required of ['name:"managementTokenEnvelope"', 'name:"idempotencyKeyH
 }
 for (const required of [
   '"production_handoff_enabled"',
+  '"production_handoff_provider_id"',
+  '"production_handoff_organisation_id"',
   '"management_token_envelope"',
   '"idempotency_key_hash"',
   '"idempotency_payload_hash"',
