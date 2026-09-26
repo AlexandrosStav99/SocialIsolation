@@ -11,6 +11,11 @@ import { ConsentRecords } from "./payload/collections/ConsentRecords.ts";
 import { EphemeralSessions } from "./payload/collections/EphemeralSessions.ts";
 import { AnonymousAnalyticsEvents } from "./payload/collections/AnonymousAnalyticsEvents.ts";
 import { ProviderAuditEvents } from "./payload/collections/ProviderAuditEvents.ts";
+import {
+  hiddenSystemCollection,
+  platformManagedCollection,
+  providerUserAdminCollection,
+} from "./payload/access.ts";
 const apiRateLimitBuckets = pgTable(
   "api_rate_limit_buckets",
   {
@@ -30,11 +35,6 @@ const apiRateLimitBuckets = pgTable(
   ],
 );
 
-import {
-  hiddenSystemCollection,
-  platformManagedCollection,
-  providerUserAdminCollection,
-} from "./payload/access.ts";
 
 export default buildConfig({
   secret: getPayloadSecret(),
