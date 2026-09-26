@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getRuntimeMode } from "@/lib/config/server";
+import { securityErrorResponse } from "@/lib/security/api-response";
+import { assertAllowedBrowserOrigin, noStoreHeaders, readJsonBodyLimited } from "@/lib/security/http-hardening";
+import { consumeRateLimit, publicRateLimitSubject, rateLimitPolicies } from "@/lib/security/rate-limit";
 import {
   DeletionError,
   withdrawProductionRequest,
@@ -9,10 +12,6 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const noStoreHeaders = {
-  "Cache-Control": "no-store",
-};
 
 const allowedFields = new Set(["requestId", "managementId"]);
 
@@ -23,6 +22,8 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 function errorResponse(error: unknown) {
+  const securityResponse = securityErrorResponse(error);
+  if (securityResponse) return securityResponse;
   if (error instanceof DeletionError) {
     return NextResponse.json(
       { error: error.message, code: error.code },
@@ -48,12 +49,15 @@ export async function POST(request: Request) {
       );
     }
 
-    let parsed: unknown;
-    try {
-      parsed = await request.json();
-    } catch {
-      throw new DeletionError(400, "invalid_json", "Request body must be valid JSON");
-    }
+    assertAllowedBrowserOrigin(request);
+    const payload = await getPayload({ config });
+    await consumeRateLimit(
+      payload,
+      rateLimitPolicies.productionWithdrawal,
+      publicRateLimitSubject(request),
+    );
+
+    const parsed = await readJsonBodyLimited(request, 4 * 1024);
 
     const body = asRecord(parsed);
     if (!body) {
@@ -68,7 +72,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const payload = await getPayload({ config });
     const result = await withdrawProductionRequest(
       payload,
       body.requestId,
