@@ -112,6 +112,9 @@ jobs:
       - name: Production handoff boundary checks
         run: npm run test:production-handoff
 
+      - name: Production retention and deletion boundary checks
+        run: npm run test:production-retention
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
@@ -126,6 +129,9 @@ jobs:
 
       - name: Verify production handoff persistence and idempotency
         run: timeout 120s npm run test:production-handoff-postgres
+
+      - name: Verify retention, withdrawal and deletion persistence
+        run: timeout 120s npm run test:retention-postgres
 
       - name: Seed synthetic demonstration directory
         run: timeout 120s npm run seed:demo
