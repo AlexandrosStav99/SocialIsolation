@@ -5,6 +5,7 @@ const PLATFORM_ROLES = new Set(["super_admin", "platform_admin"]);
 type UserLike = {
   id?: string | number;
   role?: string | null;
+  active?: boolean | null;
 };
 
 function getUser(user: unknown): UserLike | null {
@@ -13,12 +14,14 @@ function getUser(user: unknown): UserLike | null {
 }
 
 export function isPlatformAdminUser(user: unknown): boolean {
-  const role = getUser(user)?.role;
-  return typeof role === "string" && PLATFORM_ROLES.has(role);
+  const candidate = getUser(user);
+  const role = candidate?.role;
+  return candidate?.active !== false && typeof role === "string" && PLATFORM_ROLES.has(role);
 }
 
 export function isSuperAdminUser(user: unknown): boolean {
-  return getUser(user)?.role === "super_admin";
+  const candidate = getUser(user);
+  return candidate?.active !== false && candidate?.role === "super_admin";
 }
 
 const platformAdminOnly: Access = ({ req }) => isPlatformAdminUser(req.user);
@@ -27,7 +30,9 @@ const denyExternalAccess: Access = () => false;
 
 const readSelfOrSuperAdmin: Access = ({ req }) => {
   if (isSuperAdminUser(req.user)) return true;
-  const id = getUser(req.user)?.id;
+  const candidate = getUser(req.user);
+  if (candidate?.active === false) return false;
+  const id = candidate?.id;
   if (id === undefined || id === null) return false;
   return { id: { equals: id } };
 };
