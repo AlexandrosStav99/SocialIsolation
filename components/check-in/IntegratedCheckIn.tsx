@@ -20,7 +20,6 @@ import type { ProviderDirectoryRecord, ServiceDirectoryRecord } from "@/lib/dire
 import { discoverServices } from "@/lib/routing/discovery";
 import { routeSafety } from "@/lib/safety/router";
 import { safetyContent } from "@/lib/safety/content";
-import { demoProviders, demoServices } from "@/data/demo-directory";
 import HandoffPreview from "./HandoffPreview";
 
 const topicLabels: Record<ConversationLanguage, Record<SupportTopic, string>> = {
@@ -129,6 +128,8 @@ type DirectoryApiResponse = {
   services?: SerializedService[];
 };
 
+type DirectoryStatus = "loading" | "ready" | "unavailable";
+
 function providerNameFor(service: ServiceDirectoryRecord, providers: ProviderDirectoryRecord[]) {
   return providers.find((provider) => provider.id === service.providerId)?.name ?? "Demonstration provider";
 }
@@ -185,8 +186,9 @@ export default function IntegratedCheckIn() {
   const [demoSubmitting, setDemoSubmitting] = useState(false);
   const [safetySignal, setSafetySignal] = useState(false);
   const [browseAll, setBrowseAll] = useState(false);
-  const [directoryProviders, setDirectoryProviders] = useState<ProviderDirectoryRecord[]>(demoProviders);
-  const [directoryServices, setDirectoryServices] = useState<ServiceDirectoryRecord[]>(demoServices);
+  const [directoryProviders, setDirectoryProviders] = useState<ProviderDirectoryRecord[]>([]);
+  const [directoryServices, setDirectoryServices] = useState<ServiceDirectoryRecord[]>([]);
+  const [directoryStatus, setDirectoryStatus] = useState<DirectoryStatus>("loading");
 
   useEffect(() => {
     const root = document.documentElement;
@@ -204,9 +206,15 @@ export default function IntegratedCheckIn() {
     async function hydrateDirectory() {
       try {
         const response = await fetch("/api/directory", { cache: "no-store" });
-        if (!response.ok) return;
+        if (!response.ok) {
+          if (!cancelled) setDirectoryStatus("unavailable");
+          return;
+        }
         const data = (await response.json()) as DirectoryApiResponse;
-        if (!Array.isArray(data.providers) || !Array.isArray(data.services)) return;
+        if (!Array.isArray(data.providers) || !Array.isArray(data.services)) {
+          if (!cancelled) setDirectoryStatus("unavailable");
+          return;
+        }
 
         const providers = data.providers.map((provider) => ({
           ...provider,
@@ -226,9 +234,12 @@ export default function IntegratedCheckIn() {
         if (!cancelled && providers.length > 0 && services.length > 0) {
           setDirectoryProviders(providers);
           setDirectoryServices(services);
+          setDirectoryStatus("ready");
+        } else if (!cancelled) {
+          setDirectoryStatus("unavailable");
         }
       } catch {
-        // The static synthetic directory remains the explicit university-demo fallback.
+        if (!cancelled) setDirectoryStatus("unavailable");
       }
     }
 
@@ -245,7 +256,10 @@ export default function IntegratedCheckIn() {
 
   const results = useMemo(
     () =>
-      state.stage === "complete" && state.primarySupportTopic && state.serviceArea
+      directoryStatus === "ready" &&
+      state.stage === "complete" &&
+      state.primarySupportTopic &&
+      state.serviceArea
         ? discoverServices(directoryServices, {
             primaryTopic: state.primarySupportTopic,
             secondaryTopics: state.secondarySupportTopics,
@@ -253,7 +267,7 @@ export default function IntegratedCheckIn() {
             preferredLanguages: [language],
           })
         : null,
-    [directoryServices, state, language],
+    [directoryServices, directoryStatus, state, language],
   );
 
   const pendingService = useMemo(
@@ -829,6 +843,32 @@ export default function IntegratedCheckIn() {
                     </button>
                   </div>
                 </>
+              )}
+
+              {state.stage === "complete" && directoryStatus === "loading" && (
+                <p role="status" className="rounded-2xl border border-border bg-warm-bg/60 p-4 text-sm leading-relaxed text-muted">
+                  {language === "en"
+                    ? "Loading the service directory…"
+                    : "Φόρτωση του καταλόγου υπηρεσιών…"}
+                </p>
+              )}
+
+              {state.stage === "complete" && directoryStatus === "unavailable" && (
+                <div role="alert" className="rounded-2xl border border-border bg-warm-bg/60 p-4 sm:p-5">
+                  <h2 className="text-lg font-bold text-text">
+                    {language === "en"
+                      ? "Service directory temporarily unavailable"
+                      : "Ο κατάλογος υπηρεσιών δεν είναι προσωρινά διαθέσιμος"}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">
+                    {language === "en"
+                      ? "TalkPoint is not showing substitute or fictional provider records when the directory cannot be loaded. You can go back and review your choices or try again later."
+                      : "Το TalkPoint δεν εμφανίζει υποκατάστατες ή φανταστικές εγγραφές παρόχων όταν ο κατάλογος δεν μπορεί να φορτωθεί. Μπορείς να επιστρέψεις στις επιλογές σου ή να δοκιμάσεις ξανά αργότερα."}
+                  </p>
+                  <button className={`${secondaryAction} mt-4`} onClick={() => reopenForEdit("service_area")}>
+                    {language === "en" ? "Review my choices" : "Έλεγχος επιλογών"}
+                  </button>
+                </div>
               )}
 
               {state.stage === "complete" && results?.kind === "matches" && (

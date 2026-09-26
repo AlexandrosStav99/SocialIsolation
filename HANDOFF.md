@@ -1,6 +1,6 @@
 # TalkPoint Continuation Handoff
 
-Last updated: 2026-09-22  
+Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
 Latest completed implementation checkpoint: **Payload-backed MVP directory integration**  
@@ -230,9 +230,17 @@ Not yet defensible:
 9. Do not replace the minimal synthetic dataset with fake comprehensive coverage.
 10. Green CI is engineering evidence, not proof of legal compliance, safety suitability or human usability.
 
-# Immediate continuation
+# Production-readiness continuation
 
-> Do not start another feature phase. Execute the prepared real validation activities. Start with manual accessibility and target-user usability. In parallel, arrange safeguarding/domain and privacy/legal review if required by the academic submission or any intended real deployment. Implement code only when those activities expose a concrete defect or frozen-requirement failure.
+Production hardening is now an authorised programme layered on top of the frozen MVP. Do not reopen product scope.
+
+Current stage: **PROD-1 — production configuration and fail-closed behaviour**, PR #31.
+
+PROD-1 establishes explicit development/demo/production runtime modes. Production must never silently use synthetic provider records. If verified production directory data is unavailable, the public directory must return a safe unavailable state and the browser must not fall back to embedded fictional providers.
+
+After PROD-1 is green and merged, continue with **PROD-2 production authentication hardening**. Keep each stage focused and preserve least privilege, organisation isolation and the anonymous/identifiable privacy split.
+
+The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
 # Current checkpoint
 
@@ -241,7 +249,8 @@ Not yet defensible:
 - Payload CMS runtime and committed migration: **implemented and CI-verified**.
 - Synthetic provider/service data: **seeded into Payload/PostgreSQL in CI**.
 - Public check-in directory: **Payload/PostgreSQL-backed with explicit static synthetic fallback**.
-- PR #29 final CI #146: **green**.
+- PR #30 Payload Admin / REST boundary: **merged; CI #162 green**.
+- PROD-1 PR #31: **open; CI #164 pending at this handoff update**.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
 - UX-0 through UX-5: **complete and merged**.
@@ -253,3 +262,43 @@ Not yet defensible:
 - Final privacy/legal review: **not complete**.
 - Real-provider/directory validation: **not complete where applicable**.
 - Academic closure / full frozen Definition of Done: **not complete**.
+
+
+---
+
+## Production blocker register
+
+Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
+
+### Engineering
+
+- PROD-1 production configuration/fail-closed directory: **in progress in PR #31**.
+- PROD-2 production authentication hardening: **not started**.
+- PROD-3 real provider workspace foundation: **not started**.
+- PROD-4 production handoff: **not started**.
+- PROD-5 retention/deletion automation: **not started**.
+- PROD-6 API and abuse hardening: **not started**.
+- PROD-7 observability and operations: **not started**.
+- PROD-8 deployment readiness: **not started**.
+- PROD-9 accessibility execution readiness: **not started**.
+- PROD-10 real-data onboarding readiness: **not started**.
+- PROD-11 safety production-gate mechanics: **not started**.
+- PROD-12 privacy/legal production-gate mechanics: **not started**.
+
+### External gates
+
+Still unresolved and must not be self-approved:
+
+- real provider partnership/approval;
+- verified Cyprus provider directory and freshness ownership;
+- qualified safeguarding/domain review;
+- approved Cyprus immediate-support resources and exact wording;
+- privacy/legal review;
+- final production retention decisions;
+- production infrastructure/DNS/secrets;
+- manual accessibility testing;
+- target-user usability testing.
+
+## Exact next recommended action
+
+Finish PR #31 without weakening existing tests: inspect CI #164, fix any root failures, merge only when fully green, then update this handoff to mark PROD-1 complete and begin PROD-2 from the resulting `main`.
