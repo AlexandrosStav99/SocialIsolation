@@ -3,12 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed production checkpoint: **PROD-4 — production handoff persistence and idempotency**  
-Latest merged production PR: **#36**  
-Latest merged production commit: `c4fab425d49d43b2c5803427d669512a1052b1f9`  
-PR #36 final CI: **#211 green**  
+Latest completed production checkpoint: **PROD-5 — retention and deletion automation**  
+Latest merged production PR: **#38**  
+Latest merged production commit: `880dcb2cddc493ec74e2b8caf3a52e70d417b951`  
+PR #38 final CI: **#235 green**  
 Active programme: **Production-readiness hardening**  
-Exact next engineering stage: **PROD-5 — retention and deletion automation**
+Exact next engineering stage: **PROD-6 — API and abuse hardening**
 
 ## Read this first
 
@@ -241,6 +241,7 @@ Completed stages:
 - **PROD-2 — production authentication hardening**, PR #33, CI #172 green.
 - **PROD-3 — real provider workspace foundation**, PR #34, CI #184 green.
 - **PROD-4 — production handoff persistence and idempotency**, PR #36, CI #211 green.
+- **PROD-5 — retention and deletion automation**, PR #38, CI #235 green.
 
 PROD-2 uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
 
@@ -250,7 +251,9 @@ PROD-1 established explicit development/demo/production runtime modes. Productio
 
 PROD-4 adds a production-only, server-authoritative Sharing Preview and consented handoff boundary. The recipient organisation is derived from the selected service/provider, synthetic/demo records remain blocked, exact shared data are bound to a signed preview token, ContactRequest and ConsentRecord are persisted transactionally, and exact retries are idempotent. The service-level production handoff gate defaults closed and is super-admin controlled. Management bearer credentials remain random, are stored only as a hash plus encrypted replay envelope, and are never exposed to providers.
 
-Continue with **PROD-5 retention and deletion automation**. Implement configurable, auditable deletion mechanics without inventing legal retention durations. Preserve minimal consent evidence where the frozen withdrawal/deletion contract requires it, and keep final retention values subject to privacy/legal approval.
+PROD-5 adds production request withdrawal and scheduler-ready retention automation without inventing legal durations. Public request management now uses opaque random UUIDs instead of internal serial IDs; wrong IDs and wrong bearer credentials share one enumeration-safe failure. Deletion transactionally removes identifiable ContactRequests while retaining only minimal ConsentRecord evidence, and a minimal hash-only tombstone prevents delayed retries from recreating a deleted handoff. Expired anonymous sessions purge from their existing expiresAt boundary; closed requests, consent evidence, provider audit events and anonymous analytics use explicit policy values with no engineering defaults.
+
+Continue with **PROD-6 API and abuse hardening**. Focus on bounded request bodies, route-specific rate limiting, origin/CSRF protections where relevant, safe security headers and rejection of malformed/oversized input. Do not introduce user tracking or weaken anonymous-first operation.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -267,6 +270,8 @@ The external validation programme remains open in parallel. Engineering progress
 - PROD-2 PR #33: **merged; final CI #172 green**; duplicate PR #32 closed unmerged as superseded.
 - PROD-3 PR #34: **merged as `0c33650453091abe524d5eacefeb04339c9a4a7b`; final CI #184 green**.
 - PROD-4 PR #36: **merged as `c4fab425d49d43b2c5803427d669512a1052b1f9`; final PR CI #211 green**.
+- PROD-5 PR #38: **merged as `880dcb2cddc493ec74e2b8caf3a52e70d417b951`; final PR CI #235 green**.
+- Retention/deletion boundary: **opaque request-management IDs, transactional withdrawal, minimal consent tombstones, stale-retry blocking, explicit policy configuration and PostgreSQL-verified purge automation**.
 - Production handoff boundary: **server-derived recipient, signed exact Sharing Preview, atomic request+consent persistence, synthetic-service blocking, hashed idempotency key, random protected management credential and retry-safe exact replay**.
 - Provider workspace: **Payload/PostgreSQL-backed, organisation-scoped and session-authenticated; staff access is assigned-request-only; mutations are auditable**.
 - No-match recovery: **preserved and regression-tested**.
@@ -294,8 +299,8 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 - PROD-2 production authentication hardening: **complete in PR #33; CI #172 green**.
 - PROD-3 real provider workspace foundation: **complete; PR #34, CI #184 green**.
 - PROD-4 production handoff: **complete; PR #36, CI #211 green**.
-- PROD-5 retention/deletion automation: **next stage**.
-- PROD-6 API and abuse hardening: **not started**.
+- PROD-5 retention/deletion automation: **complete; PR #38, CI #235 green**.
+- PROD-6 API and abuse hardening: **next stage**.
 - PROD-7 observability and operations: **not started**.
 - PROD-8 deployment readiness: **not started**.
 - PROD-9 accessibility execution readiness: **not started**.
@@ -319,4 +324,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Create a focused PROD-5 branch from current `main`. Implement retention/deletion automation and withdrawal mechanics that purge expired ephemeral sessions, support configurable identifiable-request retention without hard-coding an unapproved legal duration, preserve only the minimal consent/audit evidence authorised by policy, and remain verifiable in PostgreSQL. Do not invent final retention periods or mark privacy/legal review complete.
+Create a focused PROD-6 branch from current `main`. Add API/abuse hardening around the existing production and demo boundaries: request-size limits, safe method/content-type/origin validation, route-specific rate limiting and security headers. Keep rate-limit keys privacy-minimised and do not turn abuse controls into persistent user tracking.
