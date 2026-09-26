@@ -61,6 +61,8 @@ for (const required of [
   "managementTokenEnvelope",
   "publicRequestId",
   "randomUUID",
+  "findDeletedIdempotencyTombstone",
+  "handoff_previously_deleted",
   "showHiddenFields: true",
 ]) {
   if (!persistence.includes(required)) throw new Error("Production handoff invariant missing: " + required);
