@@ -3,12 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed production checkpoint: **PROD-3 — real provider workspace foundation**  
-Latest merged production PR: **#34**  
-Latest merged production commit: `0c33650453091abe524d5eacefeb04339c9a4a7b`  
-PR #34 final CI: **#184 green**  
+Latest completed production checkpoint: **PROD-4 — production handoff persistence and idempotency**  
+Latest merged production PR: **#36**  
+Latest merged production commit: `c4fab425d49d43b2c5803427d669512a1052b1f9`  
+PR #36 final CI: **#211 green**  
 Active programme: **Production-readiness hardening**  
-Exact next engineering stage: **PROD-4 — production handoff persistence and idempotency**
+Exact next engineering stage: **PROD-5 — retention and deletion automation**
 
 ## Read this first
 
@@ -240,6 +240,7 @@ Completed stages:
 - **PROD-1 — production configuration and fail-closed behaviour**, PR #31, CI #165 green.
 - **PROD-2 — production authentication hardening**, PR #33, CI #172 green.
 - **PROD-3 — real provider workspace foundation**, PR #34, CI #184 green.
+- **PROD-4 — production handoff persistence and idempotency**, PR #36, CI #211 green.
 
 PROD-2 uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
 
@@ -247,7 +248,9 @@ PROD-3 adds a dedicated authenticated provider workspace API over the hidden ide
 
 PROD-1 established explicit development/demo/production runtime modes. Production cannot silently use synthetic provider records; until verified real directory onboarding exists, unavailable production directory data returns a safe unavailable state and the browser has no embedded synthetic fallback.
 
-Continue with **PROD-4 production handoff persistence and idempotency**. Persist only provider-specific explicitly consented request data, derive provider routing server-side, preserve the anonymous/identifiable split and keep controlled demo handoff behaviour separate from production.
+PROD-4 adds a production-only, server-authoritative Sharing Preview and consented handoff boundary. The recipient organisation is derived from the selected service/provider, synthetic/demo records remain blocked, exact shared data are bound to a signed preview token, ContactRequest and ConsentRecord are persisted transactionally, and exact retries are idempotent. The service-level production handoff gate defaults closed and is super-admin controlled. Management bearer credentials remain random, are stored only as a hash plus encrypted replay envelope, and are never exposed to providers.
+
+Continue with **PROD-5 retention and deletion automation**. Implement configurable, auditable deletion mechanics without inventing legal retention durations. Preserve minimal consent evidence where the frozen withdrawal/deletion contract requires it, and keep final retention values subject to privacy/legal approval.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -263,6 +266,8 @@ The external validation programme remains open in parallel. Engineering progress
 - PROD-1 PR #31: **merged; final CI #165 green**.
 - PROD-2 PR #33: **merged; final CI #172 green**; duplicate PR #32 closed unmerged as superseded.
 - PROD-3 PR #34: **merged as `0c33650453091abe524d5eacefeb04339c9a4a7b`; final CI #184 green**.
+- PROD-4 PR #36: **merged as `c4fab425d49d43b2c5803427d669512a1052b1f9`; final PR CI #211 green**.
+- Production handoff boundary: **server-derived recipient, signed exact Sharing Preview, atomic request+consent persistence, synthetic-service blocking, hashed idempotency key, random protected management credential and retry-safe exact replay**.
 - Provider workspace: **Payload/PostgreSQL-backed, organisation-scoped and session-authenticated; staff access is assigned-request-only; mutations are auditable**.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
@@ -288,8 +293,8 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 - PROD-1 production configuration/fail-closed directory: **complete; PR #31, CI #165 green**.
 - PROD-2 production authentication hardening: **complete in PR #33; CI #172 green**.
 - PROD-3 real provider workspace foundation: **complete; PR #34, CI #184 green**.
-- PROD-4 production handoff: **next stage**.
-- PROD-5 retention/deletion automation: **not started**.
+- PROD-4 production handoff: **complete; PR #36, CI #211 green**.
+- PROD-5 retention/deletion automation: **next stage**.
 - PROD-6 API and abuse hardening: **not started**.
 - PROD-7 observability and operations: **not started**.
 - PROD-8 deployment readiness: **not started**.
@@ -314,4 +319,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Create a focused PROD-4 branch from current `main`. Implement a production handoff persistence boundary that creates the identifiable ContactRequest and its provider-specific ConsentRecord atomically, derives the recipient organisation from the selected integrated service on the server, and is retry-safe/idempotent. Keep the current controlled `/api/demo-handoff` path synthetic and separate. Do not persist or join anonymous session history, free-text conversation state, safety history or AI internals.
+Create a focused PROD-5 branch from current `main`. Implement retention/deletion automation and withdrawal mechanics that purge expired ephemeral sessions, support configurable identifiable-request retention without hard-coding an unapproved legal duration, preserve only the minimal consent/audit evidence authorised by policy, and remain verifiable in PostgreSQL. Do not invent final retention periods or mark privacy/legal review complete.
