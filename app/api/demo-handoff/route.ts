@@ -22,14 +22,6 @@ type DemoHandoffBody = {
   serviceArea?: string;
 };
 
-const allowedFields = new Set([
-  "serviceId",
-  "consentAccepted",
-  "primarySupportTopic",
-  "secondarySupportTopics",
-  "serviceArea",
-]);
-
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -45,9 +37,6 @@ export async function POST(request: Request) {
     assertAllowedBrowserOrigin(request);
     const parsed = asRecord(await readJsonBodyLimited(request, 4 * 1024));
     if (!parsed) return error("Request body must be an object", "invalid_request");
-
-    const unexpected = Object.keys(parsed).find((key) => !allowedFields.has(key));
-    if (unexpected) return error("Unexpected demonstration field: " + unexpected, "unexpected_field");
 
     const body = parsed as DemoHandoffBody;
     if (!body.consentAccepted) {
