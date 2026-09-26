@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { getPayload } from "payload";
 import config from "../payload.config.ts";
 import {
@@ -26,13 +26,29 @@ function relationId(value: unknown): string | null {
   return null;
 }
 
-async function exists(collection: "contact-requests" | "consent-records" | "ephemeral-sessions" | "provider-audit-events" | "anonymous-analytics-events", id: string | number) {
+async function exists(collection: "consent-records" | "ephemeral-sessions" | "provider-audit-events" | "anonymous-analytics-events", id: string | number) {
   try {
     await payload.findByID({ collection, id, depth: 0, overrideAccess: true });
     return true;
   } catch {
     return false;
   }
+}
+
+async function findRequestByPublicId(publicRequestId: string) {
+  const result = await payload.find({
+    collection: "contact-requests",
+    where: { publicRequestId: { equals: publicRequestId } },
+    limit: 2,
+    depth: 0,
+    overrideAccess: true,
+    showHiddenFields: true,
+  });
+  return result.totalDocs === 1 ? result.docs[0] : null;
+}
+
+async function contactRequestExists(publicRequestId: string) {
+  return Boolean(await findRequestByPublicId(publicRequestId));
 }
 
 async function expectDeletionError(operation: () => Promise<unknown>, code: string) {
@@ -139,17 +155,23 @@ try {
       handoffSecret,
       consentVersion,
     );
-    created.requests.push(Number(result.requestId));
+    assert(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(result.requestId),
+      "Public request identifier must be a random UUID",
+    );
+    const storedRequest = await findRequestByPublicId(result.requestId);
+    assert(storedRequest, "Stored ContactRequest not found by public request identifier");
+    created.requests.push(storedRequest.id);
     const consent = await payload.find({
       collection: "consent-records",
-      where: { request: { equals: Number(result.requestId) } },
+      where: { request: { equals: storedRequest.id } },
       limit: 2,
       depth: 0,
       overrideAccess: true,
     });
     assert(consent.totalDocs === 1, "Expected one consent record for " + label);
     created.consents.push(consent.docs[0].id);
-    return { ...result, consentId: consent.docs[0].id };
+    return { ...result, internalId: storedRequest.id, consentId: consent.docs[0].id };
   }
 
   const withdrawalRequest = await createRequest("withdraw");
@@ -161,11 +183,22 @@ try {
         "a".repeat(43),
         baseNow,
       ),
-    "invalid_management_credential",
+    "request_not_found_or_credential_invalid",
   );
   assert(
-    await exists("contact-requests", withdrawalRequest.requestId),
+    await contactRequestExists(withdrawalRequest.requestId),
     "Invalid management credential deleted a request",
+  );
+
+  await expectDeletionError(
+    () =>
+      withdrawProductionRequest(
+        payload,
+        randomUUID(),
+        withdrawalRequest.managementId,
+        baseNow,
+      ),
+    "request_not_found_or_credential_invalid",
   );
 
   const withdrawal = await withdrawProductionRequest(
@@ -175,9 +208,8 @@ try {
     baseNow,
   );
   assert(withdrawal.requestDeleted, "Valid withdrawal did not delete the request");
-  assert(withdrawal.consentRecordsPreserved === 1, "Withdrawal did not preserve consent evidence");
   assert(
-    !(await exists("contact-requests", withdrawalRequest.requestId)),
+    !(await contactRequestExists(withdrawalRequest.requestId)),
     "Withdrawn request still exists",
   );
   const preservedConsent = await payload.findByID({
@@ -198,7 +230,7 @@ try {
   const retentionRequest = await createRequest("retention");
   await payload.update({
     collection: "contact-requests",
-    id: Number(retentionRequest.requestId),
+    id: retentionRequest.internalId,
     data: { status: "closed", closedAt: baseNow.toISOString() },
     overrideAccess: true,
   });
@@ -236,7 +268,7 @@ try {
     data: {
       actorUserId: "prod5-ci-actor",
       organisationId: String(organisation.id),
-      requestId: retentionRequest.requestId,
+      requestId: String(retentionRequest.internalId),
       eventType: "status_changed",
       occurredAt: baseNow.toISOString(),
     },
@@ -247,7 +279,7 @@ try {
     data: {
       actorUserId: "prod5-ci-actor",
       organisationId: String(organisation.id),
-      requestId: activeRequest.requestId,
+      requestId: String(activeRequest.internalId),
       eventType: "request_viewed",
       occurredAt: plusDays(100).toISOString(),
     },
@@ -279,8 +311,8 @@ try {
   assert(early.providerAuditEventsDeleted === 0, "Audit event was deleted before policy cutoff");
   assert(early.anonymousAnalyticsEventsDeleted === 0, "Analytics event was deleted before policy cutoff");
   assert(await exists("ephemeral-sessions", futureSession.id), "Future session was deleted early");
-  assert(await exists("contact-requests", retentionRequest.requestId), "Closed request was deleted early");
-  assert(await exists("contact-requests", activeRequest.requestId), "Active request was deleted early");
+  assert(await contactRequestExists(retentionRequest.requestId), "Closed request was deleted early");
+  assert(await contactRequestExists(activeRequest.requestId), "Active request was deleted early");
 
   const late = await runRetentionAutomation(payload, policy, plusDays(31));
   assert(late.contactRequestsDeleted === 1, "Eligible closed request was not deleted");
@@ -289,11 +321,11 @@ try {
   assert(late.anonymousAnalyticsEventsDeleted === 1, "Old anonymous analytics event was not deleted");
 
   assert(
-    !(await exists("contact-requests", retentionRequest.requestId)),
+    !(await contactRequestExists(retentionRequest.requestId)),
     "Retention-eligible closed request still exists",
   );
   assert(
-    await exists("contact-requests", activeRequest.requestId),
+    await contactRequestExists(activeRequest.requestId),
     "Retention automation deleted an active request",
   );
   assert(await exists("ephemeral-sessions", futureSession.id), "Future session was deleted");
