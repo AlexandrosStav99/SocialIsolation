@@ -1,6 +1,6 @@
-import type { ContactRequest } from "@/lib/domain/data-boundaries";
-import type { AuthenticatedActor } from "./auth";
-import { assertProviderRequestAccess,canAssignRequests,canUpdateRequestStatus } from "./permissions";
+import type { ContactRequest } from "../domain/data-boundaries.ts";
+import type { AuthenticatedActor } from "./auth.ts";
+import { assertProviderRequestAccess,canAssignRequests,canUpdateRequestStatus } from "./permissions.ts";
 
 export type RequestStatus=ContactRequest["status"];
 export const requestStatuses:readonly RequestStatus[]=["new","assigned","contact_attempted","contacted","accepted","closed","unable_to_reach","referred_elsewhere","user_declined"];
