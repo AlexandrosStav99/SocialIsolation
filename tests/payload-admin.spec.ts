@@ -52,6 +52,7 @@ test("Payload authentication enforces activation, least privilege, sessions and 
       },
     });
     expect(bootstrap.ok()).toBeTruthy();
+    const adminId = createdId((await bootstrap.json()) as CreateResponse);
 
     const login = await admin.post("/payload-api/provider-users/login", {
       data: { email: adminEmail, password: adminPassword },
