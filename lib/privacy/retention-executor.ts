@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import type { Payload } from "payload";
+import type { Payload, Where } from "payload";
 import { retentionCutoff, type RetentionPolicy } from "./retention-policy.ts";
 
 type TransactionID = string | number;
@@ -214,7 +214,7 @@ export async function withdrawProductionRequest(
 async function deleteMatchingDocuments(
   payload: Payload,
   collection: "ephemeral-sessions" | "consent-records" | "provider-audit-events" | "anonymous-analytics-events",
-  where: RecordLike,
+  where: Where,
 ): Promise<number> {
   let deleted = 0;
   while (true) {
