@@ -18,5 +18,7 @@ export const ContactRequests: CollectionConfig = {
     { name:"assignedProviderUser", type:"relationship", relationTo:"provider-users" },
     { name:"closedAt", type:"date" },
     { name:"managementTokenHash", type:"text", required:true, hidden:true },
+    { name:"idempotencyKeyHash", type:"text", unique:true, index:true, hidden:true },
+    { name:"idempotencyPayloadHash", type:"text", hidden:true },
   ],
 };
