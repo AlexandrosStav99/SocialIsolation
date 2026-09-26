@@ -62,7 +62,6 @@ export type ProductionHandoffPreviewInput = {
   serviceArea: ServiceArea;
   preferences?: string[];
   optionalNote?: string;
-  consentVersion: string;
   optionalNoteAccepted: boolean;
 };
 
@@ -224,21 +223,22 @@ function normalizeOptionalText(value: unknown, maxLength: number, field: string)
 function normalizePreferences(value: unknown): string[] {
   if (value === undefined || value === null) return [];
   if (!Array.isArray(value) || value.length > MAX_PREFERENCES) {
-    throw new ProductionHandoffError(400, "invalid_preferences", "Too many support preferences");
+    throw new ProductionHandoffError(400, "invalid_preferences", "Support preferences are invalid");
   }
-  const normalized: string[] = [];
-  for (const item of value) {
-    if (typeof item !== "string") {
-      throw new ProductionHandoffError(400, "invalid_preferences", "Support preferences are invalid");
-    }
-    const trimmed = item.trim();
-    if (!trimmed) continue;
-    if (trimmed.length > MAX_PREFERENCE_LENGTH) {
-      throw new ProductionHandoffError(400, "invalid_preferences", "A support preference is too long");
-    }
-    if (!normalized.includes(trimmed)) normalized.push(trimmed);
+  const nonEmpty = value.filter(
+    (item): item is string => typeof item === "string" && Boolean(item.trim()),
+  );
+  if (nonEmpty.some((item) => item.trim().length > MAX_PREFERENCE_LENGTH)) {
+    throw new ProductionHandoffError(400, "invalid_preferences", "A support preference is too long");
   }
-  return normalized;
+  if (nonEmpty.length > 0) {
+    throw new ProductionHandoffError(
+      400,
+      "unsupported_preferences",
+      "Production handoff does not accept support preferences until controlled preference options are enabled",
+    );
+  }
+  return [];
 }
 
 function normalizeSecondaryTopics(value: unknown): SupportTopic[] {
@@ -257,7 +257,10 @@ function normalizeSecondaryTopics(value: unknown): SupportTopic[] {
   return normalized;
 }
 
-function normalizeShareInput(input: ProductionHandoffPreviewInput): NormalizedProductionHandoffInput {
+function normalizeShareInput(
+  input: ProductionHandoffPreviewInput,
+  serverConsentVersion: string,
+): NormalizedProductionHandoffInput {
   const record = asRecord(input);
   if (!record) {
     throw new ProductionHandoffError(400, "invalid_request", "Handoff input must be an object");
@@ -273,9 +276,9 @@ function normalizeShareInput(input: ProductionHandoffPreviewInput): NormalizedPr
     throw new ProductionHandoffError(400, "invalid_service_area", "Support area is invalid");
   }
 
-  const consentVersion = requiredString(record.consentVersion, "consent_version");
+  const consentVersion = requiredString(serverConsentVersion, "consent_version");
   if (consentVersion.length > MAX_CONSENT_VERSION_LENGTH) {
-    throw new ProductionHandoffError(400, "invalid_consent_version", "Consent version is too long");
+    throw new ProductionHandoffError(503, "invalid_consent_version", "Configured consent version is too long");
   }
 
   if (
@@ -508,8 +511,9 @@ export async function createProductionHandoffPreview(
   payload: Payload,
   input: ProductionHandoffPreviewInput,
   serverSecret: string,
+  serverConsentVersion: string,
 ): Promise<ProductionHandoffPreview> {
-  const normalized = normalizeShareInput(input);
+  const normalized = normalizeShareInput(input, serverConsentVersion);
   const recipient = await resolveProductionRecipient(payload, normalized);
   const structuredSupportSummary = createStructuredSupportSummary(normalized);
 
@@ -603,6 +607,17 @@ async function replayExisting(
       "Idempotency-Key was already used for a different handoff payload",
     );
   }
+  const storedManagementTokenHash = existing.managementTokenHash;
+  if (
+    typeof storedManagementTokenHash !== "string" ||
+    storedManagementTokenHash !== sha256(managementId)
+  ) {
+    throw new ProductionHandoffError(
+      503,
+      "management_credential_key_mismatch",
+      "Existing request cannot be safely replayed with the current management-credential key",
+    );
+  }
   const requestId = await assertExistingConsent(payload, existing, transactionID);
   return {
     requestId: String(requestId),
@@ -642,6 +657,7 @@ export async function persistProductionHandoff(
   input: ProductionHandoffInput,
   rawIdempotencyKey: string,
   serverSecret: string,
+  serverConsentVersion: string,
 ): Promise<ProductionHandoffResult> {
   const inputRecord = asRecord(input);
   if (!inputRecord || inputRecord.consentAccepted !== true) {
@@ -656,7 +672,7 @@ export async function persistProductionHandoff(
     throw new ProductionHandoffError(400, "invalid_preview_token", "Sharing Preview token is invalid");
   }
 
-  const normalized = normalizeShareInput(input);
+  const normalized = normalizeShareInput(input, serverConsentVersion);
   const idempotencyKey = normalizeIdempotencyKey(rawIdempotencyKey);
   const idempotencyKeyHash = sha256("talkpoint-handoff-v1:" + idempotencyKey);
   const idempotencyPayloadHash = sha256(canonicalFinalPayload(normalized, previewToken));
