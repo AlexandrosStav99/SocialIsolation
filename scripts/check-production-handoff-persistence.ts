@@ -2,9 +2,11 @@ import { createHash, randomUUID } from "node:crypto";
 import { getPayload } from "payload";
 import config from "../payload.config.ts";
 import {
+  createProductionHandoffPreview,
   persistProductionHandoff,
   ProductionHandoffError,
   type ProductionHandoffInput,
+  type ProductionHandoffPreviewInput,
 } from "../lib/handoff/production-persistence.ts";
 import { SYNTHETIC_DIRECTORY_SOURCE } from "../lib/directory/synthetic.ts";
 
@@ -179,7 +181,7 @@ async function main() {
     const serverSecret = "prod4-ci-management-secret-" + suffix;
     const idempotencyKey = "prod4:" + randomUUID();
     const emailA = "prod4-" + suffix + "@example.invalid";
-    const inputA: ProductionHandoffInput = {
+    const shareA: ProductionHandoffPreviewInput = {
       serviceId: serviceA.id,
       preferredName: "Synthetic CI User",
       contact: { type: "email", value: emailA },
@@ -188,11 +190,39 @@ async function main() {
       serviceArea: "online",
       preferences: ["online"],
       optionalNote: "Controlled CI-only optional note.",
-      consentAccepted: true,
       consentVersion: "prod4-ci-v1",
       optionalNoteAccepted: true,
     };
 
+    const previewA = await createProductionHandoffPreview(payload, shareA, serverSecret);
+    assert(
+      previewA.recipient.providerName === providerA.name &&
+        previewA.recipient.serviceName === serviceA.name,
+      "Sharing Preview recipient was not derived from the selected service/provider",
+    );
+    assert(
+      previewA.sharing.structuredSupportSummary.includes("Loneliness & Social Connection") &&
+        !previewA.sharing.structuredSupportSummary.includes("Controlled CI-only optional note"),
+      "Sharing Preview summary must be controlled and separate from optional free text",
+    );
+    assert(
+      previewA.sharing.optionalNote === "Controlled CI-only optional note.",
+      "Authorised optional note must appear separately in the exact Sharing Preview",
+    );
+    assert(
+      previewA.authorisedDataCategories.includes("optional_note"),
+      "Sharing Preview must name the optional-note data category when included",
+    );
+    assert(
+      !JSON.stringify(previewA).includes("providerOrganisationId"),
+      "Sharing Preview must not expose internal provider organisation authority",
+    );
+
+    const inputA: ProductionHandoffInput = {
+      ...shareA,
+      consentAccepted: true,
+      previewToken: previewA.previewToken,
+    };
     const first = await persistProductionHandoff(
       payload,
       inputA,
@@ -216,12 +246,10 @@ async function main() {
     assert(stored.status === "new", "Production handoff must enter the provider queue as new");
     assert(stored.contactDetail === emailA, "Contact detail was not persisted correctly");
     assert(
-      typeof stored.structuredSupportSummary === "string" &&
-        stored.structuredSupportSummary.includes("Loneliness & Social Connection") &&
-        !stored.structuredSupportSummary.includes("Controlled CI-only optional note"),
-      "Structured support summary must be server-controlled and separate from the optional note",
+      stored.structuredSupportSummary === previewA.sharing.structuredSupportSummary,
+      "Persisted structured summary must exactly match the signed Sharing Preview",
     );
-    assert(stored.optionalNote === "Controlled CI-only optional note.", "Authorised optional note missing");
+    assert(stored.optionalNote === previewA.sharing.optionalNote, "Persisted optional note differs from preview");
     assert(
       typeof stored.idempotencyKeyHash === "string" &&
         /^[a-f0-9]{64}$/.test(stored.idempotencyKeyHash) &&
@@ -254,11 +282,12 @@ async function main() {
       relationId(consent.recipientProviderOrganisation) === String(organisationA.id),
       "Consent recipient must match the server-derived provider organisation",
     );
-    assert(consent.consentVersion === "prod4-ci-v1", "Consent version was not persisted");
+    assert(consent.consentVersion === previewA.consentVersion, "Consent version differs from preview");
     assert(consent.optionalNoteAuthorised === true, "Optional-note consent was not persisted");
     assert(
-      consent.authorisedDataCategories?.includes("optional_note"),
-      "Optional-note data category is missing from consent evidence",
+      JSON.stringify(consent.authorisedDataCategories) ===
+        JSON.stringify(previewA.authorisedDataCategories),
+      "Persisted consent categories must exactly match the signed Sharing Preview",
     );
 
     const replay = await persistProductionHandoff(
@@ -302,8 +331,21 @@ async function main() {
       () =>
         persistProductionHandoff(
           payload,
-          { ...inputA, serviceId: disabledService.id },
+          {
+            ...inputA,
+            previewToken: "a".repeat(43),
+          },
           "prod4:" + randomUUID(),
+          serverSecret,
+        ),
+      "preview_token_invalid_or_stale",
+    );
+
+    await expectHandoffError(
+      () =>
+        createProductionHandoffPreview(
+          payload,
+          { ...shareA, serviceId: disabledService.id },
           serverSecret,
         ),
       "service_not_enabled_for_handoff",
@@ -311,10 +353,9 @@ async function main() {
 
     await expectHandoffError(
       () =>
-        persistProductionHandoff(
+        createProductionHandoffPreview(
           payload,
-          { ...inputA, serviceId: syntheticService.id },
-          "prod4:" + randomUUID(),
+          { ...shareA, serviceId: syntheticService.id },
           serverSecret,
         ),
       "synthetic_service_blocked",
@@ -322,14 +363,13 @@ async function main() {
 
     await expectHandoffError(
       () =>
-        persistProductionHandoff(
+        createProductionHandoffPreview(
           payload,
           {
-            ...inputA,
+            ...shareA,
             primarySupportTopic: "education_student",
             secondarySupportTopics: [],
           },
-          "prod4:" + randomUUID(),
           serverSecret,
         ),
       "service_context_mismatch",
@@ -337,33 +377,36 @@ async function main() {
 
     await expectHandoffError(
       () =>
-        persistProductionHandoff(
+        createProductionHandoffPreview(
           payload,
           {
-            ...inputA,
+            ...shareA,
             optionalNote: "This note has no separate consent.",
             optionalNoteAccepted: false,
           },
-          "prod4:" + randomUUID(),
           serverSecret,
         ),
       "optional_note_consent_required",
     );
 
-    const inputB: ProductionHandoffInput = {
+    const shareB: ProductionHandoffPreviewInput = {
       serviceId: serviceB.id,
       contact: { type: "phone", value: "+357 99000000" },
       primarySupportTopic: "education_student",
       secondarySupportTopics: [],
       serviceArea: "nicosia",
       preferences: [],
-      consentAccepted: true,
       consentVersion: "prod4-ci-v1",
       optionalNoteAccepted: false,
     };
+    const previewB = await createProductionHandoffPreview(payload, shareB, serverSecret);
     const second = await persistProductionHandoff(
       payload,
-      inputB,
+      {
+        ...shareB,
+        consentAccepted: true,
+        previewToken: previewB.previewToken,
+      },
       "prod4:" + randomUUID(),
       serverSecret,
     );
@@ -379,7 +422,7 @@ async function main() {
       "Second service did not route to its own server-derived organisation",
     );
 
-    console.log("Production handoff PostgreSQL transaction, routing and idempotency checks passed.");
+    console.log("Production handoff Sharing Preview, transaction, routing and idempotency checks passed.");
   } catch (error) {
     exitCode = 1;
     console.error(error);
