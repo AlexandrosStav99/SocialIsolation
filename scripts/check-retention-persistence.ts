@@ -1,9 +1,10 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { getPayload } from "payload";
 import config from "../payload.config.ts";
 import {
   createProductionHandoffPreview,
   persistProductionHandoff,
+  ProductionHandoffError,
   type ProductionHandoffPreviewInput,
 } from "../lib/handoff/production-persistence.ts";
 import {
@@ -60,6 +61,17 @@ async function expectDeletionError(operation: () => Promise<unknown>, code: stri
     return;
   }
   throw new Error("Expected deletion error " + code);
+}
+
+async function expectHandoffError(operation: () => Promise<unknown>, code: string) {
+  try {
+    await operation();
+  } catch (error) {
+    assert(error instanceof ProductionHandoffError, "Expected ProductionHandoffError for " + code);
+    assert(error.code === code, "Expected " + code + ", received " + error.code);
+    return;
+  }
+  throw new Error("Expected handoff error " + code);
 }
 
 const payload = await getPayload({ config });
@@ -148,10 +160,12 @@ try {
       handoffSecret,
       consentVersion,
     );
+    const idempotencyKey = "prod5:" + randomUUID();
+    const finalInput = { ...share, consentAccepted: true, previewToken: preview.previewToken };
     const result = await persistProductionHandoff(
       payload,
-      { ...share, consentAccepted: true, previewToken: preview.previewToken },
-      "prod5:" + randomUUID(),
+      finalInput,
+      idempotencyKey,
       handoffSecret,
       consentVersion,
     );
@@ -171,7 +185,13 @@ try {
     });
     assert(consent.totalDocs === 1, "Expected one consent record for " + label);
     created.consents.push(consent.docs[0].id);
-    return { ...result, internalId: storedRequest.id, consentId: consent.docs[0].id };
+    return {
+      ...result,
+      internalId: storedRequest.id,
+      consentId: consent.docs[0].id,
+      idempotencyKey,
+      finalInput,
+    };
   }
 
   const withdrawalRequest = await createRequest("withdraw");
@@ -223,8 +243,47 @@ try {
   assert(typeof preservedConsent.withdrawnAt === "string", "withdrawnAt missing");
   assert(typeof preservedConsent.requestDeletedAt === "string", "requestDeletedAt missing");
   assert(
+    preservedConsent.deletedRequestPublicId === withdrawalRequest.requestId,
+    "Deletion tombstone did not preserve the opaque public request identifier",
+  );
+  assert(
+    preservedConsent.deletedManagementTokenHash ===
+      createHash("sha256").update(withdrawalRequest.managementId).digest("hex"),
+    "Deletion tombstone management hash is missing or invalid",
+  );
+  assert(
+    typeof preservedConsent.deletedIdempotencyKeyHash === "string" &&
+      /^[a-f0-9]{64}$/.test(preservedConsent.deletedIdempotencyKeyHash),
+    "Deletion tombstone idempotency-key hash is missing",
+  );
+  assert(
+    typeof preservedConsent.deletedIdempotencyPayloadHash === "string" &&
+      /^[a-f0-9]{64}$/.test(preservedConsent.deletedIdempotencyPayloadHash),
+    "Deletion tombstone payload hash is missing",
+  );
+  assert(
     !JSON.stringify(preservedConsent).includes(withdrawalRequest.managementId),
     "Management credential leaked into preserved consent evidence",
+  );
+
+  const repeatedWithdrawal = await withdrawProductionRequest(
+    payload,
+    withdrawalRequest.requestId,
+    withdrawalRequest.managementId,
+    baseNow,
+  );
+  assert(repeatedWithdrawal.requestDeleted, "Repeated withdrawal must remain idempotently successful");
+
+  await expectHandoffError(
+    () =>
+      persistProductionHandoff(
+        payload,
+        withdrawalRequest.finalInput,
+        withdrawalRequest.idempotencyKey,
+        handoffSecret,
+        consentVersion,
+      ),
+    "handoff_previously_deleted",
   );
 
   const retentionRequest = await createRequest("retention");
