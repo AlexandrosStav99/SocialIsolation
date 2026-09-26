@@ -10,6 +10,11 @@ import { ConsentRecords } from "./payload/collections/ConsentRecords.ts";
 import { EphemeralSessions } from "./payload/collections/EphemeralSessions.ts";
 import { AnonymousAnalyticsEvents } from "./payload/collections/AnonymousAnalyticsEvents.ts";
 import { ProviderAuditEvents } from "./payload/collections/ProviderAuditEvents.ts";
+import {
+  hiddenSystemCollection,
+  platformManagedCollection,
+  providerUserAdminCollection,
+} from "./payload/access.ts";
 
 export default buildConfig({
   secret: getPayloadSecret(),
@@ -17,16 +22,22 @@ export default buildConfig({
     pool: { connectionString: getDatabaseUrl() },
     migrationDir: "./migrations",
   }),
+  admin: {
+    user: "provider-users",
+  },
+  routes: {
+    api: "/payload-api",
+  },
   collections: [
-    ProviderOrganisations,
-    ProviderUsers,
-    Providers,
-    Services,
-    EphemeralSessions,
-    AnonymousAnalyticsEvents,
-    ContactRequests,
-    ConsentRecords,
-    ProviderAuditEvents,
+    platformManagedCollection(ProviderOrganisations),
+    providerUserAdminCollection(ProviderUsers),
+    platformManagedCollection(Providers),
+    platformManagedCollection(Services),
+    hiddenSystemCollection(EphemeralSessions),
+    hiddenSystemCollection(AnonymousAnalyticsEvents),
+    hiddenSystemCollection(ContactRequests),
+    hiddenSystemCollection(ConsentRecords),
+    hiddenSystemCollection(ProviderAuditEvents),
   ],
   typescript: { outputFile: "payload-types.ts" },
 });
