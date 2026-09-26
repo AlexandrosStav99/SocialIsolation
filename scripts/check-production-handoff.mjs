@@ -59,6 +59,8 @@ for (const required of [
   "createCipheriv",
   "createDecipheriv",
   "managementTokenEnvelope",
+  "publicRequestId",
+  "randomUUID",
   "showHiddenFields: true",
 ]) {
   if (!persistence.includes(required)) throw new Error("Production handoff invariant missing: " + required);
@@ -100,7 +102,7 @@ if (!config.includes("getProductionConsentVersion") || !config.includes("TALKPOI
 if (!config.includes("getProductionHandoffSecret") || !config.includes("TALKPOINT_HANDOFF_CREDENTIAL_SECRET")) {
   throw new Error("Production handoff must use a dedicated server credential secret");
 }
-for (const required of ['name:"managementTokenEnvelope"', 'name:"idempotencyKeyHash"', "unique:true", 'name:"idempotencyPayloadHash"']) {
+for (const required of ['name:"publicRequestId"', 'name:"managementTokenEnvelope"', 'name:"idempotencyKeyHash"', "unique:true", 'name:"idempotencyPayloadHash"']) {
   if (!requests.includes(required)) throw new Error("ContactRequest idempotency schema missing: " + required);
 }
 for (const required of [
