@@ -27,6 +27,7 @@ const allowedFields = new Set([
   "consentAccepted",
   "consentVersion",
   "optionalNoteAccepted",
+  "previewToken",
 ]);
 
 function asRecord(value: unknown): Record<string, unknown> | null {
