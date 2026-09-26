@@ -638,6 +638,7 @@ async function findExistingRequest(
     limit: 1,
     depth: 0,
     overrideAccess: true,
+    showHiddenFields: true,
     ...(transactionID ? { req: { transactionID } } : {}),
   });
   return asRecord(result.docs[0]);
