@@ -31,8 +31,26 @@ for (const phrase of ["collection: \"providers\"", "collection: \"services\"", "
 }
 
 const directoryRoute = fs.readFileSync("app/api/directory/route.ts", "utf8");
-for (const phrase of ["payload_postgres", "synthetic_fallback", "Demonstration Data"]) {
+for (const phrase of [
+  "payload_postgres",
+  "synthetic_fallback",
+  "Demonstration Data",
+  "getRuntimeMode",
+  "isSyntheticDirectoryFallbackAllowed",
+  "directory_unavailable",
+]) {
   if (!directoryRoute.includes(phrase)) throw new Error("Directory API source boundary missing: " + phrase);
+}
+if (!directoryRoute.includes('runtimeMode === "production" ? null')) {
+  throw new Error("Production directory path must not load synthetic Payload records");
+}
+
+const checkIn = fs.readFileSync("components/check-in/IntegratedCheckIn.tsx", "utf8");
+if (checkIn.includes('from "@/data/demo-directory"')) {
+  throw new Error("Client check-in must not embed a synthetic directory fallback");
+}
+for (const phrase of ["DirectoryStatus", "directoryStatus", "Service directory temporarily unavailable"]) {
+  if (!checkIn.includes(phrase)) throw new Error("Client fail-closed directory state missing: " + phrase);
 }
 
 const seed = fs.readFileSync("scripts/seed-demo-directory.ts", "utf8");
