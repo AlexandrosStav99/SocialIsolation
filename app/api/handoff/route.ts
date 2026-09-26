@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { getPayloadSecret, getRuntimeMode } from "@/lib/config/server";
+import { getPayloadSecret, getProductionConsentVersion, getRuntimeMode } from "@/lib/config/server";
 import {
   persistProductionHandoff,
   ProductionHandoffError,
@@ -25,7 +25,6 @@ const allowedFields = new Set([
   "preferences",
   "optionalNote",
   "consentAccepted",
-  "consentVersion",
   "optionalNoteAccepted",
   "previewToken",
 ]);
@@ -58,6 +57,18 @@ function assertExactInputShape(body: Record<string, unknown>) {
       400,
       "unexpected_contact_field",
       "Unexpected contact field: " + unexpectedContact,
+    );
+  }
+}
+
+function productionConsentVersion(): string {
+  try {
+    return getProductionConsentVersion();
+  } catch {
+    throw new ProductionHandoffError(
+      503,
+      "production_consent_unconfigured",
+      "Production assisted-contact consent version is not configured",
     );
   }
 }
@@ -115,6 +126,7 @@ export async function POST(request: Request) {
       body as unknown as ProductionHandoffInput,
       idempotencyKey,
       getPayloadSecret(),
+      productionConsentVersion(),
     );
 
     return NextResponse.json(
