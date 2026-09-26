@@ -16,7 +16,6 @@ export type RateLimitPolicy = {
 
 export const rateLimitPolicies = {
   directoryRead: { scope: "directory_read", limit: 240, windowSeconds: 60 },
-  demoHandoff: { scope: "demo_handoff", limit: 30, windowSeconds: 60 },
   productionPreview: { scope: "production_handoff_preview", limit: 30, windowSeconds: 60 },
   productionHandoff: { scope: "production_handoff_submit", limit: 12, windowSeconds: 60 },
   productionWithdrawal: { scope: "production_withdrawal", limit: 12, windowSeconds: 60 },
