@@ -1,4 +1,4 @@
-import { createHash, createHmac } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import type { Payload } from "payload";
 import { SYNTHETIC_DIRECTORY_SOURCE } from "../directory/synthetic.ts";
 import {
@@ -50,7 +50,7 @@ export class ProductionHandoffError extends Error {
   }
 }
 
-export type ProductionHandoffInput = {
+export type ProductionHandoffPreviewInput = {
   serviceId: string | number;
   preferredName?: string;
   contact: {
@@ -62,9 +62,13 @@ export type ProductionHandoffInput = {
   serviceArea: ServiceArea;
   preferences?: string[];
   optionalNote?: string;
-  consentAccepted: boolean;
   consentVersion: string;
   optionalNoteAccepted: boolean;
+};
+
+export type ProductionHandoffInput = ProductionHandoffPreviewInput & {
+  consentAccepted: boolean;
+  previewToken: string;
 };
 
 type NormalizedProductionHandoffInput = {
@@ -83,6 +87,34 @@ type NormalizedProductionHandoffInput = {
   optionalNoteAccepted: boolean;
 };
 
+type ProductionRecipient = {
+  providerId: number;
+  providerOrganisationId: number;
+  providerName: string;
+  serviceName: string;
+};
+
+export type ProductionHandoffPreview = {
+  previewToken: string;
+  recipient: {
+    providerName: string;
+    serviceName: string;
+  };
+  purpose: "provider_specific_assisted_contact";
+  sharing: {
+    preferredName?: string;
+    contact: { type: "email" | "phone"; value: string };
+    primarySupportTopic: SupportTopic;
+    secondarySupportTopics: SupportTopic[];
+    serviceArea: ServiceArea;
+    preferences: string[];
+    structuredSupportSummary: string;
+    optionalNote?: string;
+  };
+  authorisedDataCategories: string[];
+  consentVersion: string;
+};
+
 export type ProductionHandoffResult = {
   requestId: string;
   managementId: string;
@@ -90,7 +122,9 @@ export type ProductionHandoffResult = {
 };
 
 function asRecord(value: unknown): RecordLike | null {
-  return value && typeof value === "object" ? (value as RecordLike) : null;
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as RecordLike)
+    : null;
 }
 
 function relationshipId(value: unknown): string | null {
@@ -109,12 +143,23 @@ function numericRelationshipId(value: unknown, field: string): number {
   return parsed;
 }
 
+function requiredString(value: unknown, field: string): string {
+  if (typeof value !== "string") {
+    throw new ProductionHandoffError(400, "invalid_" + field, field + " is required");
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    throw new ProductionHandoffError(400, "invalid_" + field, field + " is required");
+  }
+  return trimmed;
+}
+
 function sha256(value: string): string {
   return createHash("sha256").update(value, "utf8").digest("hex");
 }
 
 function normalizeIdempotencyKey(raw: string): string {
-  const value = raw.trim();
+  const value = requiredString(raw, "idempotency_key");
   if (
     value.length < IDEMPOTENCY_KEY_MIN_LENGTH ||
     value.length > IDEMPOTENCY_KEY_MAX_LENGTH ||
@@ -129,37 +174,45 @@ function normalizeIdempotencyKey(raw: string): string {
   return value;
 }
 
-function normalizeServiceId(value: string | number): number {
-  const parsed = typeof value === "number" ? value : Number(value);
+function normalizeServiceId(value: unknown): number {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && value.trim()
+        ? Number(value)
+        : Number.NaN;
   if (!Number.isSafeInteger(parsed) || parsed <= 0) {
     throw new ProductionHandoffError(400, "invalid_service", "A valid service is required");
   }
   return parsed;
 }
 
-function normalizeContact(contact: ProductionHandoffInput["contact"]) {
-  if (!contact || (contact.type !== "email" && contact.type !== "phone")) {
+function normalizeContact(value: unknown): { type: "email" | "phone"; value: string } {
+  const contact = asRecord(value);
+  const type = contact?.type;
+  const rawValue = contact?.value;
+  if ((type !== "email" && type !== "phone") || typeof rawValue !== "string") {
     throw new ProductionHandoffError(400, "invalid_contact", "A valid contact method is required");
   }
-  const value = contact.value?.trim();
-  if (!value) {
+  const contactValue = rawValue.trim();
+  if (!contactValue) {
     throw new ProductionHandoffError(400, "invalid_contact", "A contact detail is required");
   }
-  if (contact.type === "email") {
-    if (
-      value.length > 254 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-    ) {
+  if (type === "email") {
+    if (contactValue.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue)) {
       throw new ProductionHandoffError(400, "invalid_contact", "A valid email address is required");
     }
-  } else if (value.length > 32 || !/^[+0-9 ()-]{6,32}$/.test(value)) {
+  } else if (contactValue.length > 32 || !/^[+0-9 ()-]{6,32}$/.test(contactValue)) {
     throw new ProductionHandoffError(400, "invalid_contact", "A valid phone number is required");
   }
-  return { type: contact.type, value };
+  return { type, value: contactValue };
 }
 
-function normalizeOptionalText(value: string | undefined, maxLength: number, field: string) {
-  if (value === undefined) return undefined;
+function normalizeOptionalText(value: unknown, maxLength: number, field: string): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== "string") {
+    throw new ProductionHandoffError(400, "invalid_" + field, field + " is invalid");
+  }
   const trimmed = value.trim();
   if (!trimmed) return undefined;
   if (trimmed.length > maxLength) {
@@ -168,17 +221,17 @@ function normalizeOptionalText(value: string | undefined, maxLength: number, fie
   return trimmed;
 }
 
-function normalizePreferences(values: string[] | undefined): string[] {
-  if (!values) return [];
-  if (!Array.isArray(values) || values.length > MAX_PREFERENCES) {
+function normalizePreferences(value: unknown): string[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.length > MAX_PREFERENCES) {
     throw new ProductionHandoffError(400, "invalid_preferences", "Too many support preferences");
   }
   const normalized: string[] = [];
-  for (const value of values) {
-    if (typeof value !== "string") {
+  for (const item of value) {
+    if (typeof item !== "string") {
       throw new ProductionHandoffError(400, "invalid_preferences", "Support preferences are invalid");
     }
-    const trimmed = value.trim();
+    const trimmed = item.trim();
     if (!trimmed) continue;
     if (trimmed.length > MAX_PREFERENCE_LENGTH) {
       throw new ProductionHandoffError(400, "invalid_preferences", "A support preference is too long");
@@ -188,43 +241,58 @@ function normalizePreferences(values: string[] | undefined): string[] {
   return normalized;
 }
 
-function normalizeSecondaryTopics(values: SupportTopic[] | undefined): SupportTopic[] {
-  if (!values) return [];
-  if (!Array.isArray(values) || values.length > 2) {
+function normalizeSecondaryTopics(value: unknown): SupportTopic[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.length > 2) {
     throw new ProductionHandoffError(400, "invalid_support_topics", "Maximum two secondary topics");
   }
   const normalized: SupportTopic[] = [];
-  for (const value of values) {
-    if (!supportTopics.includes(value as SupportTopic)) {
+  for (const item of value) {
+    if (typeof item !== "string" || !supportTopics.includes(item as SupportTopic)) {
       throw new ProductionHandoffError(400, "invalid_support_topics", "A secondary support topic is invalid");
     }
-    if (!normalized.includes(value)) normalized.push(value);
+    const topic = item as SupportTopic;
+    if (!normalized.includes(topic)) normalized.push(topic);
   }
   return normalized;
 }
 
-function normalizeInput(input: ProductionHandoffInput): NormalizedProductionHandoffInput {
-  if (!input?.consentAccepted) {
-    throw new ProductionHandoffError(
-      400,
-      "consent_required",
-      "Explicit provider-specific consent is required",
-    );
+function normalizeShareInput(input: ProductionHandoffPreviewInput): NormalizedProductionHandoffInput {
+  const record = asRecord(input);
+  if (!record) {
+    throw new ProductionHandoffError(400, "invalid_request", "Handoff input must be an object");
   }
-  if (!supportTopics.includes(input.primarySupportTopic as SupportTopic)) {
+
+  const primary = record.primarySupportTopic;
+  if (typeof primary !== "string" || !supportTopics.includes(primary as SupportTopic)) {
     throw new ProductionHandoffError(400, "invalid_support_topic", "Primary support topic is invalid");
   }
-  if (!serviceAreas.includes(input.serviceArea as ServiceArea)) {
+
+  const area = record.serviceArea;
+  if (typeof area !== "string" || !serviceAreas.includes(area as ServiceArea)) {
     throw new ProductionHandoffError(400, "invalid_service_area", "Support area is invalid");
   }
 
-  const consentVersion = input.consentVersion?.trim();
-  if (!consentVersion || consentVersion.length > MAX_CONSENT_VERSION_LENGTH) {
-    throw new ProductionHandoffError(400, "invalid_consent_version", "Consent version is required");
+  const consentVersion = requiredString(record.consentVersion, "consent_version");
+  if (consentVersion.length > MAX_CONSENT_VERSION_LENGTH) {
+    throw new ProductionHandoffError(400, "invalid_consent_version", "Consent version is too long");
   }
 
-  const optionalNote = normalizeOptionalText(input.optionalNote, 500, "optional_note");
-  if (optionalNote && !input.optionalNoteAccepted) {
+  if (
+    record.optionalNoteAccepted !== undefined &&
+    typeof record.optionalNoteAccepted !== "boolean"
+  ) {
+    throw new ProductionHandoffError(
+      400,
+      "invalid_optional_note_consent",
+      "Optional-note consent flag is invalid",
+    );
+  }
+
+  const preferredName = normalizeOptionalText(record.preferredName, 80, "preferred_name");
+  const optionalNote = normalizeOptionalText(record.optionalNote, 500, "optional_note");
+  const optionalNoteAccepted = record.optionalNoteAccepted === true;
+  if (optionalNote && !optionalNoteAccepted) {
     throw new ProductionHandoffError(
       400,
       "optional_note_consent_required",
@@ -233,22 +301,20 @@ function normalizeInput(input: ProductionHandoffInput): NormalizedProductionHand
   }
 
   return {
-    serviceId: normalizeServiceId(input.serviceId),
-    ...(normalizeOptionalText(input.preferredName, 80, "preferred_name")
-      ? { preferredName: normalizeOptionalText(input.preferredName, 80, "preferred_name") }
-      : {}),
-    contact: normalizeContact(input.contact),
-    primarySupportTopic: input.primarySupportTopic,
-    secondarySupportTopics: normalizeSecondaryTopics(input.secondarySupportTopics),
-    serviceArea: input.serviceArea,
-    preferences: normalizePreferences(input.preferences),
+    serviceId: normalizeServiceId(record.serviceId),
+    ...(preferredName ? { preferredName } : {}),
+    contact: normalizeContact(record.contact),
+    primarySupportTopic: primary as SupportTopic,
+    secondarySupportTopics: normalizeSecondaryTopics(record.secondarySupportTopics),
+    serviceArea: area as ServiceArea,
+    preferences: normalizePreferences(record.preferences),
     ...(optionalNote ? { optionalNote } : {}),
     consentVersion,
-    optionalNoteAccepted: Boolean(optionalNote && input.optionalNoteAccepted),
+    optionalNoteAccepted: Boolean(optionalNote && optionalNoteAccepted),
   };
 }
 
-function canonicalPayload(input: NormalizedProductionHandoffInput): string {
+function canonicalSharePayload(input: NormalizedProductionHandoffInput): string {
   return JSON.stringify({
     serviceId: input.serviceId,
     preferredName: input.preferredName ?? null,
@@ -260,6 +326,13 @@ function canonicalPayload(input: NormalizedProductionHandoffInput): string {
     optionalNote: input.optionalNote ?? null,
     consentVersion: input.consentVersion,
     optionalNoteAccepted: input.optionalNoteAccepted,
+  });
+}
+
+function canonicalFinalPayload(input: NormalizedProductionHandoffInput, previewToken: string): string {
+  return JSON.stringify({
+    share: JSON.parse(canonicalSharePayload(input)) as unknown,
+    previewToken,
   });
 }
 
@@ -290,6 +363,17 @@ function createStructuredSupportSummary(input: NormalizedProductionHandoffInput)
   ].join("\n");
 }
 
+function authorisedDataCategories(input: NormalizedProductionHandoffInput): string[] {
+  const categories = [
+    "contact",
+    "support_topics",
+    "service_area_preferences",
+    "structured_support_summary",
+  ];
+  if (input.optionalNote && input.optionalNoteAccepted) categories.push("optional_note");
+  return categories;
+}
+
 function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
@@ -312,8 +396,8 @@ function serviceMatchesSupportContext(
 async function resolveProductionRecipient(
   payload: Payload,
   input: NormalizedProductionHandoffInput,
-  transactionID: TransactionID,
-): Promise<{ providerOrganisationId: number }> {
+  transactionID?: TransactionID,
+): Promise<ProductionRecipient> {
   let service: RecordLike;
   try {
     service = (await payload.findByID({
@@ -321,7 +405,7 @@ async function resolveProductionRecipient(
       id: input.serviceId,
       depth: 0,
       overrideAccess: true,
-      req: { transactionID },
+      ...(transactionID ? { req: { transactionID } } : {}),
     })) as unknown as RecordLike;
   } catch {
     throw new ProductionHandoffError(400, "service_unavailable", "Selected service is unavailable");
@@ -357,7 +441,7 @@ async function resolveProductionRecipient(
       id: providerId,
       depth: 0,
       overrideAccess: true,
-      req: { transactionID },
+      ...(transactionID ? { req: { transactionID } } : {}),
     })) as unknown as RecordLike;
   } catch {
     throw new ProductionHandoffError(503, "provider_unavailable", "Selected service provider is unavailable");
@@ -371,11 +455,83 @@ async function resolveProductionRecipient(
     );
   }
 
+  const serviceName = providerNameOrServiceName(service.name, "Service");
+  const providerName = providerNameOrServiceName(provider.name, "Provider");
   return {
-    providerOrganisationId: numericRelationshipId(
-      provider.organisation,
-      "Provider organisation",
-    ),
+    providerId,
+    providerOrganisationId: numericRelationshipId(provider.organisation, "Provider organisation"),
+    providerName,
+    serviceName,
+  };
+}
+
+function providerNameOrServiceName(value: unknown, field: string): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new ProductionHandoffError(503, "invalid_directory_record", field + " name is invalid");
+  }
+  return value.trim();
+}
+
+function previewTokenFor(
+  serverSecret: string,
+  input: NormalizedProductionHandoffInput,
+  recipient: ProductionRecipient,
+): string {
+  const recipientFingerprint = JSON.stringify({
+    serviceId: input.serviceId,
+    serviceName: recipient.serviceName,
+    providerId: recipient.providerId,
+    providerName: recipient.providerName,
+    providerOrganisationId: recipient.providerOrganisationId,
+  });
+  return createHmac("sha256", serverSecret)
+    .update(
+      "talkpoint-sharing-preview-v1:" +
+        sha256(canonicalSharePayload(input)) +
+        ":" +
+        sha256(recipientFingerprint),
+      "utf8",
+    )
+    .digest("base64url");
+}
+
+function tokenMatches(actual: string, expected: string): boolean {
+  const actualBuffer = Buffer.from(actual, "utf8");
+  const expectedBuffer = Buffer.from(expected, "utf8");
+  return (
+    actualBuffer.length === expectedBuffer.length &&
+    timingSafeEqual(actualBuffer, expectedBuffer)
+  );
+}
+
+export async function createProductionHandoffPreview(
+  payload: Payload,
+  input: ProductionHandoffPreviewInput,
+  serverSecret: string,
+): Promise<ProductionHandoffPreview> {
+  const normalized = normalizeShareInput(input);
+  const recipient = await resolveProductionRecipient(payload, normalized);
+  const structuredSupportSummary = createStructuredSupportSummary(normalized);
+
+  return {
+    previewToken: previewTokenFor(serverSecret, normalized, recipient),
+    recipient: {
+      providerName: recipient.providerName,
+      serviceName: recipient.serviceName,
+    },
+    purpose: "provider_specific_assisted_contact",
+    sharing: {
+      ...(normalized.preferredName ? { preferredName: normalized.preferredName } : {}),
+      contact: normalized.contact,
+      primarySupportTopic: normalized.primarySupportTopic,
+      secondarySupportTopics: [...normalized.secondarySupportTopics],
+      serviceArea: normalized.serviceArea,
+      preferences: [...normalized.preferences],
+      structuredSupportSummary,
+      ...(normalized.optionalNote ? { optionalNote: normalized.optionalNote } : {}),
+    },
+    authorisedDataCategories: authorisedDataCategories(normalized),
+    consentVersion: normalized.consentVersion,
   };
 }
 
@@ -397,9 +553,10 @@ async function findExistingRequest(
 
 async function assertExistingConsent(
   payload: Payload,
-  requestId: number,
+  existingRequest: RecordLike,
   transactionID?: TransactionID,
-): Promise<void> {
+): Promise<number> {
+  const requestId = numericRelationshipId(existingRequest.id, "Contact request");
   const result = await payload.find({
     collection: "consent-records",
     where: { request: { equals: requestId } },
@@ -415,6 +572,21 @@ async function assertExistingConsent(
       "Existing handoff is missing its provider-specific consent record",
     );
   }
+  const consent = asRecord(result.docs[0]);
+  const requestOrganisationId = relationshipId(existingRequest.providerOrganisation);
+  const consentOrganisationId = relationshipId(consent?.recipientProviderOrganisation);
+  if (
+    !requestOrganisationId ||
+    !consentOrganisationId ||
+    requestOrganisationId !== consentOrganisationId
+  ) {
+    throw new ProductionHandoffError(
+      500,
+      "handoff_integrity_error",
+      "Existing handoff consent recipient does not match the request",
+    );
+  }
+  return requestId;
 }
 
 async function replayExisting(
@@ -431,8 +603,7 @@ async function replayExisting(
       "Idempotency-Key was already used for a different handoff payload",
     );
   }
-  const requestId = numericRelationshipId(existing.id, "Contact request");
-  await assertExistingConsent(payload, requestId, transactionID);
+  const requestId = await assertExistingConsent(payload, existing, transactionID);
   return {
     requestId: String(requestId),
     managementId,
@@ -472,10 +643,23 @@ export async function persistProductionHandoff(
   rawIdempotencyKey: string,
   serverSecret: string,
 ): Promise<ProductionHandoffResult> {
-  const normalized = normalizeInput(input);
+  const inputRecord = asRecord(input);
+  if (!inputRecord || inputRecord.consentAccepted !== true) {
+    throw new ProductionHandoffError(
+      400,
+      "consent_required",
+      "Explicit provider-specific consent is required",
+    );
+  }
+  const previewToken = requiredString(inputRecord.previewToken, "preview_token");
+  if (!/^[A-Za-z0-9_-]{43}$/.test(previewToken)) {
+    throw new ProductionHandoffError(400, "invalid_preview_token", "Sharing Preview token is invalid");
+  }
+
+  const normalized = normalizeShareInput(input);
   const idempotencyKey = normalizeIdempotencyKey(rawIdempotencyKey);
   const idempotencyKeyHash = sha256("talkpoint-handoff-v1:" + idempotencyKey);
-  const idempotencyPayloadHash = sha256(canonicalPayload(normalized));
+  const idempotencyPayloadHash = sha256(canonicalFinalPayload(normalized, previewToken));
   const managementId = managementIdFor(serverSecret, idempotencyKeyHash, idempotencyPayloadHash);
   const managementTokenHash = sha256(managementId);
 
@@ -501,15 +685,20 @@ export async function persistProductionHandoff(
         );
       }
 
-      const { providerOrganisationId } = await resolveProductionRecipient(
-        payload,
-        normalized,
-        transactionID,
-      );
+      const recipient = await resolveProductionRecipient(payload, normalized, transactionID);
+      const expectedPreviewToken = previewTokenFor(serverSecret, normalized, recipient);
+      if (!tokenMatches(previewToken, expectedPreviewToken)) {
+        throw new ProductionHandoffError(
+          409,
+          "preview_token_invalid_or_stale",
+          "Sharing Preview is invalid or no longer matches the selected service and data",
+        );
+      }
+
       const request = await payload.create({
         collection: "contact-requests",
         data: {
-          providerOrganisation: providerOrganisationId,
+          providerOrganisation: recipient.providerOrganisationId,
           service: normalized.serviceId,
           preferredName: normalized.preferredName,
           contactType: normalized.contact.type,
@@ -531,23 +720,13 @@ export async function persistProductionHandoff(
       });
 
       const requestId = numericRelationshipId(request.id, "Contact request");
-      const authorisedDataCategories = [
-        "contact",
-        "support_topics",
-        "service_area_preferences",
-        "structured_support_summary",
-      ];
-      if (normalized.optionalNote && normalized.optionalNoteAccepted) {
-        authorisedDataCategories.push("optional_note");
-      }
-
       await payload.create({
         collection: "consent-records",
         data: {
           request: requestId,
           consentVersion: normalized.consentVersion,
-          recipientProviderOrganisation: providerOrganisationId,
-          authorisedDataCategories,
+          recipientProviderOrganisation: recipient.providerOrganisationId,
+          authorisedDataCategories: authorisedDataCategories(normalized),
           optionalNoteAuthorised: Boolean(
             normalized.optionalNote && normalized.optionalNoteAccepted,
           ),
