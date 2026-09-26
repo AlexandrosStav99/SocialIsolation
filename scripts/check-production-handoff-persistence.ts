@@ -189,7 +189,7 @@ async function main() {
       primarySupportTopic: "social_connection",
       secondarySupportTopics: ["family_relationships"],
       serviceArea: "online",
-      preferences: ["online"],
+      preferences: [],
       optionalNote: "Controlled CI-only optional note.",
       optionalNoteAccepted: true,
     };
@@ -302,6 +302,18 @@ async function main() {
     assert(replay.requestId === first.requestId, "Exact retry created a different request");
     assert(replay.managementId === first.managementId, "Exact retry returned a different management credential");
 
+    await expectHandoffError(
+      () =>
+        persistProductionHandoff(
+          payload,
+          inputA,
+          idempotencyKey,
+          "rotated-" + serverSecret,
+          serverConsentVersion,
+        ),
+      "management_credential_key_mismatch",
+    );
+
     const requestCount = await payload.count({
       collection: "contact-requests",
       where: { contactDetail: { equals: emailA } },
@@ -395,6 +407,17 @@ async function main() {
           serverConsentVersion,
         ),
       "optional_note_consent_required",
+    );
+
+    await expectHandoffError(
+      () =>
+        createProductionHandoffPreview(
+          payload,
+          { ...shareA, preferences: ["arbitrary user text"] },
+          serverSecret,
+          serverConsentVersion,
+        ),
+      "unsupported_preferences",
     );
 
     const shareB: ProductionHandoffPreviewInput = {
