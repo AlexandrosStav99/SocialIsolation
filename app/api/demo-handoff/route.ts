@@ -6,7 +6,7 @@ import { getProviderQueue } from "@/lib/provider/queue";
 import { transitionRequestStatus } from "@/lib/provider/workflow";
 import { supportTopics, serviceAreas, type SupportTopic, type ServiceArea } from "@/lib/domain/data-boundaries";
 import { securityErrorResponse } from "@/lib/security/api-response";
-import { assertAllowedBrowserOrigin, noStoreHeaders, readJsonBodyLimited } from "@/lib/security/http-hardening";
+import { noStoreHeaders, readJsonBodyLimited } from "@/lib/security/http-hardening";
 
 const DEMO_SERVICES = {
   "demo-community-online": { providerOrganisationId: "demo-community-provider", integrated: true },
@@ -34,7 +34,6 @@ function error(message: string, code: string, status = 400) {
 
 export async function POST(request: Request) {
   try {
-    assertAllowedBrowserOrigin(request);
     const parsed = asRecord(await readJsonBodyLimited(request, 4 * 1024));
     if (!parsed) return error("Request body must be an object", "invalid_request");
 
