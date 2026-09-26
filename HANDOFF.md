@@ -3,11 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed implementation checkpoint: **Payload-backed MVP directory integration**  
-MVP directory integration PR: **#29**  
-MVP directory integration merge commit: `dbe6e141a08b2eceb400c4ae45efa968674b0442`  
-Final PR CI: **#146 green**  
-Active programme: **Validation & Evidence execution**
+Latest completed production checkpoint: **PROD-1 — production configuration and fail-closed directory behaviour**  
+Latest merged production PR: **#31**  
+Latest merged production commit: `a46c9251b8c2a7f58ea2e9237dac73b5001729bc`  
+PR #31 final CI: **#165 green**  
+Active programme: **Production-readiness hardening**  
+Exact next engineering stage: **PROD-2 — production authentication hardening**
 
 ## Read this first
 
@@ -16,17 +17,18 @@ Before changing product behaviour, read in this order:
 1. `docs/TALKPOINT-MVP-SPEC.md` — frozen source of truth.
 2. `docs/PRODUCT-UX-CONTRACT.md` — locked UX/product contract subordinate to the spec.
 3. `docs/FINAL-MVP-READINESS.md` — current technical/claim boundary.
-4. `docs/VALIDATION-EVIDENCE-MATRIX.md` — current status of all seven frozen validation gates.
-5. `docs/PHASE-10-VALIDATION-EVIDENCE.md` — academic/verification evidence rules.
-6. `docs/MANUAL-ACCESSIBILITY-TEST-PROTOCOL.md`.
-7. `docs/UX-5-USABILITY-TEST-PLAN.md`.
-8. `docs/USABILITY-SESSION-RECORD-TEMPLATE.md`.
-9. `docs/SAFETY-CONTENT-VALIDATION-CHECKLIST.md`.
-10. `docs/PRIVACY-LEGAL-VALIDATION-CHECKLIST.md`.
-11. `docs/PROVIDER-VALIDATION-CHECKLIST.md`.
-12. `docs/ACADEMIC-CLOSURE-TEMPLATE.md`.
+4. `docs/PRODUCTION-READINESS.md` — production engineering stages and blocker register.
+5. `docs/VALIDATION-EVIDENCE-MATRIX.md` — current status of all seven frozen validation gates.
+6. `docs/PHASE-10-VALIDATION-EVIDENCE.md` — academic/verification evidence rules.
+7. `docs/MANUAL-ACCESSIBILITY-TEST-PROTOCOL.md`.
+8. `docs/UX-5-USABILITY-TEST-PLAN.md`.
+9. `docs/USABILITY-SESSION-RECORD-TEMPLATE.md`.
+10. `docs/SAFETY-CONTENT-VALIDATION-CHECKLIST.md`.
+11. `docs/PRIVACY-LEGAL-VALIDATION-CHECKLIST.md`.
+12. `docs/PROVIDER-VALIDATION-CHECKLIST.md`.
+13. `docs/ACADEMIC-CLOSURE-TEMPLATE.md`.
 
-Do not redesign the product from assumptions. The frozen coded MVP scope is implemented. Further code work is justified only by a concrete defect or a material validation finding.
+Do not redesign the product from assumptions. The frozen coded MVP scope is implemented. Production hardening is authorised by the production-readiness programme, but product-scope expansion still requires a concrete frozen-requirement or validation justification.
 
 ## Product boundary
 
@@ -234,11 +236,11 @@ Not yet defensible:
 
 Production hardening is now an authorised programme layered on top of the frozen MVP. Do not reopen product scope.
 
-Current stage: **PROD-1 — production configuration and fail-closed behaviour**, PR #31.
+Completed stage: **PROD-1 — production configuration and fail-closed behaviour**, merged in PR #31 with final CI #165 green.
 
-PROD-1 establishes explicit development/demo/production runtime modes. Production must never silently use synthetic provider records. If verified production directory data is unavailable, the public directory must return a safe unavailable state and the browser must not fall back to embedded fictional providers.
+PROD-1 established explicit development/demo/production runtime modes. Production cannot silently use synthetic provider records; until verified real directory onboarding exists, unavailable production directory data returns a safe unavailable state and the browser has no embedded synthetic fallback.
 
-After PROD-1 is green and merged, continue with **PROD-2 production authentication hardening**. Keep each stage focused and preserve least privilege, organisation isolation and the anonymous/identifiable privacy split.
+Continue with **PROD-2 production authentication hardening**. Keep each stage focused and preserve least privilege, organisation isolation and the anonymous/identifiable privacy split.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -248,9 +250,10 @@ The external validation programme remains open in parallel. Engineering progress
 - PostgreSQL database: **implemented**.
 - Payload CMS runtime and committed migration: **implemented and CI-verified**.
 - Synthetic provider/service data: **seeded into Payload/PostgreSQL in CI**.
-- Public check-in directory: **Payload/PostgreSQL-backed with explicit static synthetic fallback**.
+- Public check-in directory in development/demo: **Payload/PostgreSQL-backed with explicit synthetic fallback**.
+- Public check-in directory in production: **fail-closed; synthetic data is not used or embedded as fallback**.
 - PR #30 Payload Admin / REST boundary: **merged; CI #162 green**.
-- PROD-1 PR #31: **open; CI #164 pending at this handoff update**.
+- PROD-1 PR #31: **merged; final CI #165 green**.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
 - UX-0 through UX-5: **complete and merged**.
@@ -272,8 +275,8 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 
 ### Engineering
 
-- PROD-1 production configuration/fail-closed directory: **in progress in PR #31**.
-- PROD-2 production authentication hardening: **not started**.
+- PROD-1 production configuration/fail-closed directory: **complete; PR #31, CI #165 green**.
+- PROD-2 production authentication hardening: **next stage**.
 - PROD-3 real provider workspace foundation: **not started**.
 - PROD-4 production handoff: **not started**.
 - PROD-5 retention/deletion automation: **not started**.
@@ -301,4 +304,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Finish PR #31 without weakening existing tests: inspect CI #164, fix any root failures, merge only when fully green, then update this handoff to mark PROD-1 complete and begin PROD-2 from the resulting `main`.
+Create a focused PROD-2 branch from current `main`. Harden Payload provider/admin authentication using supported Payload auth/session controls, preserve least privilege and organisation isolation, add migration/tests where schema changes require them, and keep email/MFA provider-dependent actions explicitly unconfigured rather than inventing external infrastructure.
