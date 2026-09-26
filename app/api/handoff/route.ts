@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getProductionConsentVersion, getProductionHandoffSecret, getRuntimeMode } from "@/lib/config/server";
+import { securityErrorResponse } from "@/lib/security/api-response";
+import { assertAllowedBrowserOrigin, noStoreHeaders, readJsonBodyLimited } from "@/lib/security/http-hardening";
+import { consumeRateLimit, publicRateLimitSubject, rateLimitPolicies } from "@/lib/security/rate-limit";
 import {
   persistProductionHandoff,
   ProductionHandoffError,
@@ -10,10 +13,6 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const noStoreHeaders = {
-  "Cache-Control": "no-store",
-};
 
 const allowedFields = new Set([
   "serviceId",
@@ -86,6 +85,8 @@ function productionConsentVersion(): string {
 }
 
 function errorResponse(error: unknown) {
+  const securityResponse = securityErrorResponse(error);
+  if (securityResponse) return securityResponse;
   if (error instanceof ProductionHandoffError) {
     return NextResponse.json(
       { error: error.message, code: error.code },
@@ -111,6 +112,14 @@ export async function POST(request: Request) {
       );
     }
 
+    assertAllowedBrowserOrigin(request);
+    const payload = await getPayload({ config });
+    await consumeRateLimit(
+      payload,
+      rateLimitPolicies.productionHandoff,
+      publicRateLimitSubject(request),
+    );
+
     const idempotencyKey = request.headers.get("Idempotency-Key");
     if (!idempotencyKey) {
       throw new ProductionHandoffError(
@@ -120,19 +129,13 @@ export async function POST(request: Request) {
       );
     }
 
-    let parsed: unknown;
-    try {
-      parsed = await request.json();
-    } catch {
-      throw new ProductionHandoffError(400, "invalid_json", "Request body must be valid JSON");
-    }
+    const parsed = await readJsonBodyLimited(request, 16 * 1024);
     const body = asRecord(parsed);
     if (!body) {
       throw new ProductionHandoffError(400, "invalid_request", "Request body must be an object");
     }
     assertExactInputShape(body);
 
-    const payload = await getPayload({ config });
     const result = await persistProductionHandoff(
       payload,
       body as unknown as ProductionHandoffInput,
