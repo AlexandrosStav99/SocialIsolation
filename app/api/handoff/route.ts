@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { getPayloadSecret, getProductionConsentVersion, getRuntimeMode } from "@/lib/config/server";
+import { getProductionConsentVersion, getProductionHandoffSecret, getRuntimeMode } from "@/lib/config/server";
 import {
   persistProductionHandoff,
   ProductionHandoffError,
@@ -57,6 +57,18 @@ function assertExactInputShape(body: Record<string, unknown>) {
       400,
       "unexpected_contact_field",
       "Unexpected contact field: " + unexpectedContact,
+    );
+  }
+}
+
+function productionHandoffSecret(): string {
+  try {
+    return getProductionHandoffSecret();
+  } catch {
+    throw new ProductionHandoffError(
+      503,
+      "production_handoff_secret_unconfigured",
+      "Production handoff credential secret is not configured",
     );
   }
 }
@@ -125,7 +137,7 @@ export async function POST(request: Request) {
       payload,
       body as unknown as ProductionHandoffInput,
       idempotencyKey,
-      getPayloadSecret(),
+      productionHandoffSecret(),
       productionConsentVersion(),
     );
 
