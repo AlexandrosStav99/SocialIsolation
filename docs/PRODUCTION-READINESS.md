@@ -8,8 +8,9 @@ This document tracks the production-readiness programme without changing the fro
 
 - Controlled university MVP: implemented and CI-protected.
 - Payload Admin / REST boundary: implemented in PR #30.
-- PROD-1 production configuration and fail-closed directory behaviour: in progress on the current branch.
-- PROD-2 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
+- PROD-1 production configuration and fail-closed directory behaviour: **complete in PR #31; final CI #165 green**.
+- PROD-2 production authentication hardening: **next engineering stage**.
+- PROD-3 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
 
 Green CI is necessary engineering evidence, not proof of production readiness, legal compliance, safeguarding approval, accessibility conformance or provider validation.
 
@@ -37,8 +38,8 @@ These are implementation items that can be solved in the repository and should n
 
 | ID | Area | Status | Notes |
 | --- | --- | --- | --- |
-| ENG-01 | PROD-1 runtime/config fail-closed behaviour | In progress | Explicit runtime mode, startup validation, server/client synthetic fallback removal in production |
-| ENG-02 | PROD-2 production authentication hardening | Open | Session security, recovery, deactivation, brute-force controls, MFA readiness |
+| ENG-01 | PROD-1 runtime/config fail-closed behaviour | Complete | PR #31; explicit runtime mode, startup validation, server/client synthetic fallback removal in production; CI #165 green |
+| ENG-02 | PROD-2 production authentication hardening | Next | Session security, recovery, deactivation, brute-force controls, MFA readiness |
 | ENG-03 | PROD-3 real provider workspace workflow | Open | DB-backed request queue, assignment, organisation authority |
 | ENG-04 | PROD-4 production handoff | Open | Persisted consented request, routing, idempotency |
 | ENG-05 | PROD-5 retention/deletion automation | Open | Configurable retention; exact legal duration remains external |
