@@ -32,6 +32,10 @@ for (const required of [
   "timingSafeEqual",
   "publicRequestId",
   "request_not_found_or_credential_invalid",
+  "deletedRequestPublicId",
+  "deletedManagementTokenHash",
+  "deletedIdempotencyKeyHash",
+  "deletedIdempotencyPayloadHash",
   "managementTokenHash",
   "deleteRequestPreservingConsentEvidence",
   '"user_withdrawal"',
@@ -77,7 +81,16 @@ if (!runner.includes("TALKPOINT_RETENTION_AUTOMATION_ENABLED") || !runner.includ
 if (consents.includes('name:"request",type:"relationship",relationTo:"contact-requests",required:true')) {
   throw new Error("Consent evidence must remain valid after request deletion");
 }
-for (const required of ['name:"requestDeletedAt"', 'name:"deletionReason"', "user_withdrawal", "retention"]) {
+for (const required of [
+  'name:"requestDeletedAt"',
+  'name:"deletedRequestPublicId"',
+  'name:"deletedManagementTokenHash"',
+  'name:"deletedIdempotencyKeyHash"',
+  'name:"deletedIdempotencyPayloadHash"',
+  'name:"deletionReason"',
+  "user_withdrawal",
+  "retention",
+]) {
   if (!consents.includes(required)) throw new Error("Consent deletion lifecycle field missing: " + required);
 }
 if (!requests.includes('name:"closedAt", type:"date", index:true')) {
@@ -89,6 +102,8 @@ if (!audit.includes('name:"occurredAt",type:"date",required:true,index:true')) {
 for (const required of [
   '"public_request_id"',
   '"contact_requests_public_request_id_idx"',
+  '"consent_records_deleted_request_public_id_idx"',
+  '"consent_records_deleted_idempotency_key_hash_idx"',
   'ALTER COLUMN "request_id" DROP NOT NULL',
   '"request_deleted_at"',
   '"deletion_reason"',
