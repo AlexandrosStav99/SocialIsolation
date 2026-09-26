@@ -83,6 +83,7 @@ async function main() {
         availability: service.availability,
         immediateSupportCapable: service.immediateSupportCapable,
         integrated: service.integrated,
+        productionHandoffEnabled: false,
         informationSource: DEMO_INFORMATION_SOURCE,
         informationCheckedAt: service.information.checkedAt.toISOString(),
       };
