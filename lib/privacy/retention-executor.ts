@@ -117,6 +117,7 @@ async function findRequestById(
       id: requestId,
       depth: 0,
       overrideAccess: true,
+      showHiddenFields: true,
       ...(transactionID ? { req: { transactionID } } : {}),
     });
     return asRecord(request);
@@ -142,6 +143,39 @@ async function findRequestByPublicId(
   return asRecord(result.docs[0]);
 }
 
+async function findDeletedRequestTombstone(
+  payload: Payload,
+  publicRequestId: string,
+  transactionID: TransactionID,
+): Promise<RecordLike | null> {
+  const result = await payload.find({
+    collection: "consent-records",
+    where: { deletedRequestPublicId: { equals: publicRequestId } },
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    showHiddenFields: true,
+    req: { transactionID },
+  });
+  return asRecord(result.docs[0]);
+}
+
+function optionalHash(record: RecordLike, field: string): string | undefined {
+  const value = record[field];
+  return typeof value === "string" && /^[a-f0-9]{64}$/.test(value) ? value : undefined;
+}
+
+function requiredPublicRequestId(record: RecordLike): string {
+  const value = record.publicRequestId;
+  if (
+    typeof value !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  ) {
+    throw new DeletionError(500, "invalid_request_record", "Stored public request identifier is invalid");
+  }
+  return value;
+}
+
 async function consentRecordsForRequest(
   payload: Payload,
   requestId: number,
@@ -160,11 +194,12 @@ async function consentRecordsForRequest(
 
 async function deleteRequestPreservingConsentEvidence(
   payload: Payload,
-  requestId: number,
+  request: RecordLike,
   reason: DeletionReason,
   now: Date,
   transactionID: TransactionID,
 ): Promise<number> {
+  const requestId = numericId(request.id, "request_id");
   const consents = await consentRecordsForRequest(payload, requestId, transactionID);
   if (consents.length === 0) {
     throw new DeletionError(
@@ -174,6 +209,11 @@ async function deleteRequestPreservingConsentEvidence(
     );
   }
 
+  const deletedRequestPublicId = requiredPublicRequestId(request);
+  const deletedManagementTokenHash = optionalHash(request, "managementTokenHash");
+  const deletedIdempotencyKeyHash = optionalHash(request, "idempotencyKeyHash");
+  const deletedIdempotencyPayloadHash = optionalHash(request, "idempotencyPayloadHash");
+
   for (const consent of consents) {
     const consentId = numericId(consent.id, "consent_id");
     await payload.update({
@@ -182,6 +222,10 @@ async function deleteRequestPreservingConsentEvidence(
       data: {
         requestDeletedAt: now.toISOString(),
         deletionReason: reason,
+        deletedRequestPublicId,
+        deletedManagementTokenHash,
+        deletedIdempotencyKeyHash,
+        deletedIdempotencyPayloadHash,
         ...(reason === "user_withdrawal" ? { withdrawnAt: now.toISOString() } : {}),
       },
       depth: 0,
@@ -219,7 +263,18 @@ export async function withdrawProductionRequest(
 
   return withTransaction(payload, async (transactionID) => {
     const request = await findRequestByPublicId(payload, publicRequestId, transactionID);
-    if (!request || !hashMatches(request.managementTokenHash, managementId)) {
+    if (!request) {
+      const tombstone = await findDeletedRequestTombstone(payload, publicRequestId, transactionID);
+      if (tombstone && hashMatches(tombstone.deletedManagementTokenHash, managementId)) {
+        return { requestDeleted: true };
+      }
+      throw new DeletionError(
+        404,
+        "request_not_found_or_credential_invalid",
+        "No manageable request matched the supplied credentials",
+      );
+    }
+    if (!hashMatches(request.managementTokenHash, managementId)) {
       throw new DeletionError(
         404,
         "request_not_found_or_credential_invalid",
@@ -227,10 +282,9 @@ export async function withdrawProductionRequest(
       );
     }
 
-    const requestId = numericId(request.id, "request_id");
     await deleteRequestPreservingConsentEvidence(
       payload,
-      requestId,
+      request,
       "user_withdrawal",
       now,
       transactionID,
@@ -296,7 +350,7 @@ async function purgeClosedContactRequests(
         if (!closedAt || Number.isNaN(closedAt.getTime()) || closedAt > cutoff) return;
         await deleteRequestPreservingConsentEvidence(
           payload,
-          requestId,
+          current,
           "retention",
           now,
           transactionID,
