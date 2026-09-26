@@ -52,6 +52,10 @@ for (const required of [
   "createStructuredSupportSummary",
   "unsupported_preferences",
   "management_credential_key_mismatch",
+  "randomBytes(32)",
+  "createCipheriv",
+  "createDecipheriv",
+  "managementTokenEnvelope",
 ]) {
   if (!persistence.includes(required)) throw new Error("Production handoff invariant missing: " + required);
 }
@@ -89,11 +93,15 @@ if (!services.includes("isSuperAdminUser") || !services.includes("access: { crea
 if (!config.includes("getProductionConsentVersion") || !config.includes("TALKPOINT_PRODUCTION_CONSENT_VERSION")) {
   throw new Error("Production consent version must be server-configured");
 }
-for (const required of ['name:"idempotencyKeyHash"', "unique:true", 'name:"idempotencyPayloadHash"']) {
+if (!config.includes("getProductionHandoffSecret") || !config.includes("TALKPOINT_HANDOFF_CREDENTIAL_SECRET")) {
+  throw new Error("Production handoff must use a dedicated server credential secret");
+}
+for (const required of ['name:"managementTokenEnvelope"', 'name:"idempotencyKeyHash"', "unique:true", 'name:"idempotencyPayloadHash"']) {
   if (!requests.includes(required)) throw new Error("ContactRequest idempotency schema missing: " + required);
 }
 for (const required of [
   '"production_handoff_enabled"',
+  '"management_token_envelope"',
   '"idempotency_key_hash"',
   '"idempotency_payload_hash"',
   "CREATE UNIQUE INDEX",
