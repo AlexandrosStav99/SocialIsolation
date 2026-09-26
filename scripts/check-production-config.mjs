@@ -3,6 +3,7 @@ import {
   isSyntheticDirectoryFallbackAllowed,
   validateRuntimeConfiguration,
 } from "../lib/config/server.ts";
+import { assertAllowedBrowserOrigin } from "../lib/security/http-hardening.ts";
 
 const originalEnv = { ...process.env };
 
@@ -45,6 +46,38 @@ try {
   if (getRuntimeMode() !== "production") throw new Error("Production runtime mode was not preserved");
   if (isSyntheticDirectoryFallbackAllowed()) throw new Error("Production fallback must always be disabled");
   validateRuntimeConfiguration();
+
+  assertAllowedBrowserOrigin(
+    new Request("http://internal-app.local/api/provider/requests", {
+      method: "PATCH",
+      headers: { Origin: "https://talkpoint.example.test" },
+    }),
+    { requireForCookieAuth: true },
+  );
+  expectThrows(
+    "cross-origin production browser request",
+    () =>
+      assertAllowedBrowserOrigin(
+        new Request("http://internal-app.local/api/provider/requests", {
+          method: "PATCH",
+          headers: { Origin: "https://cross-origin.invalid" },
+        }),
+        { requireForCookieAuth: true },
+      ),
+    /origin/i,
+  );
+  expectThrows(
+    "cookie-authenticated mutation without origin",
+    () =>
+      assertAllowedBrowserOrigin(
+        new Request("http://internal-app.local/api/provider/requests", {
+          method: "PATCH",
+          headers: { Cookie: "payload-token=synthetic-ci-cookie" },
+        }),
+        { requireForCookieAuth: true },
+      ),
+    /same-origin/i,
+  );
 
   delete process.env.TALKPOINT_PUBLIC_APP_ORIGIN;
   expectThrows("missing public app origin", () => validateRuntimeConfiguration(), /public_app_origin/i);
