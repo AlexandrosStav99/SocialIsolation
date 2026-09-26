@@ -67,7 +67,6 @@ for (const path of bodyRoutes) {
 }
 
 for (const path of [
-  "app/api/demo-handoff/route.ts",
   "app/api/handoff/preview/route.ts",
   "app/api/handoff/route.ts",
   "app/api/handoff/manage/withdraw/route.ts",
