@@ -29,6 +29,8 @@ jobs:
           --health-retries 5
     env:
       NEXT_TELEMETRY_DISABLED: 1
+      TALKPOINT_RUNTIME_MODE: demo
+      TALKPOINT_ALLOW_SYNTHETIC_DIRECTORY_FALLBACK: "true"
       DATABASE_URL: postgresql://talkpoint:ci-only@127.0.0.1:5432/talkpoint
       PAYLOAD_SECRET: ci-only-not-for-deployment
       NEXT_PUBLIC_MAPBOX_TOKEN: ""
@@ -97,6 +99,9 @@ jobs:
 
       - name: Provider RBAC and consent hardening checks
         run: npm run test:provider-consent
+
+      - name: Production configuration fail-closed checks
+        run: npm run test:production-config
 
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
