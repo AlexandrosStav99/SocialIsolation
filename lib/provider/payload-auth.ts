@@ -1,5 +1,5 @@
 import type { Payload } from "payload";
-import { requireAuthenticatedActor, type AuthenticatedActor } from "./auth";
+import { requireAuthenticatedActor, type AuthenticatedActor } from "./auth.ts";
 
 export class ProviderWorkspaceError extends Error {
   constructor(
