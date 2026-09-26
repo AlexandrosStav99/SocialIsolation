@@ -1,6 +1,6 @@
 import { createHash, createHmac } from "node:crypto";
 import type { Payload } from "payload";
-import { DEMO_INFORMATION_SOURCE } from "../../data/demo-directory.ts";
+import { SYNTHETIC_DIRECTORY_SOURCE } from "../directory/synthetic.ts";
 import {
   serviceAreas,
   supportTopics,
@@ -334,7 +334,7 @@ async function resolveProductionRecipient(
       "Selected service is not enabled for production assisted contact",
     );
   }
-  if (service.informationSource === DEMO_INFORMATION_SOURCE) {
+  if (service.informationSource === SYNTHETIC_DIRECTORY_SOURCE) {
     throw new ProductionHandoffError(
       409,
       "synthetic_service_blocked",
@@ -363,7 +363,7 @@ async function resolveProductionRecipient(
     throw new ProductionHandoffError(503, "provider_unavailable", "Selected service provider is unavailable");
   }
 
-  if (provider.informationSource === DEMO_INFORMATION_SOURCE) {
+  if (provider.informationSource === SYNTHETIC_DIRECTORY_SOURCE) {
     throw new ProductionHandoffError(
       409,
       "synthetic_provider_blocked",
