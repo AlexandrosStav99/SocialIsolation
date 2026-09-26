@@ -39,6 +39,9 @@ try {
   process.env.PAYLOAD_SECRET = "a-strong-production-secret-with-more-than-32-characters";
   process.env.TALKPOINT_ALLOW_SYNTHETIC_DIRECTORY_FALLBACK = "false";
   process.env.TALKPOINT_ENABLE_DEMO_DASHBOARD = "false";
+  process.env.TALKPOINT_PUBLIC_APP_ORIGIN = "https://talkpoint.example.test";
+  process.env.TALKPOINT_TRUSTED_CLIENT_IP_HEADER = "x-talkpoint-client-ip";
+  process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET = "a-dedicated-production-rate-limit-secret-value";
   if (getRuntimeMode() !== "production") throw new Error("Production runtime mode was not preserved");
   if (isSyntheticDirectoryFallbackAllowed()) throw new Error("Production fallback must always be disabled");
   validateRuntimeConfiguration();
