@@ -14,7 +14,7 @@ Implemented and CI-verified foundations include:
 - Payload CMS + PostgreSQL runtime integration;
 - committed/version-controlled Payload migration applied to clean PostgreSQL in CI;
 - live PostgreSQL round-trip verification;
-- provider organisations and organisation-scoped RBAC foundations;
+- provider organisations, hardened provider sessions and a PostgreSQL-backed provider workspace with organisation isolation, assigned-request staff scope and auditable request workflow mutations;
 - checked-directory and synthetic-directory contracts;
 - idempotent seeding of the controlled synthetic provider/service directory into Payload/PostgreSQL;
 - a Payload-backed directory API consumed by the public check-in, with a clearly synthetic static fallback when DB configuration/data is unavailable;
@@ -50,7 +50,7 @@ Payload/PostgreSQL runtime and the controlled synthetic directory integration ar
 - production identity, session management, MFA and onboarding;
 - environment-specific security assessment, monitoring and incident response;
 - real operational retention/deletion settings;
-- real provider agreements and DB-backed operational request handling if a pilot requires it;
+- real provider agreements and real public handoff activation; the DB-backed provider operational workspace foundation is implemented, but production request creation/routing/idempotency remains the next engineering stage;
 - complete checked directory content and revalidation process.
 
 The controlled university demo intentionally does not turn those production-operational gaps into fake live behaviour.
