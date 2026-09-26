@@ -239,6 +239,7 @@ try {
     id: withdrawalRequest.consentId,
     depth: 0,
     overrideAccess: true,
+    showHiddenFields: true,
   });
   assert(relationId(preservedConsent.request) === null, "Deleted request link was not cleared");
   assert(preservedConsent.deletionReason === "user_withdrawal", "Withdrawal reason missing");
