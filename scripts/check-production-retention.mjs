@@ -12,7 +12,6 @@ const migration = fs.readFileSync("migrations/20260926_203000_retention_deletion
 for (const required of [
   'getRuntimeMode() !== "production"',
   "withdrawProductionRequest",
-  "request_not_found_or_credential_invalid",
   "allowedFields",
   '"requestId"',
   '"managementId"',
@@ -32,6 +31,7 @@ for (const forbidden of [
 for (const required of [
   "timingSafeEqual",
   "publicRequestId",
+  "request_not_found_or_credential_invalid",
   "managementTokenHash",
   "deleteRequestPreservingConsentEvidence",
   '"user_withdrawal"',
