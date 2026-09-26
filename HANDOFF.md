@@ -3,12 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed production checkpoint: **PROD-1 — production configuration and fail-closed directory behaviour**  
-Latest merged production PR: **#31**  
-Latest merged production commit: `a46c9251b8c2a7f58ea2e9237dac73b5001729bc`  
-PR #31 final CI: **#165 green**  
+Latest completed production checkpoint: **PROD-2 — production authentication hardening**  
+Latest merged production PR: **#33**  
+Latest merged production commit: `86430da4a671613c7736f1cee750ba3883dc12b0`  
+PR #33 final CI: **#172 green**  
 Active programme: **Production-readiness hardening**  
-Exact next engineering stage: **PROD-2 — production authentication hardening**
+Exact next engineering stage: **PROD-3 — real provider workspace foundation**
 
 ## Read this first
 
@@ -236,11 +236,15 @@ Not yet defensible:
 
 Production hardening is now an authorised programme layered on top of the frozen MVP. Do not reopen product scope.
 
-Completed stage: **PROD-1 — production configuration and fail-closed behaviour**, merged in PR #31 with final CI #165 green.
+Completed stages:
+- **PROD-1 — production configuration and fail-closed behaviour**, PR #31, CI #165 green.
+- **PROD-2 — production authentication hardening**, PR #33, CI #172 green.
+
+PROD-2 now uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
 
 PROD-1 established explicit development/demo/production runtime modes. Production cannot silently use synthetic provider records; until verified real directory onboarding exists, unavailable production directory data returns a safe unavailable state and the browser has no embedded synthetic fallback.
 
-Continue with **PROD-2 production authentication hardening**. Keep each stage focused and preserve least privilege, organisation isolation and the anonymous/identifiable privacy split.
+Continue with **PROD-3 real provider workspace foundation**. Keep each stage focused and preserve least privilege, organisation isolation and the anonymous/identifiable privacy split.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -254,6 +258,7 @@ The external validation programme remains open in parallel. Engineering progress
 - Public check-in directory in production: **fail-closed; synthetic data is not used or embedded as fallback**.
 - PR #30 Payload Admin / REST boundary: **merged; CI #162 green**.
 - PROD-1 PR #31: **merged; final CI #165 green**.
+- PROD-2 PR #33: **merged; final CI #172 green**; duplicate PR #32 closed unmerged as superseded.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
 - UX-0 through UX-5: **complete and merged**.
@@ -276,8 +281,8 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 ### Engineering
 
 - PROD-1 production configuration/fail-closed directory: **complete; PR #31, CI #165 green**.
-- PROD-2 production authentication hardening: **next stage**.
-- PROD-3 real provider workspace foundation: **not started**.
+- PROD-2 production authentication hardening: **complete in PR #33; CI #172 green**.
+- PROD-3 real provider workspace foundation: **next stage**.
 - PROD-4 production handoff: **not started**.
 - PROD-5 retention/deletion automation: **not started**.
 - PROD-6 API and abuse hardening: **not started**.
@@ -304,4 +309,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Create a focused PROD-2 branch from current `main`. Harden Payload provider/admin authentication using supported Payload auth/session controls, preserve least privilege and organisation isolation, add migration/tests where schema changes require them, and keep email/MFA provider-dependent actions explicitly unconfigured rather than inventing external infrastructure.
+Create a focused PROD-3 branch from current `main`. Convert the provider workspace from in-memory/demo domain logic into a persisted, server-authoritative operational request lifecycle. Providers must only access requests for their authenticated organisation; assignment, provider organisation and status transitions must be enforced server-side. Do not join anonymous session history or introduce real provider records.
