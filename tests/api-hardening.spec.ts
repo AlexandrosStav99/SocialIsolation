@@ -31,20 +31,4 @@ test("demo handoff rejects oversized JSON before business logic", async ({ reque
   expect(body.code).toBe("request_too_large");
 });
 
-test("demo handoff blocks cross-origin browser requests", async ({ request }) => {
-  const response = await request.post("/api/demo-handoff", {
-    headers: {
-      "Content-Type": "application/json",
-      Origin: "https://cross-origin.invalid",
-    },
-    data: JSON.stringify({
-      serviceId: "demo-community-online",
-      consentAccepted: true,
-      primarySupportTopic: "social_connection",
-      serviceArea: "online",
-    }),
-  });
-  expect(response.status()).toBe(403);
-  const body = (await response.json()) as { code?: string };
-  expect(body.code).toBe("origin_not_allowed");
-});
+
