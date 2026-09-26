@@ -12,6 +12,7 @@ const migration = fs.readFileSync("migrations/20260926_203000_retention_deletion
 for (const required of [
   'getRuntimeMode() !== "production"',
   "withdrawProductionRequest",
+  "request_not_found_or_credential_invalid",
   "allowedFields",
   '"requestId"',
   '"managementId"',
@@ -30,6 +31,7 @@ for (const forbidden of [
 
 for (const required of [
   "timingSafeEqual",
+  "publicRequestId",
   "managementTokenHash",
   "deleteRequestPreservingConsentEvidence",
   '"user_withdrawal"',
@@ -85,6 +87,8 @@ if (!audit.includes('name:"occurredAt",type:"date",required:true,index:true')) {
   throw new Error("Audit retention field must be indexed");
 }
 for (const required of [
+  '"public_request_id"',
+  '"contact_requests_public_request_id_idx"',
   'ALTER COLUMN "request_id" DROP NOT NULL',
   '"request_deleted_at"',
   '"deletion_reason"',
