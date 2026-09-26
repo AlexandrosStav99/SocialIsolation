@@ -22,6 +22,7 @@ Implemented and CI-verified foundations include:
 - deterministic conversation, discovery and safety boundaries;
 - optional AI provider abstraction with deterministic fallback;
 - consent/contact-request domain boundaries, including a production-only signed Sharing Preview and atomic provider-specific request/consent persistence with server-derived routing and idempotent retries;
+- configurable retention/deletion mechanics with no hard-coded legal duration, including opaque-ID withdrawal, identifiable-request deletion, minimal deletion tombstones and PostgreSQL retention regressions;
 - thresholded anonymous analytics;
 - EN/EL critical journey;
 - accessibility/mobile/reduced-motion browser regressions;
@@ -49,7 +50,7 @@ Payload/PostgreSQL runtime and the controlled synthetic directory integration ar
 - production infrastructure provisioning and configuration;
 - production identity, session management, MFA and onboarding;
 - environment-specific security assessment, monitoring and incident response;
-- real operational retention/deletion settings and automation; exact durations still require privacy/legal approval;
+- final real-world retention durations and any infrastructure-level backup/log retention settings; application-level retention/deletion automation is implemented, but exact durations still require privacy/legal approval;
 - real provider agreements and real public handoff activation; the provider workspace and production handoff engineering boundaries are implemented, but productionHandoffEnabled remains a fail-closed per-service gate and no provider participation is implied;
 - complete checked directory content and revalidation process.
 
