@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { getProductionConsentVersion, getProductionHandoffSecret, getRuntimeMode } from "@/lib/config/server";
+import { securityErrorResponse } from "@/lib/security/api-response";
+import { assertAllowedBrowserOrigin, noStoreHeaders, readJsonBodyLimited } from "@/lib/security/http-hardening";
+import { consumeRateLimit, publicRateLimitSubject, rateLimitPolicies } from "@/lib/security/rate-limit";
 import {
   createProductionHandoffPreview,
   ProductionHandoffError,
