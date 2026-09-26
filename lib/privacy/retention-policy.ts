@@ -5,7 +5,7 @@ export type RetentionPolicy = {
   anonymousAnalyticsDays: number;
 };
 
-const MAX_RETENTION_DAYS = 3650;
+const MAX_RETENTION_DAYS = 36500;
 
 function parseDays(env: NodeJS.ProcessEnv, name: string): number {
   const raw = env[name]?.trim();
@@ -15,8 +15,8 @@ function parseDays(env: NodeJS.ProcessEnv, name: string): number {
     );
   }
   const value = Number(raw);
-  if (!Number.isInteger(value) || value < 1 || value > MAX_RETENTION_DAYS) {
-    throw new Error(name + " must be an integer from 1 to " + MAX_RETENTION_DAYS);
+  if (!Number.isInteger(value) || value < 0 || value > MAX_RETENTION_DAYS) {
+    throw new Error(name + " must be an integer from 0 to " + MAX_RETENTION_DAYS);
   }
   return value;
 }
