@@ -26,7 +26,8 @@
     "test:provider-consent": "node scripts/check-provider-consent-hardening.mjs",
     "payload": "payload",
     "seed:demo": "node --experimental-transform-types scripts/seed-demo-directory.ts",
-    "test:postgres": "node --experimental-transform-types scripts/check-postgres-integration.mjs"
+    "test:postgres": "node --experimental-transform-types scripts/check-postgres-integration.mjs",
+    "test:production-config": "node --experimental-transform-types scripts/check-production-config.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.1",
