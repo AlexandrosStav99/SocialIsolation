@@ -11,6 +11,6 @@ export const ConsentRecords: CollectionConfig = {
     {name:"consentedAt",type:"date",required:true},
     {name:"withdrawnAt",type:"date"},
     {name:"requestDeletedAt",type:"date",index:true},
-    {name:"deletionReason",type:"text",validate:(v)=>!v || ["user_withdrawal","retention"].includes(v) || "Invalid deletion reason"},
+    {name:"deletionReason",type:"text",validate:(v)=>!v || (typeof v==="string" && ["user_withdrawal","retention"].includes(v)) || "Invalid deletion reason"},
   ],
 };
