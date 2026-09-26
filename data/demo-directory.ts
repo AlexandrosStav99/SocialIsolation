@@ -1,6 +1,7 @@
 import type { ProviderDirectoryRecord, ServiceDirectoryRecord } from "@/lib/directory/contracts";
+import { SYNTHETIC_DIRECTORY_SOURCE } from "../lib/directory/synthetic.ts";
 
-export const DEMO_INFORMATION_SOURCE = "Synthetic university demonstration record";
+export const DEMO_INFORMATION_SOURCE = SYNTHETIC_DIRECTORY_SOURCE;
 export const DEMO_INFORMATION_CHECKED_AT = new Date("2026-09-20T00:00:00Z");
 
 // Synthetic records only. They prove the directory shape without implying partnerships or checked real-world information.
