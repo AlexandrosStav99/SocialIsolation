@@ -1,4 +1,4 @@
-import type { Payload } from "payload";
+import type { Payload, Where } from "payload";
 import type { AuthenticatedActor } from "./auth";
 import { ProviderWorkspaceError } from "./payload-auth";
 import {
@@ -119,9 +119,9 @@ function requestDetail(record: RecordLike): ProviderRequestDetail {
   };
 }
 
-function requestWhere(actor: AuthenticatedActor, requestId?: string): RecordLike {
+function requestWhere(actor: AuthenticatedActor, requestId?: string): Where {
   const organisationId = relationshipFilterId(actor.organisationId!);
-  const clauses: RecordLike[] = [{ providerOrganisation: { equals: organisationId } }];
+  const clauses: Where[] = [{ providerOrganisation: { equals: organisationId } }];
   if (requestId) clauses.push({ id: { equals: relationshipFilterId(requestId) } });
   if (actor.role === "provider_staff") {
     clauses.push({ assignedProviderUser: { equals: relationshipFilterId(actor.userId) } });
