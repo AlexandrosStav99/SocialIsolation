@@ -89,7 +89,31 @@ test("Payload authentication enforces activation, least privilege, sessions and 
     });
     expect(activate.ok()).toBeTruthy();
 
-    const platformLogin = await platform.post("/payload-api/provider-users/login", {
+    let platformLogin = await platform.post("/payload-api/provider-users/login", {
+      data: { email: platformEmail, password: platformPassword },
+    });
+    expect(platformLogin.ok()).toBeTruthy();
+
+    const deactivatePlatformUser = await admin.patch(`/payload-api/provider-users/${platformId}`, {
+      data: { active: false },
+    });
+    expect(deactivatePlatformUser.ok()).toBeTruthy();
+
+    const afterDeactivation = await platform.get("/payload-api/provider-users/me");
+    const afterDeactivationBody = (await afterDeactivation.json()) as { user?: unknown };
+    expect(afterDeactivationBody.user ?? null).toBeNull();
+
+    const loginWhileInactive = await platform.post("/payload-api/provider-users/login", {
+      data: { email: platformEmail, password: platformPassword },
+    });
+    expect(loginWhileInactive.ok()).toBeFalsy();
+
+    const reactivatePlatformUser = await admin.patch(`/payload-api/provider-users/${platformId}`, {
+      data: { active: true },
+    });
+    expect(reactivatePlatformUser.ok()).toBeTruthy();
+
+    platformLogin = await platform.post("/payload-api/provider-users/login", {
       data: { email: platformEmail, password: platformPassword },
     });
     expect(platformLogin.ok()).toBeTruthy();
