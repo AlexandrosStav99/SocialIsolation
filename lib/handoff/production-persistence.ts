@@ -488,6 +488,31 @@ async function resolveProductionRecipient(
   }
 
   const providerId = numericRelationshipId(service.provider, "Service provider");
+  const approvedProviderIdRaw = relationshipId(service.productionHandoffProvider);
+  const approvedOrganisationIdRaw = relationshipId(service.productionHandoffOrganisation);
+  if (!approvedProviderIdRaw || !approvedOrganisationIdRaw) {
+    throw new ProductionHandoffError(
+      409,
+      "production_handoff_scope_unconfigured",
+      "Selected service is missing its approved production recipient scope",
+    );
+  }
+  const approvedProviderId = numericRelationshipId(
+    service.productionHandoffProvider,
+    "Approved production provider",
+  );
+  const approvedOrganisationId = numericRelationshipId(
+    service.productionHandoffOrganisation,
+    "Approved production organisation",
+  );
+  if (providerId !== approvedProviderId) {
+    throw new ProductionHandoffError(
+      409,
+      "production_handoff_scope_mismatch",
+      "Selected service provider no longer matches its approved production recipient",
+    );
+  }
+
   let provider: RecordLike;
   try {
     provider = (await payload.findByID({
@@ -509,11 +534,23 @@ async function resolveProductionRecipient(
     );
   }
 
+  const providerOrganisationId = numericRelationshipId(
+    provider.organisation,
+    "Provider organisation",
+  );
+  if (providerOrganisationId !== approvedOrganisationId) {
+    throw new ProductionHandoffError(
+      409,
+      "production_handoff_scope_mismatch",
+      "Selected provider organisation no longer matches its approved production recipient",
+    );
+  }
+
   const serviceName = providerNameOrServiceName(service.name, "Service");
   const providerName = providerNameOrServiceName(provider.name, "Provider");
   return {
     providerId,
-    providerOrganisationId: numericRelationshipId(provider.organisation, "Provider organisation"),
+    providerOrganisationId: approvedOrganisationId,
     providerName,
     serviceName,
   };
