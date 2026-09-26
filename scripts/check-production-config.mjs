@@ -46,6 +46,22 @@ try {
   if (isSyntheticDirectoryFallbackAllowed()) throw new Error("Production fallback must always be disabled");
   validateRuntimeConfiguration();
 
+  delete process.env.TALKPOINT_PUBLIC_APP_ORIGIN;
+  expectThrows("missing public app origin", () => validateRuntimeConfiguration(), /public_app_origin/i);
+  process.env.TALKPOINT_PUBLIC_APP_ORIGIN = "http://talkpoint.example.test";
+  expectThrows("non-HTTPS public app origin", () => validateRuntimeConfiguration(), /public_app_origin/i);
+  process.env.TALKPOINT_PUBLIC_APP_ORIGIN = "https://talkpoint.example.test";
+
+  delete process.env.TALKPOINT_TRUSTED_CLIENT_IP_HEADER;
+  expectThrows("missing trusted client IP header", () => validateRuntimeConfiguration(), /trusted_client_ip_header/i);
+  process.env.TALKPOINT_TRUSTED_CLIENT_IP_HEADER = "x-talkpoint-client-ip";
+
+  delete process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET;
+  expectThrows("missing rate-limit hash secret", () => validateRuntimeConfiguration(), /rate_limit_hash_secret/i);
+  process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET = "change-me";
+  expectThrows("placeholder rate-limit hash secret", () => validateRuntimeConfiguration(), /rate_limit_hash_secret/i);
+  process.env.TALKPOINT_RATE_LIMIT_HASH_SECRET = "a-dedicated-production-rate-limit-secret-value";
+
   process.env.TALKPOINT_ALLOW_SYNTHETIC_DIRECTORY_FALLBACK = "true";
   expectThrows(
     "production synthetic fallback",
