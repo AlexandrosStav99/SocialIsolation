@@ -17,7 +17,6 @@ export type RetentionRunReport = {
 
 export type WithdrawalResult = {
   requestDeleted: true;
-  consentRecordsPreserved: number;
 };
 
 export class DeletionError extends Error {
@@ -48,6 +47,20 @@ function numericId(value: unknown, field: string): number {
     throw new DeletionError(400, "invalid_" + field, field + " is invalid");
   }
   return parsed;
+}
+
+function normalizePublicRequestId(value: unknown): string {
+  if (
+    typeof value !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  ) {
+    throw new DeletionError(
+      404,
+      "request_not_found_or_credential_invalid",
+      "No manageable request matched the supplied credentials",
+    );
+  }
+  return value;
 }
 
 function sha256(value: string): string {
@@ -112,6 +125,23 @@ async function findRequestById(
   }
 }
 
+async function findRequestByPublicId(
+  payload: Payload,
+  publicRequestId: string,
+  transactionID: TransactionID,
+): Promise<RecordLike | null> {
+  const result = await payload.find({
+    collection: "contact-requests",
+    where: { publicRequestId: { equals: publicRequestId } },
+    depth: 0,
+    limit: 1,
+    overrideAccess: true,
+    showHiddenFields: true,
+    req: { transactionID },
+  });
+  return asRecord(result.docs[0]);
+}
+
 async function consentRecordsForRequest(
   payload: Payload,
   requestId: number,
@@ -171,43 +201,41 @@ async function deleteRequestPreservingConsentEvidence(
 
 export async function withdrawProductionRequest(
   payload: Payload,
-  requestIdInput: string | number,
+  publicRequestIdInput: unknown,
   managementId: string,
   now = new Date(),
 ): Promise<WithdrawalResult> {
-  const requestId = numericId(requestIdInput, "request_id");
+  const publicRequestId = normalizePublicRequestId(publicRequestIdInput);
   if (
     typeof managementId !== "string" ||
     !/^[A-Za-z0-9_-]{43}$/.test(managementId)
   ) {
     throw new DeletionError(
-      403,
-      "invalid_management_credential",
-      "Request management credential is invalid",
+      404,
+      "request_not_found_or_credential_invalid",
+      "No manageable request matched the supplied credentials",
     );
   }
 
   return withTransaction(payload, async (transactionID) => {
-    const request = await findRequestById(payload, requestId, transactionID);
-    if (!request) {
-      throw new DeletionError(404, "request_not_found", "Request not found");
-    }
-    if (!hashMatches(request.managementTokenHash, managementId)) {
+    const request = await findRequestByPublicId(payload, publicRequestId, transactionID);
+    if (!request || !hashMatches(request.managementTokenHash, managementId)) {
       throw new DeletionError(
-        403,
-        "invalid_management_credential",
-        "Request management credential is invalid",
+        404,
+        "request_not_found_or_credential_invalid",
+        "No manageable request matched the supplied credentials",
       );
     }
 
-    const consentRecordsPreserved = await deleteRequestPreservingConsentEvidence(
+    const requestId = numericId(request.id, "request_id");
+    await deleteRequestPreservingConsentEvidence(
       payload,
       requestId,
       "user_withdrawal",
       now,
       transactionID,
     );
-    return { requestDeleted: true, consentRecordsPreserved };
+    return { requestDeleted: true };
   });
 }
 
