@@ -7,7 +7,6 @@ const handoffData = {
   secondarySupportTopics: [],
   serviceArea: "online",
   preferences: [],
-  consentVersion: "ci-v1",
   optionalNoteAccepted: false,
 };
 
