@@ -119,7 +119,7 @@ export async function PATCH(request: Request) {
         requestId,
         body.status as RequestStatus,
       );
-      return NextResponse.json({ request: updated });
+      return NextResponse.json({ request: updated }, { headers: noStoreHeaders });
     }
 
     throw new ProviderWorkspaceError(400, "invalid_action", "Unknown provider workspace action");
