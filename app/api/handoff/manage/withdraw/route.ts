@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     const payload = await getPayload({ config });
     const result = await withdrawProductionRequest(
       payload,
-      body.requestId as string | number,
+      body.requestId,
       typeof body.managementId === "string" ? body.managementId : "",
     );
 
