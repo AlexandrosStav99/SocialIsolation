@@ -109,6 +109,9 @@ jobs:
       - name: Production provider workspace boundary checks
         run: npm run test:production-provider-workspace
 
+      - name: Production handoff boundary checks
+        run: npm run test:production-handoff
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
@@ -120,6 +123,9 @@ jobs:
 
       - name: Verify provider workspace persistence and organisation isolation
         run: timeout 120s npm run test:provider-workspace-postgres
+
+      - name: Verify production handoff persistence and idempotency
+        run: timeout 120s npm run test:production-handoff-postgres
 
       - name: Seed synthetic demonstration directory
         run: timeout 120s npm run seed:demo
