@@ -1,6 +1,6 @@
-import type { ContactRequest } from "@/lib/domain/data-boundaries";
-import type { AuthenticatedActor } from "./auth";
-import { canAccessIdentifiableProviderRequest } from "@/lib/security/access-scope";
+import type { ContactRequest } from "../domain/data-boundaries.ts";
+import type { AuthenticatedActor } from "./auth.ts";
+import { canAccessIdentifiableProviderRequest } from "../security/access-scope.ts";
 
 export function assertProviderRequestAccess(actor:AuthenticatedActor,request:ContactRequest):void{
   if(!canAccessIdentifiableProviderRequest(actor,request.providerOrganisationId)) throw new Error("Provider request access denied");

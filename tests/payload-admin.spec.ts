@@ -7,6 +7,8 @@ const platformEmail = "prod2-platform-admin@test.invalid";
 const platformPassword = "Prod2-Platform-Password-2026!";
 const lockedEmail = "prod2-lockout@test.invalid";
 const lockedPassword = "Prod2-Lockout-Password-2026!";
+const providerEmail = "prod3-provider-manager@test.invalid";
+const providerPassword = "Prod3-Provider-Password-2026!";
 
 type CreateResponse = {
   doc?: { id?: string | number };
@@ -33,6 +35,7 @@ test("Payload authentication enforces activation, least privilege, sessions and 
   const inactive = await playwrightRequest.newContext({ baseURL });
   const platform = await playwrightRequest.newContext({ baseURL });
   const locked = await playwrightRequest.newContext({ baseURL });
+  const provider = await playwrightRequest.newContext({ baseURL });
 
   try {
     const shortPassword = await admin.post("/payload-api/provider-users", {
@@ -164,6 +167,49 @@ test("Payload authentication enforces activation, least privilege, sessions and 
     });
     expect(unlockedLogin.ok()).toBeTruthy();
 
+    const providerOrganisation = await admin.post("/payload-api/provider-organisations", {
+      data: { name: "PROD-3 Provider Session Test Organisation" },
+    });
+    expect(providerOrganisation.ok()).toBeTruthy();
+    const providerOrganisationId = createdId(
+      (await providerOrganisation.json()) as CreateResponse,
+    );
+
+    const providerUser = await admin.post("/payload-api/provider-users", {
+      data: {
+        email: providerEmail,
+        password: providerPassword,
+        role: "provider_manager",
+        organisation: providerOrganisationId,
+        active: true,
+      },
+    });
+    expect(providerUser.ok()).toBeTruthy();
+    const providerUserId = createdId((await providerUser.json()) as CreateResponse);
+
+    const providerLogin = await provider.post("/payload-api/provider-users/login", {
+      data: { email: providerEmail, password: providerPassword },
+    });
+    expect(providerLogin.ok()).toBeTruthy();
+
+    const providerQueue = await provider.get("/api/provider/requests");
+    expect(providerQueue.status()).toBe(200);
+    const providerQueueBody = (await providerQueue.json()) as { totalDocs?: number };
+    expect(providerQueueBody.totalDocs).toBe(0);
+
+    const platformWorkspace = await platform.get("/api/provider/requests");
+    expect(platformWorkspace.status()).toBe(403);
+    const platformWorkspaceBody = (await platformWorkspace.json()) as { code?: string };
+    expect(platformWorkspaceBody.code).toBe("provider_role_required");
+
+    const deactivateProvider = await admin.patch(`/payload-api/provider-users/${providerUserId}`, {
+      data: { active: false },
+    });
+    expect(deactivateProvider.ok()).toBeTruthy();
+
+    const providerAfterDeactivation = await provider.get("/api/provider/requests");
+    expect(providerAfterDeactivation.status()).toBe(401);
+
     const logout = await platform.post("/payload-api/provider-users/logout?allSessions=true");
     expect(logout.ok()).toBeTruthy();
 
@@ -171,7 +217,13 @@ test("Payload authentication enforces activation, least privilege, sessions and 
     const meBody = (await meAfterLogout.json()) as { user?: unknown };
     expect(meBody.user ?? null).toBeNull();
   } finally {
-    await Promise.all([admin.dispose(), inactive.dispose(), platform.dispose(), locked.dispose()]);
+    await Promise.all([
+      admin.dispose(),
+      inactive.dispose(),
+      platform.dispose(),
+      locked.dispose(),
+      provider.dispose(),
+    ]);
   }
 });
 
