@@ -11,6 +11,10 @@ export const ConsentRecords: CollectionConfig = {
     {name:"consentedAt",type:"date",required:true},
     {name:"withdrawnAt",type:"date"},
     {name:"requestDeletedAt",type:"date",index:true},
+    {name:"deletedRequestPublicId",type:"text",unique:true,index:true,hidden:true},
+    {name:"deletedManagementTokenHash",type:"text",hidden:true},
+    {name:"deletedIdempotencyKeyHash",type:"text",unique:true,index:true,hidden:true},
+    {name:"deletedIdempotencyPayloadHash",type:"text",hidden:true},
     {name:"deletionReason",type:"text",validate:(v: unknown)=>!v || (typeof v==="string" && ["user_withdrawal","retention"].includes(v)) || "Invalid deletion reason"},
   ],
 };
