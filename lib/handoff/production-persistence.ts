@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import type { Payload } from "payload";
 import { SYNTHETIC_DIRECTORY_SOURCE } from "../directory/synthetic.ts";
 import {
@@ -140,6 +140,21 @@ function numericRelationshipId(value: unknown, field: string): number {
     throw new ProductionHandoffError(503, "invalid_directory_relationship", field + " is invalid");
   }
   return parsed;
+}
+
+function publicRequestId(record: RecordLike): string {
+  const value = record.publicRequestId;
+  if (
+    typeof value !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  ) {
+    throw new ProductionHandoffError(
+      500,
+      "handoff_integrity_error",
+      "Stored public request identifier is invalid",
+    );
+  }
+  return value;
 }
 
 function requiredString(value: unknown, field: string): string {
@@ -708,9 +723,9 @@ async function replayExisting(
       "Existing request management credential failed its integrity check",
     );
   }
-  const requestId = await assertExistingConsent(payload, existing, transactionID);
+  await assertExistingConsent(payload, existing, transactionID);
   return {
-    requestId: String(requestId),
+    requestId: publicRequestId(existing),
     managementId,
     idempotentReplay: true,
   };
@@ -802,10 +817,12 @@ export async function persistProductionHandoff(
       const managementId = randomBytes(32).toString("base64url");
       const managementTokenHash = sha256(managementId);
       const managementTokenEnvelope = encryptManagementId(serverSecret, managementId);
+      const publicRequestIdentifier = randomUUID();
 
       const request = await payload.create({
         collection: "contact-requests",
         data: {
+          publicRequestId: publicRequestIdentifier,
           providerOrganisation: recipient.providerOrganisationId,
           service: normalized.serviceId,
           preferredName: normalized.preferredName,
@@ -847,7 +864,7 @@ export async function persistProductionHandoff(
       });
 
       return {
-        requestId: String(requestId),
+        requestId: publicRequestIdentifier,
         managementId,
         idempotentReplay: false,
       };
