@@ -39,6 +39,20 @@ async function expectHandoffError(
 
 async function main() {
   const payload = await getPayload({ config });
+
+  async function requestByPublicId(publicRequestId: string) {
+    const result = await payload.find({
+      collection: "contact-requests",
+      where: { publicRequestId: { equals: publicRequestId } },
+      limit: 2,
+      depth: 0,
+      overrideAccess: true,
+      showHiddenFields: true,
+    });
+    assert(result.totalDocs === 1, "Expected one ContactRequest for public request id");
+    return result.docs[0];
+  }
+
   const suffix = randomUUID();
   const created = {
     organisations: [] as Array<string | number>,
@@ -235,15 +249,12 @@ async function main() {
       serverConsentVersion,
     );
     assert(first.idempotentReplay === false, "First handoff must not be marked as a replay");
-    created.requests.push(Number(first.requestId));
-
-    const stored = await payload.findByID({
-      collection: "contact-requests",
-      id: Number(first.requestId),
-      depth: 0,
-      overrideAccess: true,
-      showHiddenFields: true,
-    });
+    assert(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(first.requestId),
+      "Public request identifier must be a random UUID",
+    );
+    const stored = await requestByPublicId(first.requestId);
+    created.requests.push(stored.id);
     assert(
       relationId(stored.providerOrganisation) === String(organisationA.id),
       "Provider organisation was not derived from the selected service/provider",
@@ -283,7 +294,7 @@ async function main() {
 
     const consentResult = await payload.find({
       collection: "consent-records",
-      where: { request: { equals: Number(first.requestId) } },
+      where: { request: { equals: stored.id } },
       limit: 5,
       depth: 0,
       overrideAccess: true,
@@ -333,7 +344,7 @@ async function main() {
     assert(requestCount.totalDocs === 1, "Idempotent retry created a duplicate ContactRequest");
     const consentCount = await payload.count({
       collection: "consent-records",
-      where: { request: { equals: Number(first.requestId) } },
+      where: { request: { equals: stored.id } },
       overrideAccess: true,
     });
     assert(consentCount.totalDocs === 1, "Idempotent retry created duplicate consent evidence");
@@ -475,13 +486,8 @@ async function main() {
       serverSecret,
       serverConsentVersion,
     );
-    created.requests.push(Number(second.requestId));
-    const storedB = await payload.findByID({
-      collection: "contact-requests",
-      id: Number(second.requestId),
-      depth: 0,
-      overrideAccess: true,
-    });
+    const storedB = await requestByPublicId(second.requestId);
+    created.requests.push(storedB.id);
     assert(
       relationId(storedB.providerOrganisation) === String(organisationB.id),
       "Second service did not route to its own server-derived organisation",

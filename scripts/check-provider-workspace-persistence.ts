@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { getPayload } from "payload";
 import config from "../payload.config.ts";
 import { providerActorFromPayloadUser, ProviderWorkspaceError } from "../lib/provider/payload-auth.ts";
@@ -175,6 +176,7 @@ async function main() {
     const requestA1 = await payload.create({
       collection: "contact-requests",
       data: {
+        publicRequestId: randomUUID(),
         providerOrganisation: organisationA.id,
         service: serviceA.id,
         preferredName: "Synthetic A1",
@@ -193,6 +195,7 @@ async function main() {
     const requestA2 = await payload.create({
       collection: "contact-requests",
       data: {
+        publicRequestId: randomUUID(),
         providerOrganisation: organisationA.id,
         service: serviceA.id,
         contactType: "phone",
@@ -211,6 +214,7 @@ async function main() {
     const requestB1 = await payload.create({
       collection: "contact-requests",
       data: {
+        publicRequestId: randomUUID(),
         providerOrganisation: organisationB.id,
         service: serviceB.id,
         contactType: "email",

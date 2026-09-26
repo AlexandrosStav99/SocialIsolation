@@ -3,6 +3,7 @@ export const ContactRequests: CollectionConfig = {
   slug: "contact-requests",
   admin: { useAsTitle: "id" },
   fields: [
+    { name:"publicRequestId", type:"text", required:true, unique:true, index:true, hidden:true },
     { name:"providerOrganisation", type:"relationship", relationTo:"provider-organisations", required:true, index:true },
     { name:"service", type:"relationship", relationTo:"services", required:true },
     { name:"preferredName", type:"text" },
@@ -16,7 +17,7 @@ export const ContactRequests: CollectionConfig = {
     { name:"optionalNote", type:"textarea" },
     { name:"status", type:"select", required:true, defaultValue:"new", options:["new","assigned","contact_attempted","contacted","accepted","closed","unable_to_reach","referred_elsewhere","user_declined"] },
     { name:"assignedProviderUser", type:"relationship", relationTo:"provider-users" },
-    { name:"closedAt", type:"date" },
+    { name:"closedAt", type:"date", index:true },
     { name:"managementTokenHash", type:"text", required:true, hidden:true },
     { name:"managementTokenEnvelope", type:"text", hidden:true },
     { name:"idempotencyKeyHash", type:"text", unique:true, index:true, hidden:true },
