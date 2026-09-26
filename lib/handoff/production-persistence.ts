@@ -7,7 +7,6 @@ import {
   type ServiceArea,
   type SupportTopic,
 } from "../domain/data-boundaries.ts";
-import { supportTaxonomyV1 } from "../directory/taxonomy.ts";
 
 type TransactionID = string | number;
 type RecordLike = Record<string, unknown>;
@@ -17,6 +16,18 @@ const MAX_PREFERENCE_LENGTH = 80;
 const MAX_CONSENT_VERSION_LENGTH = 100;
 const IDEMPOTENCY_KEY_MIN_LENGTH = 32;
 const IDEMPOTENCY_KEY_MAX_LENGTH = 128;
+
+const supportTopicLabels: Record<SupportTopic, string> = {
+  social_connection: "Loneliness & Social Connection",
+  emotional_wellbeing: "Emotional & Mental Wellbeing",
+  family_relationships: "Family & Relationships",
+  work_unemployment: "Work & Unemployment",
+  financial_basic_needs: "Financial & Basic Needs",
+  housing_living: "Housing & Living Situation",
+  personal_safety: "Abuse, Violence & Personal Safety",
+  education_student: "Education & Student Support",
+  other_unsure: "Something else / I’m not sure",
+};
 
 const serviceAreaLabels: Record<ServiceArea, string> = {
   nicosia: "Nicosia",
@@ -263,7 +274,7 @@ function managementIdFor(
 }
 
 function supportTopicLabel(topic: SupportTopic): string {
-  return supportTaxonomyV1.find((item) => item.id === topic)?.label.en ?? topic;
+  return supportTopicLabels[topic];
 }
 
 function createStructuredSupportSummary(input: NormalizedProductionHandoffInput): string {
