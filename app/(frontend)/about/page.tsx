@@ -13,7 +13,7 @@ export default function AboutPage() {
   return (
     <>
       <Navbar />
-      <main className="bg-warm-bg">
+      <main id="main-content" tabIndex={-1} className="bg-warm-bg">
         <AboutHero />
         <AboutMission />
         <AboutWhy />
