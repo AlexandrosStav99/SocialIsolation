@@ -193,6 +193,7 @@ async function main() {
         productionDirectorySuppressed: false,
         productionDirectorySourceType: "other_authoritative_source",
         productionDirectoryNextReviewAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+        productionDirectoryEnabled: true,
       },
       overrideAccess: true,
     });
