@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main className="bg-warm-bg">
+      <main id="main-content" tabIndex={-1} className="bg-warm-bg">
         <HeroSection />
         <HowItWorks />
         <PrivacySection />

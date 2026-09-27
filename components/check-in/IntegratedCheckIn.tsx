@@ -553,7 +553,7 @@ export default function IntegratedCheckIn() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-6rem)] bg-warm-bg px-4 py-8 sm:px-6 sm:py-12">
+    <main id="main-content" tabIndex={-1} className="min-h-[calc(100vh-6rem)] bg-warm-bg px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto max-w-3xl">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2 text-xs leading-relaxed text-muted">
