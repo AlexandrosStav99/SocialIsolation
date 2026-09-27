@@ -68,13 +68,11 @@ for (const marker of [
 }
 
 const execution = read("docs/PRODUCTION-ACCESSIBILITY-EXECUTION.md");
-for (const forbidden of [
-  "has passed manual accessibility testing",
-  "is WCAG 2.2 AA conformant",
-]) {
-  if (!execution.includes("not defensible") && execution.includes(forbidden)) {
-    throw new Error("Accessibility execution guide overclaims validation");
-  }
+if (!execution.includes("It is **not** defensible to say:")) {
+  throw new Error("Accessibility execution guide must explicitly reject stronger validation claims");
+}
+if (!execution.includes("has passed manual accessibility testing") || !execution.includes("is WCAG 2.2 AA conformant")) {
+  throw new Error("Accessibility execution guide must name the claims that remain unsupported");
 }
 if (!execution.includes("manual accessibility validation remains not complete")) {
   throw new Error("Accessibility execution guide must preserve the manual validation boundary");
