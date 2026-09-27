@@ -17,3 +17,14 @@ Any future non-Payload table must use a distinct table name and an explicitly do
 ## CI rule
 
 CI provisions a real PostgreSQL service. The database integration gate must initialize Payload against that service and exercise actual create/read/delete operations. Structural source checks alone are not evidence of live persistence.
+
+
+## Production migration-before-start contract
+
+Production deployments must apply committed Payload migrations as a distinct migration step before the new application revision is started or rolled out.
+
+Do not rely on every horizontally scaled application instance to race migration execution during startup.
+
+Application rollback is allowed only when the previous application revision is backward-compatible with the schema already applied in the target database.
+
+Do not automatically run down migrations as part of an application rollback. A schema rollback may be destructive and requires an approved recovery/change decision using real backup/restore evidence where necessary. Prefer a forward fix when that is the safer data-preserving path.
