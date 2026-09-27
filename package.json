@@ -39,6 +39,8 @@
     "test:production-deployment": "node scripts/check-production-deployment.mjs",
     "test:production-accessibility-readiness": "node scripts/check-production-accessibility-readiness.mjs",
     "test:production-directory": "node scripts/check-production-directory-onboarding.mjs",
+    "test:production-safety": "node scripts/check-production-safety.mjs",
+    "test:production-safety-config": "node --experimental-transform-types scripts/check-production-safety-config.ts",
     "test:api-rate-limit-postgres": "node --experimental-transform-types scripts/check-api-rate-limit-persistence.ts",
     "test:production-directory-postgres": "node --experimental-transform-types scripts/check-production-directory-persistence.ts",
     "test:retention-postgres": "node --experimental-transform-types scripts/check-retention-persistence.ts",
