@@ -140,6 +140,15 @@ export function isProductionSafetyEnabled(): boolean {
   );
 }
 
+export function isProductionPrivacyEnabled(): boolean {
+  const raw = process.env.TALKPOINT_PRODUCTION_PRIVACY_ENABLED;
+  if (raw === undefined || raw.trim() === "") return false;
+  return parseBoolean(
+    "TALKPOINT_PRODUCTION_PRIVACY_ENABLED",
+    raw.trim().toLowerCase(),
+  );
+}
+
 function validateProductionSecret(secret: string) {
   if (secret.length < 32) {
     throw new Error("PAYLOAD_SECRET must be at least 32 characters in production");
