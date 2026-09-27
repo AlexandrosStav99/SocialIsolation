@@ -131,7 +131,13 @@ type DirectoryApiResponse = {
 type DirectoryStatus = "loading" | "ready" | "unavailable";
 
 function providerNameFor(service: ServiceDirectoryRecord, providers: ProviderDirectoryRecord[]) {
-  return providers.find((provider) => provider.id === service.providerId)?.name ?? "Demonstration provider";
+  return providers.find((provider) => provider.id === service.providerId)?.name ?? "Directory provider";
+}
+
+function formatSafetyCheckedDate(value: string, language: ConversationLanguage): string {
+  return new Intl.DateTimeFormat(language === "el" ? "el-CY" : "en-CY", {
+    dateStyle: "medium",
+  }).format(new Date(value));
 }
 
 function explainService(
@@ -462,8 +468,12 @@ export default function IntegratedCheckIn({
         {!exact && (
           <p className="mt-3 text-sm leading-relaxed text-muted">
             {language === "en"
-              ? "This synthetic service is shown only for broader directory browsing. It may not match the topic or area you selected."
-              : "Αυτή η συνθετική υπηρεσία εμφανίζεται μόνο για ευρύτερη περιήγηση στον κατάλογο. Μπορεί να μην ταιριάζει με το θέμα ή την περιοχή που επέλεξες."}
+              ? isProduction
+                ? "This checked directory service is shown only for broader browsing. It may not match the topic or area you selected."
+                : "This synthetic service is shown only for broader directory browsing. It may not match the topic or area you selected."
+              : isProduction
+                ? "Αυτή η ελεγμένη υπηρεσία καταλόγου εμφανίζεται μόνο για ευρύτερη περιήγηση. Μπορεί να μην ταιριάζει με το θέμα ή την περιοχή που επέλεξες."
+                : "Αυτή η συνθετική υπηρεσία εμφανίζεται μόνο για ευρύτερη περιήγηση στον κατάλογο. Μπορεί να μην ταιριάζει με το θέμα ή την περιοχή που επέλεξες."}
           </p>
         )}
 
@@ -530,15 +540,39 @@ export default function IntegratedCheckIn({
               <dd className="mt-1 leading-relaxed text-text">{service.availability}</dd>
             </div>
           )}
+          {service.contactChannels.length > 0 && (
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                {language === "en" ? "Contact" : "Επικοινωνία"}
+              </dt>
+              <dd className="mt-1 leading-relaxed text-text">
+                {service.contactChannels.join(" · ")}
+              </dd>
+            </div>
+          )}
         </dl>
 
-        <p className="mt-4 text-xs font-semibold text-teal">
-          {language === "en"
-            ? "Synthetic demonstration service. No real request will be sent."
-            : "Συνθετική υπηρεσία επίδειξης. Δεν θα σταλεί πραγματικό αίτημα."}
-        </p>
+        {isProduction ? (
+          <div className="mt-4 rounded-xl bg-warm-bg/60 p-3 text-xs leading-relaxed text-muted">
+            <p>
+              {language === "en"
+                ? `Information checked: ${service.information.checkedAt.toLocaleDateString("en-CY")}`
+                : `Έλεγχος πληροφοριών: ${service.information.checkedAt.toLocaleDateString("el-CY")}`}
+            </p>
+            <p className="mt-1 break-words">
+              {language === "en" ? "Information source: " : "Πηγή πληροφοριών: "}
+              {service.information.source}
+            </p>
+          </div>
+        ) : (
+          <p className="mt-4 text-xs font-semibold text-teal">
+            {language === "en"
+              ? "Synthetic demonstration service. No real request will be sent."
+              : "Συνθετική υπηρεσία επίδειξης. Δεν θα σταλεί πραγματικό αίτημα."}
+          </p>
+        )}
 
-        {service.integrated ? (
+        {!isProduction && service.integrated ? (
           <button
             className={`${primaryAction} mt-4`}
             onClick={() => {
@@ -552,8 +586,12 @@ export default function IntegratedCheckIn({
         ) : (
           <p className="mt-4 text-xs leading-relaxed text-muted">
             {language === "en"
-              ? "Assisted handoff is not enabled for this demonstration service."
-              : "Η υποβοηθούμενη παραπομπή δεν είναι ενεργοποιημένη για αυτή την υπηρεσία επίδειξης."}
+              ? isProduction
+                ? "Use the checked contact information above to contact this service directly. Assisted contact is not enabled from this public interface."
+                : "Assisted handoff is not enabled for this demonstration service."
+              : isProduction
+                ? "Χρησιμοποίησε τα ελεγμένα στοιχεία επικοινωνίας πιο πάνω για να επικοινωνήσεις απευθείας με την υπηρεσία. Η υποβοηθούμενη επικοινωνία δεν είναι ενεργοποιημένη από αυτή τη δημόσια διεπαφή."
+                : "Η υποβοηθούμενη παραπομπή δεν είναι ενεργοποιημένη για αυτή την υπηρεσία επίδειξης."}
           </p>
         )}
       </article>
@@ -568,8 +606,12 @@ export default function IntegratedCheckIn({
             <LockKeyhole size={14} className="shrink-0 text-teal" aria-hidden="true" />
             <span>
               {language === "en"
-                ? "University demonstration · synthetic services only"
-                : "Πανεπιστημιακή επίδειξη · μόνο συνθετικές υπηρεσίες"}
+                ? isProduction
+                  ? "Checked support directory · anonymous exploration"
+                  : "University demonstration · synthetic services only"
+                : isProduction
+                  ? "Ελεγμένος κατάλογος υποστήριξης · ανώνυμη εξερεύνηση"
+                  : "Πανεπιστημιακή επίδειξη · μόνο συνθετικές υπηρεσίες"}
             </span>
           </div>
 
@@ -607,6 +649,39 @@ export default function IntegratedCheckIn({
               <p className="font-semibold">{safetyCopy.heading}</p>
               <p className="mt-1 text-muted">{safetyCopy.notice}</p>
             </div>
+            {safetyPresentation.resources.length > 0 && (
+              <section className="mt-4 border-t border-border pt-4" aria-label={safetyCopy.resourcesHeading}>
+                <h3 className="text-sm font-bold text-text">{safetyCopy.resourcesHeading}</h3>
+                <div className="mt-3 grid gap-3">
+                  {safetyPresentation.resources.map((resource) => (
+                    <article key={resource.id} className="rounded-xl border border-border bg-warm-bg/50 p-3">
+                      <p className="font-semibold text-text">{resource.name[language]}</p>
+                      <p className="mt-1 text-muted">{resource.description[language]}</p>
+                      <p className="mt-2 text-xs text-muted">{resource.scope[language]}</p>
+                      <p className="mt-1 text-xs text-muted">{resource.audienceEligibility[language]}</p>
+                      <p className="mt-1 text-xs text-muted">{resource.availability[language]}</p>
+                      <a
+                        className="mt-3 inline-flex min-h-11 items-center rounded-lg font-semibold text-teal underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal"
+                        href={resource.contact.type === "phone" ? `tel:${resource.contact.value}` : resource.contact.value}
+                      >
+                        {resource.contact.display}
+                      </a>
+                      <p className="mt-3 text-xs text-muted">
+                        {safetyCopy.checkedLabel}: {formatSafetyCheckedDate(resource.informationCheckedAt, language)}
+                      </p>
+                      <a
+                        className="mt-1 inline-flex text-xs text-muted underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal"
+                        href={resource.informationSource}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {safetyCopy.sourceLabel}
+                      </a>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
             <button
               type="button"
               className={`${secondaryAction} mt-3`}
@@ -661,8 +736,12 @@ export default function IntegratedCheckIn({
                   </button>
                   <p className="mt-2 text-xs leading-relaxed text-muted">
                     {language === "en"
-                      ? "No name or account is required to explore this demonstration."
-                      : "Δεν χρειάζεται όνομα ή λογαριασμός για να εξερευνήσεις αυτή την επίδειξη."}
+                      ? isProduction
+                        ? "No name or account is required to explore the directory."
+                        : "No name or account is required to explore this demonstration."
+                      : isProduction
+                        ? "Δεν χρειάζεται όνομα ή λογαριασμός για να εξερευνήσεις τον κατάλογο."
+                        : "Δεν χρειάζεται όνομα ή λογαριασμός για να εξερευνήσεις αυτή την επίδειξη."}
                   </p>
                 </>
               )}
@@ -752,8 +831,12 @@ export default function IntegratedCheckIn({
                     <div className="mt-2 flex flex-wrap items-start justify-between gap-2 text-xs text-muted">
                       <span>
                         {language === "en"
-                          ? "This text stays in this check-in and is not shared in this demonstration."
-                          : "Αυτό το κείμενο παραμένει σε αυτό το check-in και δεν κοινοποιείται στην επίδειξη."}
+                          ? isProduction
+                            ? "This text stays in this check-in and is not shared with directory services."
+                            : "This text stays in this check-in and is not shared in this demonstration."
+                          : isProduction
+                            ? "Αυτό το κείμενο παραμένει σε αυτό το check-in και δεν κοινοποιείται στις υπηρεσίες του καταλόγου."
+                            : "Αυτό το κείμενο παραμένει σε αυτό το check-in και δεν κοινοποιείται στην επίδειξη."}
                       </span>
                       <span aria-live="polite">{text.length}/500</span>
                     </div>
@@ -838,8 +921,12 @@ export default function IntegratedCheckIn({
                       </p>
                       <p className="mt-1 leading-relaxed text-muted">
                         {language === "en"
-                          ? "Your text is not shown here, is not used to match services in this demonstration, and is not shared with providers."
-                          : "Το κείμενό σου δεν εμφανίζεται εδώ, δεν χρησιμοποιείται για αντιστοίχιση υπηρεσιών σε αυτή την επίδειξη και δεν κοινοποιείται σε παρόχους."}
+                          ? isProduction
+                            ? "Your text is not shown here, is not used to match services, and is not shared with providers."
+                            : "Your text is not shown here, is not used to match services in this demonstration, and is not shared with providers."
+                          : isProduction
+                            ? "Το κείμενό σου δεν εμφανίζεται εδώ, δεν χρησιμοποιείται για αντιστοίχιση υπηρεσιών και δεν κοινοποιείται σε παρόχους."
+                            : "Το κείμενό σου δεν εμφανίζεται εδώ, δεν χρησιμοποιείται για αντιστοίχιση υπηρεσιών σε αυτή την επίδειξη και δεν κοινοποιείται σε παρόχους."}
                       </p>
                     </div>
                   )}
@@ -883,8 +970,12 @@ export default function IntegratedCheckIn({
                 <div className="grid gap-4">
                   <div className="rounded-2xl bg-warm-bg/60 p-4 text-sm leading-relaxed text-muted">
                     {language === "en"
-                      ? "These synthetic services meet the structured criteria from your check-in. TalkPoint does not score or clinically assess suitability."
-                      : "Αυτές οι συνθετικές υπηρεσίες πληρούν τα δομημένα κριτήρια του check-in σου. Το TalkPoint δεν βαθμολογεί ούτε αξιολογεί κλινικά την καταλληλότητα."}
+                      ? isProduction
+                        ? "These checked services meet the structured criteria from your check-in. TalkPoint does not score or clinically assess suitability."
+                        : "These synthetic services meet the structured criteria from your check-in. TalkPoint does not score or clinically assess suitability."
+                      : isProduction
+                        ? "Αυτές οι ελεγμένες υπηρεσίες πληρούν τα δομημένα κριτήρια του check-in σου. Το TalkPoint δεν βαθμολογεί ούτε αξιολογεί κλινικά την καταλληλότητα."
+                        : "Αυτές οι συνθετικές υπηρεσίες πληρούν τα δομημένα κριτήρια του check-in σου. Το TalkPoint δεν βαθμολογεί ούτε αξιολογεί κλινικά την καταλληλότητα."}
                   </div>
                   {results.services.map(({ service }) => renderServiceCard(service, true))}
                 </div>
@@ -912,12 +1003,22 @@ export default function IntegratedCheckIn({
                 <div className="grid gap-4">
                   <div className="rounded-2xl border border-border bg-warm-bg/60 p-4 sm:p-5">
                     <h2 className="text-lg font-bold text-text">
-                      {language === "en" ? "No exact demonstration match found" : "Δεν βρέθηκε ακριβής αντιστοίχιση επίδειξης"}
+                      {language === "en"
+                        ? isProduction
+                          ? "No exact directory match found"
+                          : "No exact demonstration match found"
+                        : isProduction
+                          ? "Δεν βρέθηκε ακριβής αντιστοίχιση στον κατάλογο"
+                          : "Δεν βρέθηκε ακριβής αντιστοίχιση επίδειξης"}
                     </h2>
                     <p className="mt-2 text-sm leading-relaxed text-muted">
                       {language === "en"
-                        ? "The current synthetic directory does not contain a service that matches these structured choices. That does not mean suitable support does not exist."
-                        : "Ο τρέχων συνθετικός κατάλογος δεν περιέχει υπηρεσία που να ταιριάζει με αυτές τις δομημένες επιλογές. Αυτό δεν σημαίνει ότι δεν υπάρχει κατάλληλη υποστήριξη."}
+                        ? isProduction
+                          ? "The current checked directory does not contain a service that matches these structured choices. That does not mean suitable support does not exist."
+                          : "The current synthetic directory does not contain a service that matches these structured choices. That does not mean suitable support does not exist."
+                        : isProduction
+                          ? "Ο τρέχων ελεγμένος κατάλογος δεν περιέχει υπηρεσία που να ταιριάζει με αυτές τις δομημένες επιλογές. Αυτό δεν σημαίνει ότι δεν υπάρχει κατάλληλη υποστήριξη."
+                          : "Ο τρέχων συνθετικός κατάλογος δεν περιέχει υπηρεσία που να ταιριάζει με αυτές τις δομημένες επιλογές. Αυτό δεν σημαίνει ότι δεν υπάρχει κατάλληλη υποστήριξη."}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button className={secondaryAction} onClick={() => reopenForEdit("primary_topic")}>
@@ -927,7 +1028,9 @@ export default function IntegratedCheckIn({
                         {language === "en" ? "Change area" : "Αλλαγή περιοχής"}
                       </button>
                       <button className={secondaryAction} onClick={() => setBrowseAll(true)}>
-                        {language === "en" ? "Browse all demonstration services" : "Προβολή όλων των υπηρεσιών επίδειξης"}
+                        {language === "en"
+                          ? isProduction ? "Browse all checked services" : "Browse all demonstration services"
+                          : isProduction ? "Προβολή όλων των ελεγμένων υπηρεσιών" : "Προβολή όλων των υπηρεσιών επίδειξης"}
                       </button>
                     </div>
                     <button className={`${quietAction} mt-2`} onClick={reset}>
@@ -939,12 +1042,18 @@ export default function IntegratedCheckIn({
                     <section aria-labelledby="broader-directory-heading" className="grid gap-4">
                       <div>
                         <h2 id="broader-directory-heading" className="text-lg font-bold text-text">
-                          {language === "en" ? "Broader demonstration directory" : "Ευρύτερος κατάλογος επίδειξης"}
+                          {language === "en"
+                            ? isProduction ? "Broader checked directory" : "Broader demonstration directory"
+                            : isProduction ? "Ευρύτερος ελεγμένος κατάλογος" : "Ευρύτερος κατάλογος επίδειξης"}
                         </h2>
                         <p className="mt-1 text-sm leading-relaxed text-muted">
                           {language === "en"
-                            ? "These are existing synthetic directory records, not replacements for an exact match. Review their details before choosing any next action."
-                            : "Αυτές είναι υπάρχουσες συνθετικές εγγραφές καταλόγου και όχι αντικατάσταση μιας ακριβούς αντιστοίχισης. Δες τις πληροφορίες τους πριν επιλέξεις οποιοδήποτε επόμενο βήμα."}
+                            ? isProduction
+                              ? "These are checked directory records, not replacements for an exact match. Review their details before choosing any next action."
+                              : "These are existing synthetic directory records, not replacements for an exact match. Review their details before choosing any next action."
+                            : isProduction
+                              ? "Αυτές είναι ελεγμένες εγγραφές καταλόγου και όχι αντικατάσταση μιας ακριβούς αντιστοίχισης. Δες τις πληροφορίες τους πριν επιλέξεις οποιοδήποτε επόμενο βήμα."
+                              : "Αυτές είναι υπάρχουσες συνθετικές εγγραφές καταλόγου και όχι αντικατάσταση μιας ακριβούς αντιστοίχισης. Δες τις πληροφορίες τους πριν επιλέξεις οποιοδήποτε επόμενο βήμα."}
                         </p>
                       </div>
                       {directoryServices.map((service) => renderServiceCard(service, false))}
