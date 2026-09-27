@@ -54,6 +54,7 @@ const bodyRoutes = [
   "app/api/handoff/preview/route.ts",
   "app/api/handoff/route.ts",
   "app/api/handoff/manage/withdraw/route.ts",
+  "app/api/handoff/manage/access/route.ts",
   "app/api/provider/requests/route.ts",
 ];
 for (const path of bodyRoutes) {
@@ -70,6 +71,7 @@ for (const path of [
   "app/api/handoff/preview/route.ts",
   "app/api/handoff/route.ts",
   "app/api/handoff/manage/withdraw/route.ts",
+  "app/api/handoff/manage/access/route.ts",
   "app/api/provider/requests/route.ts",
   "app/api/directory/route.ts",
 ]) {
