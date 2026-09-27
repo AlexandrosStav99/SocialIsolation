@@ -1,3 +1,5 @@
+import type { SafetyPresentation } from "./presentation.ts";
+
 export const safetyContent = {
   en: {
     action: "I need help now",
@@ -14,3 +16,22 @@ export const safetyContent = {
     continueAction: "Συνέχεια με το check-in",
   },
 } as const;
+
+
+export const demoSafetyPresentation: SafetyPresentation = {
+  copy: {
+    en: {
+      ...safetyContent.en,
+      resourcesHeading: "Checked immediate-support resources",
+      sourceLabel: "Information source",
+      checkedLabel: "Information checked",
+    },
+    el: {
+      ...safetyContent.el,
+      resourcesHeading: "Ελεγμένοι πόροι άμεσης υποστήριξης",
+      sourceLabel: "Πηγή πληροφοριών",
+      checkedLabel: "Έλεγχος πληροφοριών",
+    },
+  },
+  resources: [],
+};

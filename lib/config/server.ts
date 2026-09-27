@@ -131,6 +131,15 @@ export function isSyntheticDirectoryFallbackAllowed(): boolean {
   return parseBoolean("TALKPOINT_ALLOW_SYNTHETIC_DIRECTORY_FALLBACK", raw.trim().toLowerCase());
 }
 
+export function isProductionSafetyEnabled(): boolean {
+  const raw = process.env.TALKPOINT_PRODUCTION_SAFETY_ENABLED;
+  if (raw === undefined || raw.trim() === "") return false;
+  return parseBoolean(
+    "TALKPOINT_PRODUCTION_SAFETY_ENABLED",
+    raw.trim().toLowerCase(),
+  );
+}
+
 function validateProductionSecret(secret: string) {
   if (secret.length < 32) {
     throw new Error("PAYLOAD_SECRET must be at least 32 characters in production");
