@@ -19,7 +19,7 @@ import {
 import type { ProviderDirectoryRecord, ServiceDirectoryRecord } from "@/lib/directory/contracts";
 import { discoverServices } from "@/lib/routing/discovery";
 import { routeSafety } from "@/lib/safety/router";
-import { safetyContent } from "@/lib/safety/content";
+import type { SafetyPresentation } from "@/lib/safety/presentation";
 import HandoffPreview from "./HandoffPreview";
 
 const topicLabels: Record<ConversationLanguage, Record<SupportTopic, string>> = {
@@ -175,7 +175,13 @@ function explainService(
   return explanations;
 }
 
-export default function IntegratedCheckIn() {
+export default function IntegratedCheckIn({
+  experienceMode,
+  safetyPresentation,
+}: {
+  experienceMode: "demo" | "production";
+  safetyPresentation: SafetyPresentation;
+}) {
   const [language, setLanguage] = useState<ConversationLanguage>("en");
   const [state, setState] = useState<ConversationState>(() => createConversation(crypto.randomUUID(), "en"));
   const [secondary, setSecondary] = useState<SupportTopic[]>([]);
@@ -251,6 +257,8 @@ export default function IntegratedCheckIn() {
 
   const prompt = getConversationPrompt(language, state.stage);
   const safety = routeSafety({ explicitSignals: safetySignal ? ["user_requests_help_now"] : [] });
+  const safetyCopy = safetyPresentation.copy[language];
+  const isProduction = experienceMode === "production";
   const currentProgress = progressByStage[state.stage];
   const canGoBack = Boolean(previousStage[state.stage]);
 
@@ -589,22 +597,22 @@ export default function IntegratedCheckIn() {
             onClick={() => setSafetySignal(true)}
           >
             <LifeBuoy size={16} aria-hidden="true" />
-            {safetyContent[language].action}
+            {safetyCopy.action}
           </button>
         </div>
 
         {safety.state === "immediate_support" && (
           <div className="mb-5 rounded-2xl border border-clay/60 bg-white p-4 text-sm leading-relaxed text-text shadow-sm">
             <div role="status">
-              <p className="font-semibold">{safetyContent[language].heading}</p>
-              <p className="mt-1 text-muted">{safetyContent[language].notice}</p>
+              <p className="font-semibold">{safetyCopy.heading}</p>
+              <p className="mt-1 text-muted">{safetyCopy.notice}</p>
             </div>
             <button
               type="button"
               className={`${secondaryAction} mt-3`}
               onClick={() => setSafetySignal(false)}
             >
-              {safetyContent[language].continueAction}
+              {safetyCopy.continueAction}
             </button>
           </div>
         )}
