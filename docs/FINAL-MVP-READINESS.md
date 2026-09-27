@@ -16,6 +16,7 @@ Implemented and CI-verified foundations include:
 - live PostgreSQL round-trip verification;
 - provider organisations, hardened provider sessions and a PostgreSQL-backed provider workspace with organisation isolation, assigned-request staff scope and auditable request workflow mutations;
 - checked-directory and synthetic-directory contracts;
+- fail-closed production real-directory onboarding mechanics with objective provenance, verification, suppression, next-review and publication gates, without seeding or claiming real provider participation;
 - idempotent seeding of the controlled synthetic provider/service directory into Payload/PostgreSQL;
 - a Payload-backed directory API consumed by the public check-in, with a clearly synthetic static fallback when DB configuration/data is unavailable;
 - browser verification that the full CI runtime serves the demonstration directory from PostgreSQL rather than the fallback;
@@ -56,7 +57,7 @@ Payload/PostgreSQL runtime and the controlled synthetic directory integration ar
 - environment-specific security assessment, production monitoring/alert delivery, real backup/restore evidence and approved incident ownership; repository-level observability/operations mechanics are implemented, but external operations provisioning remains unproven;
 - final real-world retention durations and any infrastructure-level backup/log retention settings; application-level retention/deletion automation is implemented, but exact durations still require privacy/legal approval;
 - real provider agreements and real public handoff activation; the provider workspace and production handoff engineering boundaries are implemented, but productionHandoffEnabled remains a fail-closed per-service gate and no provider participation is implied;
-- complete checked directory content and revalidation process.
+- complete checked directory content and real operational revalidation ownership; repository-level freshness/suppression/publication mechanics exist, but no complete real Cyprus dataset or provider participation is claimed.
 
 The controlled university demo intentionally does not turn those production-operational gaps into fake live behaviour.
 
