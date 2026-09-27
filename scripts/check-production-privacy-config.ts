@@ -1,6 +1,5 @@
 import {
   getApprovedProductionPrivacyConfiguration,
-  productionPrivacyConfiguration,
   validateProductionPrivacyConfiguration,
   type ProductionPrivacyConfiguration,
   type ProductionPrivacyNoticeCopy,
