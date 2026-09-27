@@ -73,12 +73,14 @@ The envelope uses the dedicated server secret `TALKPOINT_HANDOFF_CREDENTIAL_SECR
 
 Production assisted handoff additionally requires:
 
-- `TALKPOINT_PRODUCTION_CONSENT_VERSION`;
+- an approved/current PROD-12 privacy/legal configuration;
+- `TALKPOINT_PRODUCTION_PRIVACY_ENABLED=true`;
+- `TALKPOINT_PRODUCTION_CONSENT_VERSION` matching the approved privacy package;
 - `TALKPOINT_HANDOFF_CREDENTIAL_SECRET` of at least 32 characters;
 - verified real provider/service records;
 - explicit per-service `productionHandoffEnabled=true`.
 
-The repository does not provide real providers or enable the flag automatically.
+The Sharing Preview also returns the approved privacy-notice version and exact EN/EL assisted-contact consent statements from the server-side privacy package. The repository does not provide real providers, legal approval or enable the gates automatically.
 
 ## Privacy boundary
 
