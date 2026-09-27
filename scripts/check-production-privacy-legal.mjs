@@ -12,13 +12,17 @@ for (const marker of [
   "approvedRetentionPolicy: null",
   "notice: null",
   "getApprovedProductionPrivacyConfiguration",
-  "TALKPOINT_PRODUCTION_PRIVACY_ENABLED",
   "Runtime retention values do not match the approved privacy configuration",
   "Production consent version does not match the approved privacy configuration",
 ]) {
   if (!configuration.includes(marker)) {
     throw new Error("Production privacy configuration marker missing: " + marker);
   }
+}
+
+const serverConfig = read("lib/config/server.ts");
+if (!serverConfig.includes("TALKPOINT_PRODUCTION_PRIVACY_ENABLED")) {
+  throw new Error("Server privacy/legal operational gate is missing");
 }
 
 const env = read(".env.example");
