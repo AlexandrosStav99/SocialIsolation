@@ -19,7 +19,6 @@ export const Providers: CollectionConfig = {
     {
       name: "productionDirectoryVerified",
       type: "checkbox",
-      required: true,
       defaultValue: false,
       access: {
         create: ({ req }) => isSuperAdminUser(req.user),
@@ -33,7 +32,6 @@ export const Providers: CollectionConfig = {
     {
       name: "productionDirectorySuppressed",
       type: "checkbox",
-      required: true,
       defaultValue: true,
       access: {
         create: ({ req }) => isSuperAdminUser(req.user),
