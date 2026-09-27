@@ -140,7 +140,9 @@ Retain:
 
 ## 10. Release gate
 
-Real immediate-support resources may be enabled only when all required items above have documented approval.
+PROD-11 provides a fail-closed version-controlled production safety configuration plus a separate operational enable flag. Those mechanics are engineering controls only and are not evidence that this checklist has been completed.
+
+Real immediate-support resources may be enabled only when all required items above have documented approval and the approved evidence/version is recorded in the production safety configuration.
 
 Until then:
 
