@@ -40,7 +40,7 @@ PROD-11 adds a two-key production safety boundary: a version-controlled external
 
 PROD-12 adds a parallel fail-closed privacy/legal release package without making legal determinations. Production privacy activation requires an authorised version-controlled package plus a separate operational flag. The approved consent version and four retention values must exactly match runtime configuration; production check-in, assisted-contact preview/final submission and deployment preflight remain unavailable while the package is missing, stale or inconsistent. A credential-authorised self-service request copy exposes only the identifiable request/consent material linkable by the existing random management credential, preserves anonymous-domain unlinkability, and after withdrawal returns only minimal surviving consent/deletion evidence. A technical integration inventory records code-visible data boundaries without assigning legal vendor/controller/processor roles.
 
-Real public use still depends on real-provider approval, verified service data, legal/privacy approval, deployment configuration and the remaining production stages.
+Real public use still depends on real-provider approval, verified/current service data, qualified safeguarding review, authorised privacy/legal approval, manual accessibility and target-user evidence, and real deployment/operations evidence.
 
 Green CI is necessary engineering evidence, not proof of production readiness, legal compliance, safeguarding approval, accessibility conformance or provider validation.
 
@@ -60,7 +60,7 @@ Production mode requires explicit safe configuration. Startup validation rejects
 - synthetic directory fallback that is not explicitly disabled;
 - missing or invalid runtime mode.
 
-Until verified real-provider onboarding is implemented, a production directory request returns a safe unavailable state rather than synthetic records.
+Until verified, current real provider/service records are actually onboarded and explicitly published through the PROD-10 gates, a production directory request returns a safe unavailable state rather than synthetic records.
 
 ## Engineering blocker register
 
@@ -106,4 +106,4 @@ TalkPoint must not be described as production ready until both categories are sa
 1. the production engineering programme is complete with green CI and operational deployment evidence; and
 2. the external validation gates relevant to the intended real deployment have documented approval/evidence.
 
-Until then, use precise language such as **production engineering hardening in progress** or **controlled university implementation**.
+Until then, use precise language such as **production engineering complete; external validation and deployment evidence remain open** or **controlled university implementation**.
