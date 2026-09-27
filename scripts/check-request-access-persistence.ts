@@ -62,6 +62,7 @@ async function main() {
         contactChannels: ["prod12@example.invalid"],
         immediateSupportCapable: false,
         integrated: false,
+        productionHandoffEnabled: false,
         informationSource: "CI-only privacy fixture; not a real provider",
         informationCheckedAt: new Date().toISOString(),
       },
