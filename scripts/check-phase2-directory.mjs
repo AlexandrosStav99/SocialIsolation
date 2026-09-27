@@ -41,8 +41,37 @@ for (const phrase of [
 ]) {
   if (!directoryRoute.includes(phrase)) throw new Error("Directory API source boundary missing: " + phrase);
 }
-if (!directoryRoute.includes('runtimeMode === "production" ? null')) {
-  throw new Error("Production directory path must not load synthetic Payload records");
+for (const phrase of [
+  "loadProductionDirectory",
+  'source: "payload_postgres_production"',
+]) {
+  if (!directoryRoute.includes(phrase)) {
+    throw new Error("Verified production directory boundary missing: " + phrase);
+  }
+}
+const productionBranchIndex = directoryRoute.indexOf('if (runtimeMode === "production")');
+const productionLoaderIndex = directoryRoute.indexOf("loadProductionDirectory(payload)");
+const demoLoaderIndex = directoryRoute.indexOf("loadPayloadDemoDirectory()");
+if (
+  productionBranchIndex < 0 ||
+  productionLoaderIndex < productionBranchIndex ||
+  demoLoaderIndex < productionLoaderIndex
+) {
+  throw new Error("Production directory must resolve verified records before any demo loader path");
+}
+
+const productionLoader = fs.readFileSync("lib/directory/production-directory.ts", "utf8");
+for (const phrase of [
+  "isProductionProviderDirectoryEligible",
+  "isProductionServiceDirectoryEligible",
+]) {
+  if (!productionLoader.includes(phrase)) {
+    throw new Error("Production directory eligibility boundary missing: " + phrase);
+  }
+}
+const productionMetadata = fs.readFileSync("lib/directory/production-metadata.ts", "utf8");
+if (!productionMetadata.includes("SYNTHETIC_DIRECTORY_SOURCE")) {
+  throw new Error("Production directory eligibility must explicitly reject synthetic provenance");
 }
 
 const checkIn = fs.readFileSync("components/check-in/IntegratedCheckIn.tsx", "utf8");
