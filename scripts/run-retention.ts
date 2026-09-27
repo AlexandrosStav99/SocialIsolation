@@ -2,6 +2,7 @@ import { getPayload } from "payload";
 import config from "../payload.config.ts";
 import { readRetentionPolicy } from "../lib/privacy/retention-policy.ts";
 import { runRetentionAutomation } from "../lib/privacy/retention-executor.ts";
+import { operationalLog } from "../lib/operations/operational-logger.ts";
 
 function requireEnabled() {
   if (process.env.TALKPOINT_RETENTION_AUTOMATION_ENABLED?.trim().toLowerCase() !== "true") {
@@ -16,10 +17,18 @@ async function main() {
   const policy = readRetentionPolicy();
   const payload = await getPayload({ config });
   const report = await runRetentionAutomation(payload, policy, new Date());
-  console.log(JSON.stringify({ retentionRun: "complete", ...report }));
+  operationalLog("info", "retention_run_complete", {
+    component: "retention",
+    status: "complete",
+    ...report,
+  });
 }
 
-main().catch((error) => {
-  console.error("Retention automation failed:", error instanceof Error ? error.message : error);
+main().catch(() => {
+  operationalLog("error", "retention_run_failed", {
+    component: "retention",
+    status: "failed",
+    errorCode: "retention_run_failed",
+  });
   process.exit(1);
 });

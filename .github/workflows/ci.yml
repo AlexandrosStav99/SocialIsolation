@@ -118,6 +118,9 @@ jobs:
       - name: Production API and abuse hardening checks
         run: npm run test:production-api-hardening
 
+      - name: Production observability and operations checks
+        run: npm run test:production-operations
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
