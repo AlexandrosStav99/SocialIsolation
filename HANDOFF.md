@@ -3,12 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed production checkpoint: **PROD-9 — accessibility execution readiness**  
-Latest merged production PR: **#46**  
-Latest merged production commit: `bb8f36234d9bebf1888da40f86f89192596e2099`  
-PR #46 final CI: **#258 green**  
+Latest completed production checkpoint: **PROD-10 — real-data onboarding readiness**  
+Latest merged production PR: **#48**  
+Latest merged production commit: `7593fc22b89ab0a66ad76af57ea9a8cf1e19ca50`  
+PR #48 final CI: **#266 green**  
 Active programme: **Production-readiness hardening**  
-Exact next engineering stage: **PROD-10 — real-data onboarding readiness**
+Exact next engineering stage: **PROD-11 — safety production-gate mechanics**
 
 ## Read this first
 
@@ -246,6 +246,7 @@ Completed stages:
 - **PROD-7 — observability and operations**, PR #42, CI #249 green.
 - **PROD-8 — deployment readiness**, PR #44, CI #253 green.
 - **PROD-9 — accessibility execution readiness**, PR #46, CI #258 green.
+- **PROD-10 — real-data onboarding readiness**, PR #48, CI #266 green.
 
 PROD-2 uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
 
@@ -255,7 +256,7 @@ PROD-1 established explicit development/demo/production runtime modes. Productio
 
 PROD-4 adds a production-only, server-authoritative Sharing Preview and consented handoff boundary. The recipient organisation is derived from the selected service/provider, synthetic/demo records remain blocked, exact shared data are bound to a signed preview token, ContactRequest and ConsentRecord are persisted transactionally, and exact retries are idempotent. The service-level production handoff gate defaults closed and is super-admin controlled. Management bearer credentials remain random, are stored only as a hash plus encrypted replay envelope, and are never exposed to providers.
 
-Continue with **PROD-10 real-data onboarding readiness**. Add provenance, freshness, suppression and production-directory publication mechanics that can accept future verified provider/service records without seeding or inventing any real organisation. Production must continue to fail closed when no verified, current real records exist, and technical onboarding readiness must not be presented as provider participation.
+Continue with **PROD-11 safety production-gate mechanics**. Add a fail-closed version-controlled approval/configuration boundary for future real immediate-support wording/resources without inventing any Cyprus resource, reviewer approval or emergency capability. Safety routing logic must remain version-controlled and must not become a CMS-editable rules engine.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -277,12 +278,14 @@ The external validation programme remains open in parallel. Engineering progress
 - PROD-7 PR #42: **merged as `0006188300e6903df4e134001a8d697d4c0cf6b1`; final PR CI #249 green**.
 - PROD-8 PR #44: **merged as `4c3695f63c295a68757ca37624acf315959d7b7e`; final PR CI #253 green**.
 - PROD-9 PR #46: **merged as `bb8f36234d9bebf1888da40f86f89192596e2099`; final PR CI #258 green**.
+- PROD-10 PR #48: **merged as `7593fc22b89ab0a66ad76af57ea9a8cf1e19ca50`; final PR CI #266 green**.
 - Production handoff boundary: **server-derived recipient, signed exact Sharing Preview, atomic request+consent persistence, synthetic-service blocking, hashed idempotency key, random protected management credential and retry-safe exact replay**.
 - Retention/deletion boundary: **explicit retention configuration with no legal defaults, production withdrawal by opaque public request ID plus management credential, closed-request retention purge, expired-session purge, minimal deletion tombstones and PostgreSQL regression coverage**.
 - API/abuse boundary: **bounded JSON parsing, strict JSON content type, production/browser origin controls, shared PostgreSQL fixed-window rate limiting with HMAC-only client buckets, explicit trusted-ingress client-IP configuration, baseline security headers and Next.js 16.3.6 security patch**.
 - Observability/operations boundary: **minimal liveness/readiness endpoints, runtime/database readiness checks, privacy-safe structured operational events, retention lifecycle logging, incident guidance and explicit backup/restore expectations without claiming external monitoring or backup provisioning**.
 - Deployment boundary: **complete environment-variable inventory, target-side production preflight, migration-before-start sequence, credential-free HTTPS post-deploy verification and rollback rules that prohibit automatic destructive down-migrations**.
 - Accessibility execution boundary: **keyboard skip-to-main path, CI-protected accessibility evidence checks, blank A11Y-01–A11Y-08 run record and execution guide; manual screen-reader/device/zoom/contrast/motion validation remains open**.
+- Production directory boundary: **super-admin verification/suppression/provenance/recheck/publication gates, automatic stale-record fail-closed behaviour, synthetic-record exclusion and handoff revalidation; no real provider records or participation are claimed**.
 - Provider workspace: **Payload/PostgreSQL-backed, organisation-scoped and session-authenticated; staff access is assigned-request-only; mutations are auditable**.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
@@ -314,8 +317,8 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 - PROD-7 observability and operations: **complete; PR #42, CI #249 green**.
 - PROD-8 deployment readiness: **complete; PR #44, CI #253 green**.
 - PROD-9 accessibility execution readiness: **complete; PR #46, CI #258 green**.
-- PROD-10 real-data onboarding readiness: **next stage**.
-- PROD-11 safety production-gate mechanics: **not started**.
+- PROD-10 real-data onboarding readiness: **complete; PR #48, CI #266 green**.
+- PROD-11 safety production-gate mechanics: **next stage**.
 - PROD-12 privacy/legal production-gate mechanics: **not started**.
 
 ### External gates
@@ -334,4 +337,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Create a focused PROD-10 branch from current `main`. Implement fail-closed production-directory onboarding controls for future verified real provider/service records, including explicit provenance/freshness/recheck metadata, publication/suppression gates and PostgreSQL evidence. Do not seed real organisations, imply provider agreement or enable assisted handoff from public-source directory data alone.
+Create a focused PROD-11 branch from current `main`. Implement a fail-closed production safety-content/resource gate that remains disabled until a qualified external review is actually recorded. Keep routing logic in code, publish no real Cyprus immediate-support resources in the repository until validated, and do not infer safety approval from CI.
