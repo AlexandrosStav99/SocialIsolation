@@ -2,6 +2,10 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, 
 import type { Payload } from "payload";
 import { SYNTHETIC_DIRECTORY_SOURCE } from "../directory/synthetic.ts";
 import {
+  isProductionProviderDirectoryEligible,
+  isProductionServiceDirectoryEligible,
+} from "../directory/production-metadata.ts";
+import {
   serviceAreas,
   supportTopics,
   type ServiceArea,
@@ -480,6 +484,14 @@ async function resolveProductionRecipient(
     throw new ProductionHandoffError(400, "service_unavailable", "Selected service is unavailable");
   }
 
+  if (!isProductionServiceDirectoryEligible(service)) {
+    throw new ProductionHandoffError(
+      409,
+      "service_directory_unavailable",
+      "Selected service is not currently available in the production directory",
+    );
+  }
+
   if (service.integrated !== true || service.productionHandoffEnabled !== true) {
     throw new ProductionHandoffError(
       409,
@@ -539,6 +551,14 @@ async function resolveProductionRecipient(
     })) as unknown as RecordLike;
   } catch {
     throw new ProductionHandoffError(503, "provider_unavailable", "Selected service provider is unavailable");
+  }
+
+  if (!isProductionProviderDirectoryEligible(provider)) {
+    throw new ProductionHandoffError(
+      409,
+      "provider_directory_unavailable",
+      "Selected service provider is not currently available in the production directory",
+    );
   }
 
   if (provider.informationSource === SYNTHETIC_DIRECTORY_SOURCE) {
