@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getPayload } from "payload";
 import config from "@payload-config";
-import { getProductionConsentVersion, getProductionHandoffSecret, getRuntimeMode } from "@/lib/config/server";
+import { getProductionHandoffSecret, getRuntimeMode } from "@/lib/config/server";
+import { getApprovedProductionPrivacyConfiguration } from "@/lib/privacy/production-config";
 import { securityErrorResponse } from "@/lib/security/api-response";
 import { assertAllowedBrowserOrigin, noStoreHeaders, readJsonBodyLimited } from "@/lib/security/http-hardening";
 import { consumeRateLimit, publicRateLimitSubject, rateLimitPolicies } from "@/lib/security/rate-limit";
@@ -70,14 +71,14 @@ function productionHandoffSecret(): string {
   }
 }
 
-function productionConsentVersion(): string {
+function approvedPrivacyConfiguration() {
   try {
-    return getProductionConsentVersion();
+    return getApprovedProductionPrivacyConfiguration();
   } catch {
     throw new ProductionHandoffError(
       503,
-      "production_consent_unconfigured",
-      "Production assisted-contact consent version is not configured",
+      "production_privacy_unapproved",
+      "Production privacy/legal configuration is not approved or current",
     );
   }
 }
@@ -125,14 +126,25 @@ export async function POST(request: Request) {
     }
     assertExactInputShape(body);
 
+    const privacy = approvedPrivacyConfiguration();
     const preview = await createProductionHandoffPreview(
       payload,
       body as unknown as ProductionHandoffPreviewInput,
       productionHandoffSecret(),
-      productionConsentVersion(),
+      privacy.consentVersion!,
     );
 
-    return NextResponse.json(preview, { headers: noStoreHeaders });
+    return NextResponse.json(
+      {
+        ...preview,
+        privacyNoticeVersion: privacy.version,
+        consentStatements: {
+          en: privacy.notice!.en.assistedContactConsent,
+          el: privacy.notice!.el.assistedContactConsent,
+        },
+      },
+      { headers: noStoreHeaders },
+    );
   } catch (error) {
     return errorResponse(error);
   }
