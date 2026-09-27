@@ -130,6 +130,12 @@ jobs:
       - name: Production real-directory onboarding checks
         run: npm run test:production-directory
 
+      - name: Production safety-gate checks
+        run: npm run test:production-safety
+
+      - name: Production safety configuration validation checks
+        run: npm run test:production-safety-config
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
