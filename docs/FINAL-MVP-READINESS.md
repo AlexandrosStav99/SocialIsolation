@@ -25,6 +25,7 @@ Implemented and CI-verified foundations include:
 - configurable retention/deletion mechanics with no hard-coded legal duration, including opaque-ID withdrawal, identifiable-request deletion, minimal deletion tombstones and PostgreSQL retention regressions;
 - API/abuse hardening with byte-bounded JSON parsing, strict media-type checks, browser-origin protections, shared PostgreSQL fixed-window rate limiting using HMAC-only client buckets, explicit production ingress trust configuration and baseline security headers;
 - repository-level observability/operations mechanics including liveness/readiness endpoints, privacy-safe structured operational events, retention lifecycle logging and an incident/backup operations runbook;
+- vendor-neutral deployment mechanics including complete configuration-name inventory, production preflight, migration-before-start sequencing, public HTTPS health verification and schema-safe rollback guidance;
 - thresholded anonymous analytics;
 - EN/EL critical journey;
 - accessibility/mobile/reduced-motion browser regressions;
@@ -49,7 +50,7 @@ These are not code failures and must not be represented as complete until real e
 
 Payload/PostgreSQL runtime and the controlled synthetic directory integration are no longer future implementation items. What remains unproven is a real production environment and real-provider operation, including as applicable:
 
-- production infrastructure provisioning and configuration;
+- production infrastructure provisioning and configuration; repository-level deployment/preflight/verification/rollback mechanics are implemented, but no real hosting/DNS/TLS/secrets/deploy success is claimed;
 - production identity, session management, MFA and onboarding;
 - environment-specific security assessment, production monitoring/alert delivery, real backup/restore evidence and approved incident ownership; repository-level observability/operations mechanics are implemented, but external operations provisioning remains unproven;
 - final real-world retention durations and any infrastructure-level backup/log retention settings; application-level retention/deletion automation is implemented, but exact durations still require privacy/legal approval;
