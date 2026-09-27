@@ -39,15 +39,18 @@ Latest known green engineering evidence should be referenced from the current `m
 
 ## A1. Freeze the evaluated build
 
+Status: **COMPLETE for RC1**. See `docs/VALIDATION-BASELINE-RC1.md`.
+
 Owner: **Project owner / developer**
 
-- [ ] Select the exact commit/build that will be used for human validation.
-- [ ] Confirm its CI run is green.
-- [ ] Record commit SHA and CI run in the evidence pack.
-- [ ] Use the controlled university `demo` runtime.
-- [ ] Keep synthetic services clearly labelled.
-- [ ] Confirm no real provider contact request will be sent during testing.
-- [ ] Do not add new features while validation is running unless a material defect is found.
+- [x] Select the exact commit/build that will be used for human validation: `dc8aeb6e4ef49a93605e7600e27376ca43b5f420`.
+- [x] Confirm its CI evidence is green: PR #55 / CI #283 on the identical source tree.
+- [x] Record commit SHA and CI run in the evidence pack.
+- [x] Freeze branch `validation/2026-09-27-rc1` at the evaluated commit.
+- [x] Define the controlled university `demo` runtime as the validation environment.
+- [x] Preserve explicit synthetic-service labelling.
+- [x] Confirm no real provider contact request will be sent during testing.
+- [x] Freeze feature scope while validation is running unless a material defect is found.
 
 Evidence to keep:
 
@@ -455,7 +458,7 @@ If any real exercise exposes a defect:
 
 These can start now without inventing external evidence:
 
-1. [ ] Freeze the build used for validation and record SHA/CI.
+1. [x] Freeze the build used for validation and record SHA/CI (`RC1-2026-09-27`).
 2. [ ] Execute the manual accessibility protocol.
 3. [ ] Recruit and run the 5-8 target-user usability sessions.
 4. [ ] Identify a qualified safeguarding/domain reviewer.
