@@ -26,6 +26,9 @@ export default function CheckInPage() {
             <p className="mt-3 text-sm leading-relaxed text-muted">
               The check-in is not available in this production environment right now. Please try again later.
             </p>
+            <p lang="el" className="mt-3 text-sm leading-relaxed text-muted">
+              Το check-in δεν είναι διαθέσιμο σε αυτό το περιβάλλον παραγωγής αυτή τη στιγμή. Δοκίμασε ξανά αργότερα.
+            </p>
           </div>
         </main>
         <Footer />
