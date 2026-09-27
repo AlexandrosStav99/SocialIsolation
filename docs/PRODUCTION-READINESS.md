@@ -16,8 +16,9 @@ This document tracks the production-readiness programme without changing the fro
 - PROD-6 API/abuse hardening: **complete in PR #40; final PR CI #245 green**.
 - PROD-7 observability/operations: **complete in PR #42; final PR CI #249 green**.
 - PROD-8 deployment readiness: **complete in PR #44; final PR CI #253 green**.
-- PROD-9 accessibility execution readiness: **next engineering stage**.
-- PROD-10 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
+- PROD-9 accessibility execution readiness: **complete in PR #46; final PR CI #258 green**.
+- PROD-10 real-data onboarding readiness: **next engineering stage**.
+- PROD-11 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
 
 PROD-4 establishes the engineering boundary for a future live assisted handoff without asserting that any real provider is participating. It adds a production-only server-authoritative Sharing Preview, derives provider/organisation routing from Payload records, requires a separate fail-closed live-handoff flag, blocks synthetic records, persists ContactRequest + ConsentRecord atomically, binds submission to the exact preview through a signed token, and makes exact retries idempotent. Direct Payload REST access to identifiable requests/consent/audit records remains denied.
 
@@ -28,6 +29,8 @@ PROD-6 hardens the custom API boundary without assuming unavailable deployment i
 PROD-7 adds minimal non-cacheable liveness/readiness endpoints, validates runtime configuration plus critical PostgreSQL schema availability for readiness, and introduces a constrained structured operational logger that accepts operational tokens/counts rather than user/provider content. Retention automation emits aggregate lifecycle events, API security failures are observable without logging request payloads, and the operations runbook defines incident and backup/restore expectations while leaving real monitoring, backup systems, RPO/RTO and on-call ownership as deployment evidence.
 
 PROD-8 makes the repository deployment contract reproducible without claiming a live environment. The committed environment inventory now includes production handoff, ingress/rate-limit and retention configuration names. A target-side preflight reuses fail-closed production configuration and readiness checks; a credential-free HTTPS verifier checks public liveness/readiness and baseline headers. The deployment runbook requires a single migration-before-start step and separates application rollback from schema rollback, explicitly prohibiting automatic destructive down-migrations.
+
+PROD-9 strengthens accessibility execution readiness without self-approving the human gate. Shared public navigation now provides a keyboard-visible skip link to stable focusable main-content targets. CI verifies that browser behaviour in Chromium and protects the manual evidence boundary. A blank A11Y-01–A11Y-08 run-record template and execution guide support real keyboard, screen-reader, zoom/reflow, contrast, motion and physical-device review while explicitly leaving those results unclaimed.
 
 Real public use still depends on real-provider approval, verified service data, legal/privacy approval, deployment configuration and the remaining production stages.
 
@@ -65,8 +68,8 @@ These are implementation items that can be solved in the repository and should n
 | ENG-06 | PROD-6 API/abuse hardening | Complete | PR #40; PostgreSQL shared rate limiter, HMAC-only buckets, explicit trusted ingress contract, bounded JSON, origin/CSRF protections, baseline security headers, Next.js 16.3.6; CI #245 green |
 | ENG-07 | PROD-7 observability/operations | Complete | PR #42; liveness/readiness endpoints, runtime/PostgreSQL readiness checks, privacy-safe structured events, retention lifecycle logging and operations runbook; CI #249 green. External monitoring/backups remain deployment evidence |
 | ENG-08 | PROD-8 deployment readiness | Complete | PR #44; environment/config inventory, target production preflight, migration-before-start contract, HTTPS post-deploy health verification and schema-safe rollback guidance; CI #253 green. Real hosting/DNS/TLS/secrets/deploy evidence remains external |
-| ENG-09 | PROD-9 accessibility execution readiness | Next | Automated execution support and evidence preparation only; human validation remains external |
-| ENG-10 | PROD-10 real-data onboarding readiness | Open | Provenance/freshness/import/admin workflow; no fictional real records |
+| ENG-09 | PROD-9 accessibility execution readiness | Complete | PR #46; keyboard skip path, stable main target, browser regression, blank A11Y-01–A11Y-08 run record and evidence-integrity CI guard; CI #258 green. Human accessibility validation remains external |
+| ENG-10 | PROD-10 real-data onboarding readiness | Next | Provenance/freshness/recheck/publication/suppression workflow; no fictional real records |
 | ENG-11 | PROD-11 safety production gate mechanics | Open | Configuration/support for approved resources only |
 | ENG-12 | PROD-12 privacy/legal production gate mechanics | Open | Consent/withdrawal/export/deletion/vendor inventory/auditability |
 
