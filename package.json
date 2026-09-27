@@ -37,6 +37,7 @@
     "test:production-api-hardening": "node scripts/check-production-api-hardening.mjs",
     "test:production-operations": "node scripts/check-production-operations.mjs",
     "test:production-deployment": "node scripts/check-production-deployment.mjs",
+    "test:production-accessibility-readiness": "node scripts/check-production-accessibility-readiness.mjs",
     "test:api-rate-limit-postgres": "node --experimental-transform-types scripts/check-api-rate-limit-persistence.ts",
     "test:retention-postgres": "node --experimental-transform-types scripts/check-retention-persistence.ts",
     "retention:run": "node --experimental-transform-types scripts/run-retention.ts",
