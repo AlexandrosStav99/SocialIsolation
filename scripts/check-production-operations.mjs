@@ -36,7 +36,9 @@ for (const marker of [
 
 const logger = read("lib/operations/operational-logger.ts");
 for (const marker of [
+  "OperationalEventType",
   "allowedMetadataKeys",
+  "safeToken",
   "sanitiseOperationalMetadata",
   "JSON.stringify(record)",
 ]) {
