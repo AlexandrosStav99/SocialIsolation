@@ -5,7 +5,9 @@ export type OperationalEventType =
   | "api_boundary_failure"
   | "api_rate_limit_event"
   | "retention_run_complete"
-  | "retention_run_failed";
+  | "retention_run_failed"
+  | "deployment_preflight_ready"
+  | "deployment_preflight_failed";
 
 type SafeOperationalValue = string | number | boolean;
 

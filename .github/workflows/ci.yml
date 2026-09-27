@@ -121,6 +121,9 @@ jobs:
       - name: Production observability and operations checks
         run: npm run test:production-operations
 
+      - name: Production deployment-readiness checks
+        run: npm run test:production-deployment
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail

@@ -36,9 +36,12 @@
     "test:production-retention": "node scripts/check-production-retention.mjs",
     "test:production-api-hardening": "node scripts/check-production-api-hardening.mjs",
     "test:production-operations": "node scripts/check-production-operations.mjs",
+    "test:production-deployment": "node scripts/check-production-deployment.mjs",
     "test:api-rate-limit-postgres": "node --experimental-transform-types scripts/check-api-rate-limit-persistence.ts",
     "test:retention-postgres": "node --experimental-transform-types scripts/check-retention-persistence.ts",
-    "retention:run": "node --experimental-transform-types scripts/run-retention.ts"
+    "retention:run": "node --experimental-transform-types scripts/run-retention.ts",
+    "deploy:preflight": "node --experimental-transform-types scripts/production-preflight.ts",
+    "deploy:verify": "node scripts/verify-production-deployment.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.1",

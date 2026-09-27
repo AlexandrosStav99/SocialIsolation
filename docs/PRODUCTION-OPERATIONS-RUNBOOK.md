@@ -66,7 +66,9 @@ Current operational events include:
 - `api_boundary_failure`;
 - `api_rate_limit_event`;
 - `retention_run_complete`;
-- `retention_run_failed`.
+- `retention_run_failed`;
+- `deployment_preflight_ready`;
+- `deployment_preflight_failed`.
 
 Raw exception messages are intentionally not emitted by the retention scheduler because infrastructure/library errors can contain sensitive configuration detail.
 
