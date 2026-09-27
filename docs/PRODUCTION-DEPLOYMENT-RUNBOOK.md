@@ -40,7 +40,8 @@ Application/startup production controls include:
 - `TALKPOINT_ENABLE_DEMO_DASHBOARD`;
 - `TALKPOINT_PUBLIC_APP_ORIGIN`;
 - `TALKPOINT_TRUSTED_CLIENT_IP_HEADER`;
-- `TALKPOINT_RATE_LIMIT_HASH_SECRET`.
+- `TALKPOINT_RATE_LIMIT_HASH_SECRET`;
+- `TALKPOINT_PRODUCTION_SAFETY_ENABLED`, which remains false until the separately version-controlled safeguarding configuration has qualified external approval.
 
 Production assisted-contact configuration, when approved for use, additionally includes:
 
@@ -88,7 +89,7 @@ Run:
 npm run deploy:preflight
 ```
 
-The preflight requires production runtime mode, executes the existing fail-closed production configuration validation and verifies application readiness against the target PostgreSQL schema.
+The preflight requires production runtime mode, executes the existing fail-closed production configuration validation, requires a currently approved/fresh version-controlled production safety presentation, and verifies application readiness against the target PostgreSQL schema. The safety environment flag alone cannot satisfy this check.
 
 It emits only constrained operational success/failure events. It does not print production connection strings or raw exception messages.
 
