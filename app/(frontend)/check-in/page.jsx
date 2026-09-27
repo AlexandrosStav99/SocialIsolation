@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import IntegratedCheckIn from "@/components/check-in/IntegratedCheckIn";
 import { getRuntimeMode } from "@/lib/config/server";
 import { demoSafetyPresentation } from "@/lib/safety/content";
+import { tryGetApprovedProductionPrivacyConfiguration } from "@/lib/privacy/production-config";
 import { tryGetApprovedProductionSafetyPresentation } from "@/lib/safety/production-config";
 
 export default function CheckInPage() {
@@ -11,8 +12,11 @@ export default function CheckInPage() {
   const safetyPresentation = production
     ? tryGetApprovedProductionSafetyPresentation()
     : demoSafetyPresentation;
+  const privacyConfiguration = production
+    ? tryGetApprovedProductionPrivacyConfiguration()
+    : null;
 
-  if (!safetyPresentation) {
+  if (!safetyPresentation || (production && !privacyConfiguration)) {
     return (
       <>
         <Navbar />
@@ -42,6 +46,7 @@ export default function CheckInPage() {
       <IntegratedCheckIn
         experienceMode={production ? "production" : "demo"}
         safetyPresentation={safetyPresentation}
+        privacyNotice={privacyConfiguration?.notice ?? null}
       />
       <Footer />
     </>
