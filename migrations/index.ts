@@ -3,6 +3,7 @@ import * as migration_20260926_152500_auth_hardening from './20260926_152500_aut
 import * as migration_20260926_190000_production_handoff from './20260926_190000_production_handoff';
 import * as migration_20260926_203000_retention_deletion from './20260926_203000_retention_deletion';
 import * as migration_20260926_220000_api_abuse_hardening from './20260926_220000_api_abuse_hardening';
+import * as migration_20260927_132000_production_directory_onboarding from './20260927_132000_production_directory_onboarding';
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20260926_220000_api_abuse_hardening.up,
     down: migration_20260926_220000_api_abuse_hardening.down,
     name: '20260926_220000_api_abuse_hardening'
+  },
+  {
+    up: migration_20260927_132000_production_directory_onboarding.up,
+    down: migration_20260927_132000_production_directory_onboarding.down,
+    name: '20260927_132000_production_directory_onboarding'
   },
 ];

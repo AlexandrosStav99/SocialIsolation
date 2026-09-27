@@ -114,6 +114,10 @@ try {
       providerType: "ngo_nonprofit",
       informationSource: "Controlled PROD-5 CI fixture - not a real provider",
       informationCheckedAt: baseNow.toISOString(),
+      productionDirectoryVerified: true,
+      productionDirectorySuppressed: false,
+      productionDirectorySourceType: "other_authoritative_source",
+      productionDirectoryNextReviewAt: new Date(baseNow.getTime() + 7 * 86_400_000).toISOString(),
     },
     overrideAccess: true,
   });
@@ -138,6 +142,11 @@ try {
       productionHandoffOrganisation: organisation.id,
       informationSource: "Controlled PROD-5 CI fixture - not a real provider",
       informationCheckedAt: baseNow.toISOString(),
+      productionDirectoryVerified: true,
+      productionDirectorySuppressed: false,
+      productionDirectorySourceType: "other_authoritative_source",
+      productionDirectoryNextReviewAt: new Date(baseNow.getTime() + 7 * 86_400_000).toISOString(),
+      productionDirectoryEnabled: true,
     },
     overrideAccess: true,
   });

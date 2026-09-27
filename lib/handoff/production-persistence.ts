@@ -2,6 +2,10 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, 
 import type { Payload } from "payload";
 import { SYNTHETIC_DIRECTORY_SOURCE } from "../directory/synthetic.ts";
 import {
+  isProductionProviderDirectoryEligible,
+  isProductionServiceDirectoryEligible,
+} from "../directory/production-metadata.ts";
+import {
   serviceAreas,
   supportTopics,
   type ServiceArea,
@@ -480,18 +484,25 @@ async function resolveProductionRecipient(
     throw new ProductionHandoffError(400, "service_unavailable", "Selected service is unavailable");
   }
 
-  if (service.integrated !== true || service.productionHandoffEnabled !== true) {
-    throw new ProductionHandoffError(
-      409,
-      "service_not_enabled_for_handoff",
-      "Selected service is not enabled for production assisted contact",
-    );
-  }
   if (service.informationSource === SYNTHETIC_DIRECTORY_SOURCE) {
     throw new ProductionHandoffError(
       409,
       "synthetic_service_blocked",
       "Synthetic demonstration services cannot receive production requests",
+    );
+  }
+  if (!isProductionServiceDirectoryEligible(service)) {
+    throw new ProductionHandoffError(
+      409,
+      "service_directory_unavailable",
+      "Selected service is not currently available in the production directory",
+    );
+  }
+  if (service.integrated !== true || service.productionHandoffEnabled !== true) {
+    throw new ProductionHandoffError(
+      409,
+      "service_not_enabled_for_handoff",
+      "Selected service is not enabled for production assisted contact",
     );
   }
   if (!serviceMatchesSupportContext(service, input)) {
@@ -546,6 +557,13 @@ async function resolveProductionRecipient(
       409,
       "synthetic_provider_blocked",
       "Synthetic demonstration providers cannot receive production requests",
+    );
+  }
+  if (!isProductionProviderDirectoryEligible(provider)) {
+    throw new ProductionHandoffError(
+      409,
+      "provider_directory_unavailable",
+      "Selected service provider is not currently available in the production directory",
     );
   }
 

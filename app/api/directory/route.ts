@@ -4,6 +4,7 @@ import config from "@payload-config";
 import { demoProviders, demoServices } from "@/data/demo-directory";
 import { getRuntimeMode, isSyntheticDirectoryFallbackAllowed } from "@/lib/config/server";
 import { loadPayloadDemoDirectory } from "@/lib/directory/payload-demo";
+import { loadProductionDirectory } from "@/lib/directory/production-directory";
 import { securityErrorResponse } from "@/lib/security/api-response";
 import { consumeRateLimit, publicRateLimitSubject, rateLimitPolicies } from "@/lib/security/rate-limit";
 
@@ -24,6 +25,22 @@ export async function GET(request: Request) {
         rateLimitPolicies.directoryRead,
         publicRateLimitSubject(request),
       );
+      const productionDirectory = await loadProductionDirectory(payload);
+      if (!productionDirectory) {
+        return NextResponse.json(
+          { error: "directory_unavailable", providers: [], services: [] },
+          { status: 503, headers: noStoreHeaders },
+        );
+      }
+      return NextResponse.json(
+        {
+          label: "Directory Data",
+          source: "payload_postgres_production",
+          providers: productionDirectory.providers,
+          services: productionDirectory.services,
+        },
+        { headers: noStoreHeaders },
+      );
     } catch (error) {
       const securityResponse = securityErrorResponse(error);
       if (securityResponse) return securityResponse;
@@ -34,9 +51,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // Until verified real-provider onboarding exists, production must never expose
-  // the synthetic university directory, even when those records exist in Payload.
-  const payloadDirectory = runtimeMode === "production" ? null : await loadPayloadDemoDirectory();
+  const payloadDirectory = await loadPayloadDemoDirectory();
 
   if (payloadDirectory) {
     return NextResponse.json(

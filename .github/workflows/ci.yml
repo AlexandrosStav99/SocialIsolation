@@ -127,6 +127,9 @@ jobs:
       - name: Production accessibility execution-readiness checks
         run: npm run test:production-accessibility-readiness
 
+      - name: Production real-directory onboarding checks
+        run: npm run test:production-directory
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
@@ -138,6 +141,9 @@ jobs:
 
       - name: Verify API rate-limit persistence
         run: timeout 120s npm run test:api-rate-limit-postgres
+
+      - name: Verify production directory provenance and freshness persistence
+        run: timeout 120s npm run test:production-directory-postgres
 
       - name: Verify provider workspace persistence and organisation isolation
         run: timeout 120s npm run test:provider-workspace-postgres

@@ -92,7 +92,7 @@ Define ownership for:
 - change history;
 - suppression of unverified or expired information.
 
-A checked-date field without an operational recheck process is not sufficient for live use.
+A checked-date field without an operational recheck process is not sufficient for live use. PROD-10 provides fail-closed `productionDirectoryNextReviewAt`, verification, suppression and publication mechanics, but the real owner/cadence/evidence still has to be supplied by the operating organisation.
 
 ## 8. Pilot evidence record
 
