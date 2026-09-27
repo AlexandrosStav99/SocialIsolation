@@ -1,4 +1,5 @@
 import {
+  getApprovedProductionSafetyPresentation,
   productionSafetyConfiguration,
   validateProductionSafetyConfiguration,
   type ProductionSafetyConfiguration,
@@ -27,6 +28,31 @@ function expectInvalid(
 }
 
 const now = new Date("2026-09-27T10:00:00.000Z");
+
+delete process.env.TALKPOINT_PRODUCTION_SAFETY_ENABLED;
+try {
+  getApprovedProductionSafetyPresentation(now);
+  throw new Error("Disabled operational safety gate unexpectedly passed");
+} catch (error) {
+  assert(error instanceof Error, "Expected disabled safety-gate Error");
+  assert(
+    error.message.includes("gate is disabled"),
+    "Operational safety flag must fail closed before configuration validation",
+  );
+}
+
+process.env.TALKPOINT_PRODUCTION_SAFETY_ENABLED = "true";
+try {
+  getApprovedProductionSafetyPresentation(now);
+  throw new Error("Unapproved default safety configuration unexpectedly passed");
+} catch (error) {
+  assert(error instanceof Error, "Expected unapproved safety configuration Error");
+  assert(
+    error.message.includes("matrix is not externally approved"),
+    "Environment flag must not self-approve the safety matrix",
+  );
+}
+delete process.env.TALKPOINT_PRODUCTION_SAFETY_ENABLED;
 
 expectInvalid(
   productionSafetyConfiguration,
