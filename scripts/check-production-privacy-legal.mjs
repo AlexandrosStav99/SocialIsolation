@@ -85,19 +85,23 @@ for (const marker of [
   "anonymousAnalyticsLinked: false",
   "providerInternalAuditIncluded: false",
   "request_not_found_or_credential_invalid",
-  "Deleted request copy",
 ]) {
-  if (!retention.includes(marker) && marker !== "Deleted request copy") {
+  if (!retention.includes(marker)) {
     throw new Error("Self-service request-copy boundary missing: " + marker);
   }
 }
+const copyStart = retention.indexOf("export async function exportProductionRequestData");
+const copyEnd = retention.indexOf("export async function withdrawProductionRequest", copyStart);
+if (copyStart < 0 || copyEnd <= copyStart) {
+  throw new Error("Self-service request copy implementation boundary not found");
+}
+const copyImplementation = retention.slice(copyStart, copyEnd);
 for (const forbidden of [
   "managementTokenEnvelope:",
   "idempotencyKeyHash:",
   "idempotencyPayloadHash:",
 ]) {
-  const copyStart = retention.indexOf("export async function exportProductionRequestData");
-  if (copyStart >= 0 && retention.slice(copyStart).includes(forbidden)) {
+  if (copyImplementation.includes(forbidden)) {
     throw new Error("Self-service request copy must not return internal credential/idempotency material: " + forbidden);
   }
 }
