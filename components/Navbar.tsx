@@ -34,7 +34,14 @@ export default function Navbar() {
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 focus-visible:ring-offset-warm-bg";
 
   return (
-    <header className="sticky top-0 z-[999] w-full border-b border-border bg-warm-bg/90 shadow-sm backdrop-blur-xl">
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[1001] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-sm focus:font-semibold focus:text-text focus:shadow-lg focus:ring-2 focus:ring-teal"
+      >
+        Skip to main content
+      </a>
+      <header className="sticky top-0 z-[999] w-full border-b border-border bg-warm-bg/90 shadow-sm backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
         <Link href="/" className={`flex items-center gap-3 rounded-lg ${focusRing}`}>
           <Image
@@ -110,6 +117,7 @@ export default function Navbar() {
           </div>
         </nav>
       )}
-    </header>
+      </header>
+    </>
   );
 }
