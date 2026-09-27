@@ -25,6 +25,7 @@ Implemented and CI-verified foundations include:
 - optional AI provider abstraction with deterministic fallback;
 - consent/contact-request domain boundaries, including a production-only signed Sharing Preview and atomic provider-specific request/consent persistence with server-derived routing and idempotent retries;
 - configurable retention/deletion mechanics with no hard-coded legal duration, including opaque-ID withdrawal, identifiable-request deletion, minimal deletion tombstones and PostgreSQL retention regressions;
+- a fail-closed production privacy/legal release mechanism that ships unapproved, binds approved consent version and retention values exactly to runtime configuration, supplies server-approved bilingual privacy wording when real approval exists, provides credential-authorised self-service request data copy without re-linking anonymous domains, preserves post-deletion minimal evidence only, and maintains a technical integration inventory without inventing legal vendor/controller/processor roles;
 - API/abuse hardening with byte-bounded JSON parsing, strict media-type checks, browser-origin protections, shared PostgreSQL fixed-window rate limiting using HMAC-only client buckets, explicit production ingress trust configuration and baseline security headers;
 - repository-level observability/operations mechanics including liveness/readiness endpoints, privacy-safe structured operational events, retention lifecycle logging and an incident/backup operations runbook;
 - vendor-neutral deployment mechanics including complete configuration-name inventory, production preflight, migration-before-start sequencing, public HTTPS health verification and schema-safe rollback guidance;
@@ -51,7 +52,7 @@ These are not code failures and must not be represented as complete until real e
 
 ## Production deployment boundary
 
-Payload/PostgreSQL runtime and the controlled synthetic directory integration are no longer future implementation items. What remains unproven is a real production environment and real-provider operation, including as applicable:
+The planned repository engineering programme through PROD-12 is complete and CI-protected. Payload/PostgreSQL runtime and the controlled synthetic directory integration are no longer future implementation items. What remains unproven is the real external validation and deployment evidence required for live operation, including as applicable:
 
 - production infrastructure provisioning and configuration; repository-level deployment/preflight/verification/rollback mechanics are implemented, but no real hosting/DNS/TLS/secrets/deploy success is claimed;
 - production identity, session management, MFA and onboarding;

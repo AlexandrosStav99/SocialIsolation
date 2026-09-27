@@ -1,6 +1,6 @@
 # TalkPoint Production Readiness
 
-Status: **engineering hardening in progress; not production ready**.
+Status: **production engineering programme complete; external validation and real deployment evidence remain open; not production ready**.
 
 This document tracks the production-readiness programme without changing the frozen MVP product scope or weakening the four-domain privacy architecture.
 
@@ -19,7 +19,8 @@ This document tracks the production-readiness programme without changing the fro
 - PROD-9 accessibility execution readiness: **complete in PR #46; final PR CI #258 green**.
 - PROD-10 real-data onboarding readiness: **complete in PR #48; final PR CI #266 green**.
 - PROD-11 safety production-gate mechanics: **complete in PR #50; final PR CI #270 green**.
-- PROD-12 privacy/legal production-gate mechanics: **next engineering stage**.
+- PROD-12 privacy/legal production-gate mechanics: **complete in PR #52; final PR CI #277 green**.
+- PROD-1 through PROD-12 production engineering programme: **complete**. Further engineering should be driven only by concrete external-validation/deployment findings.
 
 PROD-4 establishes the engineering boundary for a future live assisted handoff without asserting that any real provider is participating. It adds a production-only server-authoritative Sharing Preview, derives provider/organisation routing from Payload records, requires a separate fail-closed live-handoff flag, blocks synthetic records, persists ContactRequest + ConsentRecord atomically, binds submission to the exact preview through a signed token, and makes exact retries idempotent. Direct Payload REST access to identifiable requests/consent/audit records remains denied.
 
@@ -36,6 +37,8 @@ PROD-9 strengthens accessibility execution readiness without self-approving the 
 PROD-10 adds fail-closed real-directory onboarding mechanics without seeding or claiming any real provider. Provider/service records require super-admin verification, non-suppression, permitted provenance and a future recheck date; services also require an explicit production publication switch. Stale records automatically disappear from production results, synthetic provenance is always excluded, and production handoff rechecks the same eligibility so a stale/suppressed service cannot still receive a request. PostgreSQL regression coverage verifies these boundaries.
 
 PROD-11 adds a two-key production safety boundary: a version-controlled externally approved safety configuration plus a separate server-side operational enable flag. The repository ships unapproved with no real Cyprus resources. Production check-in and deployment preflight fail closed while approval/configuration is absent or stale. Trigger rules remain version-controlled application logic rather than CMS-editable rules, and approved resources require complete EN/EL content, authoritative provenance, freshness and explicit immediate-support approval.
+
+PROD-12 adds a parallel fail-closed privacy/legal release package without making legal determinations. Production privacy activation requires an authorised version-controlled package plus a separate operational flag. The approved consent version and four retention values must exactly match runtime configuration; production check-in, assisted-contact preview/final submission and deployment preflight remain unavailable while the package is missing, stale or inconsistent. A credential-authorised self-service request copy exposes only the identifiable request/consent material linkable by the existing random management credential, preserves anonymous-domain unlinkability, and after withdrawal returns only minimal surviving consent/deletion evidence. A technical integration inventory records code-visible data boundaries without assigning legal vendor/controller/processor roles.
 
 Real public use still depends on real-provider approval, verified service data, legal/privacy approval, deployment configuration and the remaining production stages.
 
@@ -61,7 +64,7 @@ Until verified real-provider onboarding is implemented, a production directory r
 
 ## Engineering blocker register
 
-These are implementation items that can be solved in the repository and should not be confused with external approval gates.
+These are implementation items that can be solved in the repository and should not be confused with external approval gates. **ENG-01 through ENG-12 are complete.** Do not create additional production stages unless real validation/deployment evidence exposes a concrete engineering defect.
 
 | ID | Area | Status | Notes |
 | --- | --- | --- | --- |
@@ -76,7 +79,7 @@ These are implementation items that can be solved in the repository and should n
 | ENG-09 | PROD-9 accessibility execution readiness | Complete | PR #46; keyboard skip path, stable main target, browser regression, blank A11Y-01–A11Y-08 run record and evidence-integrity CI guard; CI #258 green. Human accessibility validation remains external |
 | ENG-10 | PROD-10 real-data onboarding readiness | Complete | PR #48; super-admin provenance/verification/suppression/recheck/publication gates, stale-record fail-closed loader, synthetic exclusion and handoff revalidation; CI #266 green. Real provider data/ownership/acceptance remain external |
 | ENG-11 | PROD-11 safety production gate mechanics | Complete | PR #50; independent version-controlled approval + operational enable gates, production check-in/preflight fail-closed behaviour, bilingual resource validation and stale-resource rejection; CI #270 green. Qualified safeguarding approval/resources remain external |
-| ENG-12 | PROD-12 privacy/legal production gate mechanics | Next | Approved privacy/consent configuration, subject access/export/deletion, integration/vendor inventory and auditability |
+| ENG-12 | PROD-12 privacy/legal production gate mechanics | Complete | PR #52; unapproved-by-default privacy release package + separate operational gate, exact consent/retention runtime binding, server-approved bilingual notice boundary, credential-authorised request copy, deletion continuity and technical integration inventory; CI #277 green. Authorised legal/privacy determinations remain external |
 
 ## External production gates
 

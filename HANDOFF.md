@@ -3,12 +3,12 @@
 Last updated: 2026-09-26  
 Repository: `AlexandrosStav99/SocialIsolation`  
 Current continuation branch after merge: `main`  
-Latest completed production checkpoint: **PROD-11 — safety production-gate mechanics**  
-Latest merged production PR: **#50**  
-Latest merged production commit: `a13d06e6c6069aa547c4a216c56e27d2368b62ac`  
-PR #50 final CI: **#270 green**  
-Active programme: **Production-readiness hardening**  
-Exact next engineering stage: **PROD-12 — privacy/legal production-gate mechanics**
+Latest completed production checkpoint: **PROD-12 — privacy/legal production-gate mechanics**  
+Latest merged production PR: **#52**  
+Latest merged production commit: `d4ad7cf0d5071d879167fbe14d2937378cf030c7`  
+PR #52 final CI: **#277 green**  
+Active programme: **Production engineering complete; external validation and deployment evidence remain open**  
+Exact next engineering stage: **none — PROD-1 through PROD-12 are complete; create further engineering work only from a concrete validation/deployment defect**
 
 ## Read this first
 
@@ -248,6 +248,7 @@ Completed stages:
 - **PROD-9 — accessibility execution readiness**, PR #46, CI #258 green.
 - **PROD-10 — real-data onboarding readiness**, PR #48, CI #266 green.
 - **PROD-11 — safety production-gate mechanics**, PR #50, CI #270 green.
+- **PROD-12 — privacy/legal production-gate mechanics**, PR #52, CI #277 green.
 
 PROD-2 uses revocable Payload sessions, login lockout, password policy, explicit activation/deactivation, session invalidation after authority changes, and final-super-admin protection. Real reset-email delivery and MFA/SSO remain external deployment identity gates.
 
@@ -257,7 +258,7 @@ PROD-1 established explicit development/demo/production runtime modes. Productio
 
 PROD-4 adds a production-only, server-authoritative Sharing Preview and consented handoff boundary. The recipient organisation is derived from the selected service/provider, synthetic/demo records remain blocked, exact shared data are bound to a signed preview token, ContactRequest and ConsentRecord are persisted transactionally, and exact retries are idempotent. The service-level production handoff gate defaults closed and is super-admin controlled. Management bearer credentials remain random, are stored only as a hash plus encrypted replay envelope, and are never exposed to providers.
 
-Continue with **PROD-12 privacy/legal production-gate mechanics**. Add fail-closed engineering support for externally approved privacy/consent wording, data-subject access/export/deletion handling, vendor/integration inventory and auditability without inventing a lawful basis, controller/processor determination, legal approval or retention period.
+The planned production engineering programme is complete through **PROD-12**. Do **not** invent PROD-13 or expand product scope merely because engineering capacity is available. Continue by executing and recording the real external validation/deployment evidence gates: qualified safeguarding review, authorised privacy/legal review and retention decisions, verified real-provider/directory ownership, manual accessibility testing, target-user sessions, production infrastructure/backup/monitoring evidence and final academic closure. Create a new code PR only when one of those real exercises exposes a concrete defect or approved configuration change.
 
 The external validation programme remains open in parallel. Engineering progress must not be presented as provider, safeguarding, legal, accessibility or target-user approval.
 
@@ -281,6 +282,7 @@ The external validation programme remains open in parallel. Engineering progress
 - PROD-9 PR #46: **merged as `bb8f36234d9bebf1888da40f86f89192596e2099`; final PR CI #258 green**.
 - PROD-10 PR #48: **merged as `7593fc22b89ab0a66ad76af57ea9a8cf1e19ca50`; final PR CI #266 green**.
 - PROD-11 PR #50: **merged as `a13d06e6c6069aa547c4a216c56e27d2368b62ac`; final PR CI #270 green**.
+- PROD-12 PR #52: **merged as `d4ad7cf0d5071d879167fbe14d2937378cf030c7`; final PR CI #277 green**.
 - Production handoff boundary: **server-derived recipient, signed exact Sharing Preview, atomic request+consent persistence, synthetic-service blocking, hashed idempotency key, random protected management credential and retry-safe exact replay**.
 - Retention/deletion boundary: **explicit retention configuration with no legal defaults, production withdrawal by opaque public request ID plus management credential, closed-request retention purge, expired-session purge, minimal deletion tombstones and PostgreSQL regression coverage**.
 - API/abuse boundary: **bounded JSON parsing, strict JSON content type, production/browser origin controls, shared PostgreSQL fixed-window rate limiting with HMAC-only client buckets, explicit trusted-ingress client-IP configuration, baseline security headers and Next.js 16.3.6 security patch**.
@@ -289,6 +291,7 @@ The external validation programme remains open in parallel. Engineering progress
 - Accessibility execution boundary: **keyboard skip-to-main path, CI-protected accessibility evidence checks, blank A11Y-01–A11Y-08 run record and execution guide; manual screen-reader/device/zoom/contrast/motion validation remains open**.
 - Production directory boundary: **super-admin verification/suppression/provenance/recheck/publication gates, automatic stale-record fail-closed behaviour, synthetic-record exclusion and handoff revalidation; no real provider records or participation are claimed**.
 - Production safety boundary: **two independent activation gates, version-controlled safety rules/configuration, bilingual checked-resource validation, stale-resource fail-closed behaviour and production check-in/preflight blocking while approval is absent; no real safety approval or Cyprus resources are claimed**.
+- Production privacy/legal boundary: **version-controlled unapproved-by-default privacy package plus separate operational gate, exact approved consent-version and retention-value binding, server-approved bilingual notice boundary, credential-authorised self-service request copy, withdrawal/deletion continuity and technical integration inventory; no legal approval, lawful basis, controller/processor determination or GDPR-compliance claim is made**.
 - Provider workspace: **Payload/PostgreSQL-backed, organisation-scoped and session-authenticated; staff access is assigned-request-only; mutations are auditable**.
 - No-match recovery: **preserved and regression-tested**.
 - Controlled assisted handoff: **preserved; no real request sent**.
@@ -322,7 +325,7 @@ Canonical detailed register: `docs/PRODUCTION-READINESS.md`.
 - PROD-9 accessibility execution readiness: **complete; PR #46, CI #258 green**.
 - PROD-10 real-data onboarding readiness: **complete; PR #48, CI #266 green**.
 - PROD-11 safety production-gate mechanics: **complete; PR #50, CI #270 green**.
-- PROD-12 privacy/legal production-gate mechanics: **next stage**.
+- PROD-12 privacy/legal production-gate mechanics: **complete; PR #52, CI #277 green**.
 
 ### External gates
 
@@ -340,4 +343,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-Create a focused PROD-12 branch from current `main`. Strengthen privacy/legal production mechanics around approved privacy/consent configuration, subject-access/export/deletion workflows, integration/vendor inventory and auditable evidence. Preserve anonymous-data unlinkability and do not claim GDPR/legal compliance or invent legal determinations.
+No new production engineering phase is currently justified. Execute the external validation/deployment programme and record real evidence. Prioritise qualified safeguarding review, authorised privacy/legal/retention review, verified real-provider directory ownership, manual accessibility, target-user usability, production infrastructure/backup/monitoring proof and academic closure. Open engineering work only for concrete findings or approved configuration/data onboarding.
