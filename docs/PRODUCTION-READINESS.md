@@ -14,14 +14,17 @@ This document tracks the production-readiness programme without changing the fro
 - PROD-4 production handoff persistence and idempotency: **complete in PR #36; final PR CI #211 green**.
 - PROD-5 retention/deletion automation: **complete in PR #38; final PR CI #235 green**.
 - PROD-6 API/abuse hardening: **complete in PR #40; final PR CI #245 green**.
-- PROD-7 observability/operations: **next engineering stage**.
-- PROD-8 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
+- PROD-7 observability/operations: **complete in PR #42; final PR CI #249 green**.
+- PROD-8 deployment readiness: **next engineering stage**.
+- PROD-9 through PROD-12: not yet completed unless explicitly marked otherwise in later revisions.
 
 PROD-4 establishes the engineering boundary for a future live assisted handoff without asserting that any real provider is participating. It adds a production-only server-authoritative Sharing Preview, derives provider/organisation routing from Payload records, requires a separate fail-closed live-handoff flag, blocks synthetic records, persists ContactRequest + ConsentRecord atomically, binds submission to the exact preview through a signed token, and makes exact retries idempotent. Direct Payload REST access to identifiable requests/consent/audit records remains denied.
 
 PROD-5 adds configurable retention and deletion mechanics without supplying unapproved legal durations. Production withdrawal uses an opaque public request UUID plus the management credential, removes the identifiable ContactRequest transactionally, preserves only a minimal consent/deletion tombstone needed for retry/deletion semantics, and keeps active requests outside automated request-retention deletion. Expired ephemeral sessions, eligible closed requests, orphan consent records, provider audit events and anonymous analytics have explicit retention paths covered by PostgreSQL regression tests.
 
 PROD-6 hardens the custom API boundary without assuming unavailable deployment infrastructure. Production/live DB-backed routes use a shared PostgreSQL fixed-window limiter with HMAC-derived bucket keys rather than process-local memory or stored raw client IPs. Production requires an explicit ingress-controlled client-IP header contract and dedicated rate-limit HMAC secret. Sensitive JSON routes use byte-bounded parsing and strict content type; browser-authenticated provider mutations require same-origin evidence; production handoff routes enforce the configured public origin when an Origin header is present. Baseline security headers and the Next.js 16.3.6 security patch are included. The synthetic demo retains its controlled fallback behaviour and is not made dependent on the shared limiter.
+
+PROD-7 adds minimal non-cacheable liveness/readiness endpoints, validates runtime configuration plus critical PostgreSQL schema availability for readiness, and introduces a constrained structured operational logger that accepts operational tokens/counts rather than user/provider content. Retention automation emits aggregate lifecycle events, API security failures are observable without logging request payloads, and the operations runbook defines incident and backup/restore expectations while leaving real monitoring, backup systems, RPO/RTO and on-call ownership as deployment evidence.
 
 Real public use still depends on real-provider approval, verified service data, legal/privacy approval, deployment configuration and the remaining production stages.
 
@@ -57,8 +60,8 @@ These are implementation items that can be solved in the repository and should n
 | ENG-04 | PROD-4 production handoff | Complete | PR #36; signed exact Sharing Preview, server-derived recipient, synthetic-service block, atomic ContactRequest + ConsentRecord persistence, random protected management credential and idempotent exact retry; CI #211 green |
 | ENG-05 | PROD-5 retention/deletion automation | Complete | PR #38; configurable no-default retention policy, opaque-ID withdrawal, closed-request/session/audit/analytics purge mechanics, minimal deletion tombstones and PostgreSQL regression coverage; CI #235 green. Exact legal durations remain external |
 | ENG-06 | PROD-6 API/abuse hardening | Complete | PR #40; PostgreSQL shared rate limiter, HMAC-only buckets, explicit trusted ingress contract, bounded JSON, origin/CSRF protections, baseline security headers, Next.js 16.3.6; CI #245 green |
-| ENG-07 | PROD-7 observability/operations | Next | Health/readiness, privacy-safe operational logging, incident/runbook and backup/restore expectations |
-| ENG-08 | PROD-8 deployment readiness | Open | Environment separation, migration/deploy/rollback flow |
+| ENG-07 | PROD-7 observability/operations | Complete | PR #42; liveness/readiness endpoints, runtime/PostgreSQL readiness checks, privacy-safe structured events, retention lifecycle logging and operations runbook; CI #249 green. External monitoring/backups remain deployment evidence |
+| ENG-08 | PROD-8 deployment readiness | Next | Environment separation, configuration inventory, migration/deploy/readiness/rollback flow |
 | ENG-09 | PROD-9 accessibility execution readiness | Open | Code fixes/evidence preparation only; human validation remains external |
 | ENG-10 | PROD-10 real-data onboarding readiness | Open | Provenance/freshness/import/admin workflow; no fictional real records |
 | ENG-11 | PROD-11 safety production gate mechanics | Open | Configuration/support for approved resources only |

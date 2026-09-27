@@ -24,6 +24,7 @@ Implemented and CI-verified foundations include:
 - consent/contact-request domain boundaries, including a production-only signed Sharing Preview and atomic provider-specific request/consent persistence with server-derived routing and idempotent retries;
 - configurable retention/deletion mechanics with no hard-coded legal duration, including opaque-ID withdrawal, identifiable-request deletion, minimal deletion tombstones and PostgreSQL retention regressions;
 - API/abuse hardening with byte-bounded JSON parsing, strict media-type checks, browser-origin protections, shared PostgreSQL fixed-window rate limiting using HMAC-only client buckets, explicit production ingress trust configuration and baseline security headers;
+- repository-level observability/operations mechanics including liveness/readiness endpoints, privacy-safe structured operational events, retention lifecycle logging and an incident/backup operations runbook;
 - thresholded anonymous analytics;
 - EN/EL critical journey;
 - accessibility/mobile/reduced-motion browser regressions;
@@ -50,7 +51,7 @@ Payload/PostgreSQL runtime and the controlled synthetic directory integration ar
 
 - production infrastructure provisioning and configuration;
 - production identity, session management, MFA and onboarding;
-- environment-specific security assessment, production monitoring/alert delivery and approved incident response; application-level API hardening is implemented, while observability/operations engineering continues in PROD-7;
+- environment-specific security assessment, production monitoring/alert delivery, real backup/restore evidence and approved incident ownership; repository-level observability/operations mechanics are implemented, but external operations provisioning remains unproven;
 - final real-world retention durations and any infrastructure-level backup/log retention settings; application-level retention/deletion automation is implemented, but exact durations still require privacy/legal approval;
 - real provider agreements and real public handoff activation; the provider workspace and production handoff engineering boundaries are implemented, but productionHandoffEnabled remains a fail-closed per-service gate and no provider participation is implied;
 - complete checked directory content and revalidation process.
