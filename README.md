@@ -33,4 +33,4 @@ Tests launch two Next.js production servers in explicit `demo` runtime mode: the
 
 CI runs all commands above with failure propagation, a zero-warning lint gate, strict TypeScript, and an all-severity dependency audit. Update packages through npm and commit the regenerated lockfile together with package.json. Do not hand-edit the lockfile, suppress advisories or bypass checks.
 
-See [production readiness](docs/PRODUCTION-READINESS.md) for the production-hardening programme and blocker register, and [final MVP readiness](docs/FINAL-MVP-READINESS.md) for the controlled university implementation boundary.
+See [production readiness](docs/PRODUCTION-READINESS.md) for the production-hardening programme and blocker register, [production deployment runbook](docs/PRODUCTION-DEPLOYMENT-RUNBOOK.md) for the vendor-neutral migration/preflight/verification/rollback contract, and [final MVP readiness](docs/FINAL-MVP-READINESS.md) for the controlled university implementation boundary.
