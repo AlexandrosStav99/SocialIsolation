@@ -18,15 +18,16 @@ Before changing product behaviour, read in this order:
 2. `docs/PRODUCT-UX-CONTRACT.md` — locked UX/product contract subordinate to the spec.
 3. `docs/FINAL-MVP-READINESS.md` — current technical/claim boundary.
 4. `docs/PRODUCTION-READINESS.md` — production engineering stages and blocker register.
-5. `docs/VALIDATION-EVIDENCE-MATRIX.md` — current status of all seven frozen validation gates.
-6. `docs/PHASE-10-VALIDATION-EVIDENCE.md` — academic/verification evidence rules.
-7. `docs/MANUAL-ACCESSIBILITY-TEST-PROTOCOL.md`.
-8. `docs/UX-5-USABILITY-TEST-PLAN.md`.
-9. `docs/USABILITY-SESSION-RECORD-TEMPLATE.md`.
-10. `docs/SAFETY-CONTENT-VALIDATION-CHECKLIST.md`.
-11. `docs/PRIVACY-LEGAL-VALIDATION-CHECKLIST.md`.
-12. `docs/PROVIDER-VALIDATION-CHECKLIST.md`.
-13. `docs/ACADEMIC-CLOSURE-TEMPLATE.md`.
+5. `docs/GO-LIVE-ACADEMIC-CLOSURE-CHECKLIST.md` — master execution checklist for university completion and any later real production launch.
+6. `docs/VALIDATION-EVIDENCE-MATRIX.md` — current status of all seven frozen validation gates.
+7. `docs/PHASE-10-VALIDATION-EVIDENCE.md` — academic/verification evidence rules.
+8. `docs/MANUAL-ACCESSIBILITY-TEST-PROTOCOL.md`.
+9. `docs/UX-5-USABILITY-TEST-PLAN.md`.
+10. `docs/USABILITY-SESSION-RECORD-TEMPLATE.md`.
+11. `docs/SAFETY-CONTENT-VALIDATION-CHECKLIST.md`.
+12. `docs/PRIVACY-LEGAL-VALIDATION-CHECKLIST.md`.
+13. `docs/PROVIDER-VALIDATION-CHECKLIST.md`.
+14. `docs/ACADEMIC-CLOSURE-TEMPLATE.md`.
 
 Do not redesign the product from assumptions. The frozen coded MVP scope is implemented. Production hardening is authorised by the production-readiness programme, but product-scope expansion still requires a concrete frozen-requirement or validation justification.
 
@@ -343,4 +344,4 @@ Still unresolved and must not be self-approved:
 
 ## Exact next recommended action
 
-No new production engineering phase is currently justified. Execute the external validation/deployment programme and record real evidence. Prioritise qualified safeguarding review, authorised privacy/legal/retention review, verified real-provider directory ownership, manual accessibility, target-user usability, production infrastructure/backup/monitoring proof and academic closure. Open engineering work only for concrete findings or approved configuration/data onboarding.
+Use `docs/GO-LIVE-ACADEMIC-CLOSURE-CHECKLIST.md` as the master execution sequence. For university completion, freeze the evaluated build, execute manual accessibility and 5–8 target-user sessions, obtain the required safeguarding and privacy/legal evidence, complete the problem/requirements synthesis, fix and retest concrete findings, then complete academic closure. Real provider onboarding and production infrastructure/deployment are a separate live-launch track and must not be fabricated merely to strengthen the university submission. Open engineering work only for concrete findings or approved configuration/data onboarding.
