@@ -124,6 +124,9 @@ jobs:
       - name: Production deployment-readiness checks
         run: npm run test:production-deployment
 
+      - name: Production accessibility execution-readiness checks
+        run: npm run test:production-accessibility-readiness
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
