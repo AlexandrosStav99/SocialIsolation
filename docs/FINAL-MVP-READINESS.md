@@ -21,6 +21,7 @@ Implemented and CI-verified foundations include:
 - a Payload-backed directory API consumed by the public check-in, with a clearly synthetic static fallback when DB configuration/data is unavailable;
 - browser verification that the full CI runtime serves the demonstration directory from PostgreSQL rather than the fallback;
 - deterministic conversation, discovery and safety boundaries;
+- a fail-closed production safety activation mechanism requiring version-controlled external-approval configuration plus a separate operational enable flag; production check-in/preflight remain unavailable while approval is absent or stale, and no real Cyprus safety resources are included;
 - optional AI provider abstraction with deterministic fallback;
 - consent/contact-request domain boundaries, including a production-only signed Sharing Preview and atomic provider-specific request/consent persistence with server-derived routing and idempotent retries;
 - configurable retention/deletion mechanics with no hard-coded legal duration, including opaque-ID withdrawal, identifiable-request deletion, minimal deletion tombstones and PostgreSQL retention regressions;
