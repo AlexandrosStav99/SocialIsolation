@@ -28,7 +28,8 @@ Implemented and CI-verified foundations include:
 - vendor-neutral deployment mechanics including complete configuration-name inventory, production preflight, migration-before-start sequencing, public HTTPS health verification and schema-safe rollback guidance;
 - thresholded anonymous analytics;
 - EN/EL critical journey;
-- accessibility/mobile/reduced-motion browser regressions;
+- accessibility/mobile/reduced-motion browser regressions, including keyboard skip-to-main behaviour and CI-protected manual evidence-boundary checks;
+- a blank A11Y-01–A11Y-08 manual accessibility run-record template and execution guide, without claiming those human tests have been performed;
 - dependency security gate, zero-warning lint, TypeScript and production build;
 - Playwright coverage of privacy, consent, no-match, handoff failure/retry and critical UX states.
 

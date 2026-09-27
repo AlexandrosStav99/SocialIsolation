@@ -24,7 +24,7 @@ This matrix maps section 23 of `TALKPOINT-MVP-SPEC.md` to the evidence currently
 
 ## Manual accessibility evidence
 
-Automated accessibility regressions are **not** formal WCAG conformance evidence. Manual validation remains open and should be executed using `MANUAL-ACCESSIBILITY-TEST-PROTOCOL.md` together with `PHASE-9-ACCESSIBILITY-CHECKLIST.md`.
+Automated accessibility regressions are **not** formal WCAG conformance evidence. PROD-9 adds a keyboard skip-to-main regression, a blank A11Y-01–A11Y-08 run-record template and a CI guard that preserves the manual/automated evidence boundary. Manual validation remains open and should be executed using `MANUAL-ACCESSIBILITY-TEST-PROTOCOL.md`, `ACCESSIBILITY-MANUAL-RUN-RECORD.md` and `PHASE-9-ACCESSIBILITY-CHECKLIST.md` together.
 
 ## Production-readiness boundaries
 
