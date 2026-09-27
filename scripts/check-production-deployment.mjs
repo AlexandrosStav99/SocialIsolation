@@ -21,6 +21,7 @@ for (const name of [
   "TALKPOINT_RETENTION_ANONYMOUS_ANALYTICS_DAYS",
   "TALKPOINT_RETENTION_AUTOMATION_ENABLED",
   "TALKPOINT_PRODUCTION_SAFETY_ENABLED",
+  "TALKPOINT_PRODUCTION_PRIVACY_ENABLED",
 ]) {
   if (!env.includes(name + "=")) {
     throw new Error("Deployment environment inventory missing: " + name);
@@ -33,6 +34,7 @@ for (const marker of [
   "validateRuntimeConfiguration",
   "checkApplicationReadiness",
   "getApprovedProductionSafetyPresentation",
+  "getApprovedProductionPrivacyConfiguration",
   "deployment_preflight_ready",
   "deployment_preflight_failed",
 ]) {

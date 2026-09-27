@@ -19,6 +19,7 @@ export const rateLimitPolicies = {
   productionPreview: { scope: "production_handoff_preview", limit: 30, windowSeconds: 60 },
   productionHandoff: { scope: "production_handoff_submit", limit: 12, windowSeconds: 60 },
   productionWithdrawal: { scope: "production_withdrawal", limit: 12, windowSeconds: 60 },
+  productionRequestAccess: { scope: "production_request_access", limit: 12, windowSeconds: 60 },
   providerRead: { scope: "provider_workspace_read", limit: 240, windowSeconds: 60 },
   providerMutation: { scope: "provider_workspace_mutation", limit: 120, windowSeconds: 60 },
 } as const satisfies Record<string, RateLimitPolicy>;

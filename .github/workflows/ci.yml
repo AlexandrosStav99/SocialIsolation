@@ -136,6 +136,12 @@ jobs:
       - name: Production safety configuration validation checks
         run: npm run test:production-safety-config
 
+      - name: Production privacy/legal engineering-gate checks
+        run: npm run test:production-privacy-legal
+
+      - name: Production privacy/legal configuration validation checks
+        run: npm run test:production-privacy-config
+
       - name: Verify committed Payload migration on clean PostgreSQL
         run: |
           set -euo pipefail
@@ -159,6 +165,9 @@ jobs:
 
       - name: Verify retention, withdrawal and deletion persistence
         run: timeout 120s npm run test:retention-postgres
+
+      - name: Verify request-data access and deletion continuity
+        run: timeout 120s npm run test:request-access-postgres
 
       - name: Seed synthetic demonstration directory
         run: timeout 120s npm run seed:demo

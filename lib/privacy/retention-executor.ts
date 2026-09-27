@@ -19,6 +19,42 @@ export type WithdrawalResult = {
   requestDeleted: true;
 };
 
+export type RequestDataCopy = {
+  packageVersion: "request-copy-v1";
+  requestId: string;
+  requestDeleted: boolean;
+  scope: {
+    anonymousExplorationLinked: false;
+    anonymousAnalyticsLinked: false;
+    providerInternalAuditIncluded: false;
+    note: string;
+  };
+  request?: {
+    status: string;
+    preferredName?: string;
+    contact: { type: string; value: string };
+    primarySupportTopic: string;
+    secondarySupportTopics: string[];
+    serviceArea?: string;
+    preferences: string[];
+    structuredSupportSummary: string;
+    optionalNote?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    serviceName?: string;
+    recipientOrganisationName?: string;
+  };
+  consent: Array<{
+    consentVersion: string;
+    authorisedDataCategories: string[];
+    optionalNoteAuthorised: boolean;
+    consentedAt: string;
+    withdrawnAt?: string;
+    requestDeletedAt?: string;
+    deletionReason?: string;
+  }>;
+};
+
 export class DeletionError extends Error {
   constructor(
     public readonly status: number,
@@ -34,6 +70,13 @@ function asRecord(value: unknown): RecordLike | null {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as RecordLike)
     : null;
+}
+
+function numericRelationshipId(value: unknown, field: string): number {
+  if (value && typeof value === "object" && "id" in value) {
+    return numericId((value as { id?: unknown }).id, field);
+  }
+  return numericId(value, field);
 }
 
 function numericId(value: unknown, field: string): number {
@@ -241,6 +284,207 @@ async function deleteRequestPreservingConsentEvidence(
     req: { transactionID },
   });
   return consents.length;
+}
+
+function stringValue(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+async function relationshipName(
+  payload: Payload,
+  collection: "services" | "provider-organisations",
+  value: unknown,
+  transactionID: TransactionID,
+): Promise<string | undefined> {
+  let id: number;
+  try {
+    id = numericRelationshipId(value, collection.replaceAll("-", "_") + "_id");
+  } catch {
+    return undefined;
+  }
+  try {
+    const doc = await payload.findByID({
+      collection,
+      id,
+      depth: 0,
+      overrideAccess: true,
+      req: { transactionID },
+    });
+    return stringValue((doc as unknown as RecordLike).name);
+  } catch {
+    return undefined;
+  }
+}
+
+function consentCopy(consent: RecordLike): RequestDataCopy["consent"][number] {
+  const consentVersion = stringValue(consent.consentVersion);
+  const consentedAt = stringValue(consent.consentedAt);
+  if (!consentVersion || !consentedAt) {
+    throw new DeletionError(
+      500,
+      "invalid_consent_record",
+      "Stored consent evidence is incomplete",
+    );
+  }
+  return {
+    consentVersion,
+    authorisedDataCategories: stringList(consent.authorisedDataCategories),
+    optionalNoteAuthorised: consent.optionalNoteAuthorised === true,
+    consentedAt,
+    ...(stringValue(consent.withdrawnAt)
+      ? { withdrawnAt: stringValue(consent.withdrawnAt) }
+      : {}),
+    ...(stringValue(consent.requestDeletedAt)
+      ? { requestDeletedAt: stringValue(consent.requestDeletedAt) }
+      : {}),
+    ...(stringValue(consent.deletionReason)
+      ? { deletionReason: stringValue(consent.deletionReason) }
+      : {}),
+  };
+}
+
+export async function exportProductionRequestData(
+  payload: Payload,
+  publicRequestIdInput: unknown,
+  managementId: string,
+): Promise<RequestDataCopy> {
+  const publicRequestId = normalizePublicRequestId(publicRequestIdInput);
+  if (
+    typeof managementId !== "string" ||
+    !/^[A-Za-z0-9_-]{43}$/.test(managementId)
+  ) {
+    throw new DeletionError(
+      404,
+      "request_not_found_or_credential_invalid",
+      "No manageable request matched the supplied credentials",
+    );
+  }
+
+  return withTransaction(payload, async (transactionID) => {
+    const request = await findRequestByPublicId(payload, publicRequestId, transactionID);
+    if (!request) {
+      const tombstone = await findDeletedRequestTombstone(
+        payload,
+        publicRequestId,
+        transactionID,
+      );
+      if (!tombstone || !hashMatches(tombstone.deletedManagementTokenHash, managementId)) {
+        throw new DeletionError(
+          404,
+          "request_not_found_or_credential_invalid",
+          "No manageable request matched the supplied credentials",
+        );
+      }
+      return {
+        packageVersion: "request-copy-v1",
+        requestId: publicRequestId,
+        requestDeleted: true,
+        scope: {
+          anonymousExplorationLinked: false,
+          anonymousAnalyticsLinked: false,
+          providerInternalAuditIncluded: false,
+          note:
+            "This self-service copy reflects the identifiable request/consent records that remain linkable by the request-management credential. Anonymous exploration and anonymous analytics are intentionally not linkable to this request.",
+        },
+        consent: [consentCopy(tombstone)],
+      };
+    }
+
+    if (!hashMatches(request.managementTokenHash, managementId)) {
+      throw new DeletionError(
+        404,
+        "request_not_found_or_credential_invalid",
+        "No manageable request matched the supplied credentials",
+      );
+    }
+
+    const requestId = numericId(request.id, "request_id");
+    const consents = await consentRecordsForRequest(payload, requestId, transactionID);
+    if (consents.length === 0) {
+      throw new DeletionError(
+        500,
+        "missing_consent_evidence",
+        "Contact request is missing its consent evidence",
+      );
+    }
+
+    const contactType = stringValue(request.contactType);
+    const contactDetail = stringValue(request.contactDetail);
+    const primarySupportTopic = stringValue(request.primarySupportTopic);
+    const structuredSupportSummary = stringValue(request.structuredSupportSummary);
+    const status = stringValue(request.status);
+    if (
+      !contactType ||
+      !contactDetail ||
+      !primarySupportTopic ||
+      !structuredSupportSummary ||
+      !status
+    ) {
+      throw new DeletionError(
+        500,
+        "invalid_request_record",
+        "Stored contact request is incomplete",
+      );
+    }
+
+    const serviceName = await relationshipName(
+      payload,
+      "services",
+      request.service,
+      transactionID,
+    );
+    const recipientOrganisationName = await relationshipName(
+      payload,
+      "provider-organisations",
+      request.providerOrganisation,
+      transactionID,
+    );
+
+    return {
+      packageVersion: "request-copy-v1",
+      requestId: publicRequestId,
+      requestDeleted: false,
+      scope: {
+        anonymousExplorationLinked: false,
+        anonymousAnalyticsLinked: false,
+        providerInternalAuditIncluded: false,
+        note:
+          "This is a technical self-service copy of the identifiable request and consent records linked by the request-management credential. It is not a legal determination of the complete scope of any formal data-subject access request.",
+      },
+      request: {
+        status,
+        ...(stringValue(request.preferredName)
+          ? { preferredName: stringValue(request.preferredName) }
+          : {}),
+        contact: { type: contactType, value: contactDetail },
+        primarySupportTopic,
+        secondarySupportTopics: stringList(request.secondarySupportTopics),
+        ...(stringValue(request.serviceArea)
+          ? { serviceArea: stringValue(request.serviceArea) }
+          : {}),
+        preferences: stringList(request.preferences),
+        structuredSupportSummary,
+        ...(stringValue(request.optionalNote)
+          ? { optionalNote: stringValue(request.optionalNote) }
+          : {}),
+        ...(stringValue(request.createdAt)
+          ? { createdAt: stringValue(request.createdAt) }
+          : {}),
+        ...(stringValue(request.updatedAt)
+          ? { updatedAt: stringValue(request.updatedAt) }
+          : {}),
+        ...(serviceName ? { serviceName } : {}),
+        ...(recipientOrganisationName ? { recipientOrganisationName } : {}),
+      },
+      consent: consents.map(consentCopy),
+    };
+  });
 }
 
 export async function withdrawProductionRequest(

@@ -146,4 +146,6 @@ If required, complete it before real operation and link the approved version her
 
 ## Release gate
 
-Until this review is actually completed, TalkPoint must remain described as a controlled university implementation rather than legally/privacy validated for live operation.
+PROD-12 provides a fail-closed version-controlled privacy/legal release package, exact runtime consent/retention binding, a credential-authorised self-service request copy and a technical integration inventory. Those are engineering controls only; they do not complete or substitute for this review.
+
+Until this review is actually completed and the approved evidence/version is encoded into the production privacy configuration, TalkPoint must remain described as a controlled university implementation rather than legally/privacy validated for live operation.

@@ -41,9 +41,12 @@
     "test:production-directory": "node scripts/check-production-directory-onboarding.mjs",
     "test:production-safety": "node scripts/check-production-safety.mjs",
     "test:production-safety-config": "node --experimental-transform-types scripts/check-production-safety-config.ts",
+    "test:production-privacy-legal": "node scripts/check-production-privacy-legal.mjs",
+    "test:production-privacy-config": "node --experimental-transform-types scripts/check-production-privacy-config.ts",
     "test:api-rate-limit-postgres": "node --experimental-transform-types scripts/check-api-rate-limit-persistence.ts",
     "test:production-directory-postgres": "node --experimental-transform-types scripts/check-production-directory-persistence.ts",
     "test:retention-postgres": "node --experimental-transform-types scripts/check-retention-persistence.ts",
+    "test:request-access-postgres": "node --experimental-transform-types scripts/check-request-access-persistence.ts",
     "retention:run": "node --experimental-transform-types scripts/run-retention.ts",
     "deploy:preflight": "node --experimental-transform-types scripts/production-preflight.ts",
     "deploy:verify": "node scripts/verify-production-deployment.mjs"

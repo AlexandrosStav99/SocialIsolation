@@ -6,6 +6,7 @@ import {
 } from "../lib/config/server.ts";
 import { checkApplicationReadiness } from "../lib/operations/health.ts";
 import { getApprovedProductionSafetyPresentation } from "../lib/safety/production-config.ts";
+import { getApprovedProductionPrivacyConfiguration } from "../lib/privacy/production-config.ts";
 import { operationalLog } from "../lib/operations/operational-logger.ts";
 
 async function main() {
@@ -15,6 +16,7 @@ async function main() {
 
   validateRuntimeConfiguration();
   getApprovedProductionSafetyPresentation();
+  getApprovedProductionPrivacyConfiguration();
   const payload = await getPayload({ config });
   const ready = await checkApplicationReadiness(payload);
   if (!ready) {

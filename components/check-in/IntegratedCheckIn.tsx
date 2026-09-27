@@ -20,6 +20,7 @@ import type { ProviderDirectoryRecord, ServiceDirectoryRecord } from "@/lib/dire
 import { discoverServices } from "@/lib/routing/discovery";
 import { routeSafety } from "@/lib/safety/router";
 import type { SafetyPresentation } from "@/lib/safety/presentation";
+import type { ProductionPrivacyConfiguration } from "@/lib/privacy/production-config";
 import HandoffPreview from "./HandoffPreview";
 
 const topicLabels: Record<ConversationLanguage, Record<SupportTopic, string>> = {
@@ -184,9 +185,11 @@ function explainService(
 export default function IntegratedCheckIn({
   experienceMode,
   safetyPresentation,
+  privacyNotice,
 }: {
   experienceMode: "demo" | "production";
   safetyPresentation: SafetyPresentation;
+  privacyNotice: ProductionPrivacyConfiguration["notice"];
 }) {
   const [language, setLanguage] = useState<ConversationLanguage>("en");
   const [state, setState] = useState<ConversationState>(() => createConversation(crypto.randomUUID(), "en"));
@@ -726,6 +729,31 @@ export default function IntegratedCheckIn({
             <div className="mt-7 grid gap-3">
               {state.stage === "age_gate" && (
                 <>
+                  {isProduction && privacyNotice && (
+                    <section className="mb-3 rounded-2xl border border-border bg-warm-bg/60 p-4 text-sm leading-relaxed text-muted" aria-labelledby="privacy-notice-heading">
+                      <h2 id="privacy-notice-heading" className="font-bold text-text">
+                        {privacyNotice[language].heading}
+                      </h2>
+                      <p className="mt-2">{privacyNotice[language].summary}</p>
+                      <details className="mt-3">
+                        <summary className="cursor-pointer font-semibold text-teal">
+                          {language === "en" ? "Privacy details" : "Λεπτομέρειες απορρήτου"}
+                        </summary>
+                        <div className="mt-3 grid gap-2">
+                          <p>{privacyNotice[language].controllerIdentity}</p>
+                          <p>{privacyNotice[language].anonymousExploration}</p>
+                          <p>{privacyNotice[language].analytics}</p>
+                          <p>{privacyNotice[language].assistedContact}</p>
+                          <p>{privacyNotice[language].retention}</p>
+                          <p>{privacyNotice[language].rights}</p>
+                          <p>{privacyNotice[language].privacyContact}</p>
+                          <p>{privacyNotice[language].complaintRoute}</p>
+                          <p>{privacyNotice[language].transfers}</p>
+                          <p>{privacyNotice[language].automatedDecisionMaking}</p>
+                        </div>
+                      </details>
+                    </section>
+                  )}
                   <button className={choiceClass()} onClick={() => dispatch({ type: "confirm_age", confirmed: true })}>
                     <span>{language === "en" ? "Yes, I’m 18 or over" : "Ναι, είμαι 18 ετών ή άνω"}</span>
                     <ChevronRight size={17} className="shrink-0 text-sage transition group-hover:translate-x-0.5" aria-hidden="true" />
